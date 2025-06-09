@@ -11,7 +11,7 @@ import java.sql.Time;
 @NoArgsConstructor
 public class DisponibilidadDTO {
     private Integer idDisponibilidad;
-    private Integer idDocente; // Solo el ID del docente
+    private Integer idDocente;
     private String diaSemana;
     private Time horaInicio;
     private Time horaFin;

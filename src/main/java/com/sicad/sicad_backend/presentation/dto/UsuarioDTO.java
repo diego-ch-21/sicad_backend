@@ -2,6 +2,8 @@ package com.sicad.sicad_backend.presentation.dto;
 
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Column;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,10 +16,11 @@ import lombok.NonNull;
 public class UsuarioDTO {
     @NonNull
     private Integer idUsuario;
-    @NonNull
-    @JsonIncludeProperties(value = {"idRol"})
-    private RolDTO rol;
 
+    //@NonNull
+    //@JsonIncludeProperties(value = {"idRol"})
+    //private RolDTO rol;
+    private Integer idRol;
     @JsonProperty(value = "user_name")
     @NonNull
     private String username;
@@ -30,4 +33,7 @@ public class UsuarioDTO {
     //@JsonProperty(access= JsonProperty.Access.READ_ONLY)
     private String password; // Bcrypt
     private boolean enabled;
+    private String nombres;
+    private String apellidos;
+    private String email;
 }

@@ -17,6 +17,10 @@ public class Docente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Integer idDocente;
+    @ManyToOne
+    @JoinColumn(name = "id_usuario", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_DOCENTE_USUARIO"))
+    private Usuario idUsuario;
     private String categoria;
     private Integer horasMaxLectivas;
     private boolean isPermiso;

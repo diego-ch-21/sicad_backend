@@ -1,6 +1,7 @@
 package com.sicad.sicad_backend.persistence.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -15,6 +16,7 @@ import lombok.NoArgsConstructor;
 public class Usuario {
     @Id
     @EqualsAndHashCode.Include
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id_usuario")
     private Integer idUsuario;
 
@@ -28,4 +30,10 @@ public class Usuario {
     private String password;
     @Column(nullable = false,name="enabled")
     private boolean enabled;
+    @Column(nullable = false, length = 50, name = "nombres")
+    private String nombres;
+    @Column(nullable = false, length = 50, name = "apellidos")
+    private String apellidos;
+    @Column(nullable = false, length = 100, name = "email")
+    private String email;
 }

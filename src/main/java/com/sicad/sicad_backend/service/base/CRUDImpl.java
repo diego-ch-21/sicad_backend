@@ -17,10 +17,8 @@ public abstract class CRUDImpl<T,ID> implements ICRUD<T, ID> {
 
     @Override
     public T update(ID id, T t) throws Exception {
-        //t.setIdProducto(id); // Assuming T has a method setIdProducto
-        //API Reflection
+
         String className=t.getClass().getSimpleName();
-        //setIdXYZ
         String methodName = "setId" + className;
         Method setIdMethod = t.getClass().getMethod(methodName,id.getClass());
         setIdMethod.invoke(t, id);
