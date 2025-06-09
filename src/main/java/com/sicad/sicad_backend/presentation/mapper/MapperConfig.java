@@ -1,0 +1,18 @@
+package com.sicad.sicad_backend.presentation.mapper;
+
+
+import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class MapperConfig {
+    //@Bean(name = "defaultMapper")
+    @Bean
+    public ModelMapper defaultMapper() {
+        return new ModelMapper();
+    }
+
+
+
+}
