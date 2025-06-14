@@ -16,22 +16,14 @@ import lombok.NonNull;
 public class UsuarioDTO {
     @NonNull
     private Integer idUsuario;
-
-    //@NonNull
-    //@JsonIncludeProperties(value = {"idRol"})
-    //private RolDTO rol;
-    private Integer idRol;
     @JsonProperty(value = "user_name")
     @NonNull
     private String username;
     @NonNull
     @Size(min = 5, max=60)
-    //@JsonIgnore
-    // solo escritura
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    // solo lectura
-    //@JsonProperty(access= JsonProperty.Access.READ_ONLY)
-    private String password; // Bcrypt
+    private String password;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private boolean enabled;
     private String nombres;
     private String apellidos;

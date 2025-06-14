@@ -33,6 +33,7 @@ public class UsuarioController {
                 new GenericReponse<>(200, "Lista de Usuarios", lista)
         );
     }
+    //para el login
     @GetMapping("/buscar/{id}")
     public ResponseEntity<GenericReponse<UsuarioDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
         Usuario obj = service.findById(id);
@@ -44,9 +45,10 @@ public class UsuarioController {
     public ResponseEntity<GenericReponse<UsuarioDTO>> save(@Valid @RequestBody UsuarioDTO dto) throws Exception {
         Usuario obj = service.save(convertToEntity(dto));
         return new ResponseEntity<>(new GenericReponse<>(
-                201, "Usuario creada", List.of(convertToDTO(obj))
+                201, "Usuario creada exitosamente", List.of(convertToDTO(obj))
         ), HttpStatus.CREATED);
     }
+    //para actualizar
     @PutMapping("/actualizar/{id}")
     public ResponseEntity<GenericReponse<UsuarioDTO>> update(@Valid @PathVariable("id") Integer id, @RequestBody UsuarioDTO dto) throws Exception {
         Usuario obj = service.update(id,convertToEntity(dto));
