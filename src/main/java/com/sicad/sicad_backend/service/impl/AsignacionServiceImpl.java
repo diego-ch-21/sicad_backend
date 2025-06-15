@@ -1,8 +1,8 @@
 package com.sicad.sicad_backend.service.impl;
 
-import com.sicad.sicad_backend.persistence.model.Asignacion;
-import com.sicad.sicad_backend.persistence.repository.base.IGenericRepo;
-import com.sicad.sicad_backend.persistence.repository.interfaces.IAsignacionRepo;
+import com.sicad.sicad_backend.model.Asignacion;
+import com.sicad.sicad_backend.repository.base.IGenericRepo;
+import com.sicad.sicad_backend.repository.interfaces.IAsignacionRepo;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.IAsignacionService;
 import lombok.RequiredArgsConstructor;

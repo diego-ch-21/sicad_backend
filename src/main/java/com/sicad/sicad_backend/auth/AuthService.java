@@ -1,16 +1,16 @@
 package com.sicad.sicad_backend.auth;
 
 import com.sicad.sicad_backend.jwt.JwtService;
-import com.sicad.sicad_backend.persistence.model.Docente;
-import com.sicad.sicad_backend.persistence.model.Rol;
-import com.sicad.sicad_backend.persistence.model.Usuario;
-import com.sicad.sicad_backend.persistence.repository.interfaces.IDocenteRepo;
-import com.sicad.sicad_backend.persistence.repository.interfaces.IRolRepo;
-import com.sicad.sicad_backend.persistence.repository.interfaces.IUsuarioRepo;
-import com.sicad.sicad_backend.presentation.dto.DocenteDTO;
-import com.sicad.sicad_backend.presentation.dto.UsuarioDTO;
-import com.sicad.sicad_backend.presentation.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.util.CodigoGeneratorUtil;
+import com.sicad.sicad_backend.model.Docente;
+import com.sicad.sicad_backend.model.Rol;
+import com.sicad.sicad_backend.model.Usuario;
+import com.sicad.sicad_backend.repository.interfaces.IDocenteRepo;
+import com.sicad.sicad_backend.repository.interfaces.IRolRepo;
+import com.sicad.sicad_backend.repository.interfaces.IUsuarioRepo;
+import com.sicad.sicad_backend.dto.DocenteDTO;
+import com.sicad.sicad_backend.dto.UsuarioDTO;
+import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
+import com.sicad.sicad_backend.utils.CodigoGeneratorUtil;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;

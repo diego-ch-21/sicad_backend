@@ -1,7 +1,7 @@
 package com.sicad.sicad_backend.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sicad.sicad_backend.presentation.dto.base.GenericMessageResponse;
+import com.sicad.sicad_backend.dto.base.GenericMessageResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;

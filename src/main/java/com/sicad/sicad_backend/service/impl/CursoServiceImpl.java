@@ -1,8 +1,8 @@
 package com.sicad.sicad_backend.service.impl;
 
-import com.sicad.sicad_backend.persistence.model.Curso;
-import com.sicad.sicad_backend.persistence.repository.base.IGenericRepo;
-import com.sicad.sicad_backend.persistence.repository.interfaces.ICursoRepo;
+import com.sicad.sicad_backend.model.Curso;
+import com.sicad.sicad_backend.repository.base.IGenericRepo;
+import com.sicad.sicad_backend.repository.interfaces.ICursoRepo;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.ICursoService;
 import lombok.RequiredArgsConstructor;

@@ -1,7 +1,7 @@
 package com.sicad.sicad_backend.service.base;
 
 import com.sicad.sicad_backend.exception.ModelNotFoundException;
-import com.sicad.sicad_backend.persistence.repository.base.IGenericRepo;
+import com.sicad.sicad_backend.repository.base.IGenericRepo;
 
 import java.lang.reflect.Method;
 import java.util.List;

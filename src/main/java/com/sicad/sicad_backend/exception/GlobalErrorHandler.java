@@ -1,7 +1,7 @@
 package com.sicad.sicad_backend.exception;
 
-import com.sicad.sicad_backend.presentation.dto.base.CustomErrorResponse;
-import com.sicad.sicad_backend.presentation.dto.base.GenericReponse;
+import com.sicad.sicad_backend.dto.base.CustomErrorResponse;
+import com.sicad.sicad_backend.dto.base.GenericReponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;

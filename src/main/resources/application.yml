@@ -19,3 +19,4 @@ spring:
       url: jdbc:postgresql://localhost:5432/sicad_bd
       username: postgres
       password: admin
+

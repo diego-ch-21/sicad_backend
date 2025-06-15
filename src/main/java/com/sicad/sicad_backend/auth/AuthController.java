@@ -1,9 +1,7 @@
 package com.sicad.sicad_backend.auth;
 
-import com.sicad.sicad_backend.presentation.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.presentation.dto.base.GenericReponse;
+import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

@@ -1,6 +1,6 @@
 package com.sicad.sicad_backend.config;
 
-import com.sicad.sicad_backend.persistence.repository.interfaces.IUsuarioRepo;
+import com.sicad.sicad_backend.repository.interfaces.IUsuarioRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

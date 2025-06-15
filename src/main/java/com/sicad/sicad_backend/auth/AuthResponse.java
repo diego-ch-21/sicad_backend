@@ -1,8 +1,8 @@
 package com.sicad.sicad_backend.auth;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.sicad.sicad_backend.presentation.dto.DocenteDTO;
-import com.sicad.sicad_backend.presentation.dto.UsuarioDTO;
+import com.sicad.sicad_backend.dto.DocenteDTO;
+import com.sicad.sicad_backend.dto.UsuarioDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
