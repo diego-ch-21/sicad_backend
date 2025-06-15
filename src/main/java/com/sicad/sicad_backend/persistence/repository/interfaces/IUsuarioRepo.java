@@ -11,4 +11,6 @@ import java.util.Optional;
 public interface IUsuarioRepo extends IGenericRepo<Usuario, Integer> {
     Optional<Usuario> findByUsername(String username);
     Optional<Usuario> findByEmail(String email);
+    boolean existsByCodigo(String codigo);
+
 }

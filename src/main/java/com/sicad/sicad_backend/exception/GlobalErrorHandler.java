@@ -47,7 +47,7 @@ public class GlobalErrorHandler extends ResponseEntityExceptionHandler {
                 List.of(cer)
         ), HttpStatus.NOT_FOUND);
     }
-
+    /*
     @ExceptionHandler(ArithmeticException.class)
     public ResponseEntity<CustomErrorResponse> handleArithmeticException(ArithmeticException ex, WebRequest request) {
         CustomErrorResponse cer = new CustomErrorResponse(
@@ -57,6 +57,8 @@ public class GlobalErrorHandler extends ResponseEntityExceptionHandler {
         );
         return new ResponseEntity<>(cer, HttpStatus.NOT_ACCEPTABLE);
     }
+
+     */
     //otra forma de hacer una excepcion de validacion usando un metodo heredado ResponseEntityExceptionHandler
     /*@Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {

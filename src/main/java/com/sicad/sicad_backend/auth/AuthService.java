@@ -1,12 +1,16 @@
 package com.sicad.sicad_backend.auth;
 
 import com.sicad.sicad_backend.jwt.JwtService;
+import com.sicad.sicad_backend.persistence.model.Docente;
 import com.sicad.sicad_backend.persistence.model.Rol;
 import com.sicad.sicad_backend.persistence.model.Usuario;
+import com.sicad.sicad_backend.persistence.repository.interfaces.IDocenteRepo;
 import com.sicad.sicad_backend.persistence.repository.interfaces.IRolRepo;
 import com.sicad.sicad_backend.persistence.repository.interfaces.IUsuarioRepo;
+import com.sicad.sicad_backend.presentation.dto.DocenteDTO;
 import com.sicad.sicad_backend.presentation.dto.UsuarioDTO;
 import com.sicad.sicad_backend.presentation.dto.base.GenericObjectResponse;
+import com.sicad.sicad_backend.util.CodigoGeneratorUtil;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,6 +25,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthService {
     private final IUsuarioRepo userRepository;
+    private final IDocenteRepo docenteRepository;
     private final IRolRepo rolRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
@@ -40,11 +45,37 @@ public class AuthService {
             }
 
             Usuario usuario = optionalUser.get();
-            UsuarioDTO usuarioDTO = convertToDTO(usuario);
             String token = jwtService.getToken(usuario);
+            UsuarioDTO usuarioDTO = convertToDTO(usuario);
+            Integer idRol = usuario.getRol().getIdRol();
+            Docente docente;
+            switch (idRol){
+                case 1: // Admin
+                    docente =null;
+                    break;
+                case 2: // Director
+                    docente =null;
+                    break;
+                case 3: // Docente
+                    docente = docenteRepository.findByIdUsuario(usuario)
+                            .orElse(null);
+                    break;
+                default:
+                    docente =null;
+                    break;
+            }
+            DocenteDTO docenteDTO;
+            if(docente != null){
+                docenteDTO = modelMapper.map(docente, DocenteDTO.class);
+            } else {
+                docenteDTO = null;
+            }
+
+
             AuthResponse authResponse = AuthResponse.builder()
                     .token(token)
                     .usuario(usuarioDTO)
+                    .docente(docenteDTO)
                     .build();
 
             return new GenericObjectResponse<>(200, "Inicio de sesión exitoso", authResponse);
@@ -54,31 +85,41 @@ public class AuthService {
         }
     }
 
-
-    public GenericObjectResponse<AuthResponse> register(RegisterRequest request) {
+    //no se usara
+    public GenericObjectResponse<AuthResponse> registerAdmin(RegisterRequest request, Integer idRol) {
         // Verificar si el username ya existe
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             return new GenericObjectResponse<>(409, "El nombre de usuario ya está en uso", null);
         }
 
-        // (Opcional) Verificar si el email ya existe
+        // Verificar si el email ya existe
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             return new GenericObjectResponse<>(409, "El correo electrónico ya está en uso", null);
         }
 
-        // Obtener rol por defecto
-        Rol rolUsuario = rolRepository.findById(1)
-                .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+        // Obtener rol
+        Optional<Rol> optionalRol = rolRepository.findById(idRol);
+        if (!optionalRol.isPresent()) {
+            return new GenericObjectResponse<>(404, "Rol no encontrado", null);
+        }
+        Rol rolUsuario = optionalRol.get();
+
+        // Generar código único y verificar duplicado
+        String codigo;
+        do {
+            codigo = CodigoGeneratorUtil.generarCodigoNumerico(8);
+        } while (userRepository.existsByCodigo(codigo));
 
         // Crear y guardar usuario
         Usuario user = Usuario.builder()
+                .codigo(codigo)
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .nombres(request.getNombres())
                 .apellidos(request.getApellidos())
                 .email(request.getEmail())
                 .enabled(true)
-                .idRol(rolUsuario)
+                .rol(rolUsuario)
                 .build();
 
         userRepository.save(user);

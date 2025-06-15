@@ -24,16 +24,19 @@ public class Usuario implements UserDetails {
     private Integer idUsuario;
 
     @ManyToOne
-    @JoinColumn(name = "id_rol", nullable = false,
+    @JoinColumn(name = "id_rol",
             foreignKey = @ForeignKey(name = "FK_USUARIO_ROL"))
-    private Rol idRol;
+    private Rol rol;
 
     @Basic
-    @Column(nullable = false, length = 50, name = "nombre")
+    @Column(nullable = false, length = 50, name = "user_name")
     private String username;
 
     @Column(nullable = false,length = 60,name="password")
     private String password;
+
+    @Column(nullable = false, length = 8, name = "codigo")
+    private String codigo;
 
     @Column(nullable = false,name="enabled")
     private boolean enabled;
@@ -49,7 +52,7 @@ public class Usuario implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority((idRol.getNombre())));
+        return List.of(new SimpleGrantedAuthority((rol.getNombre())));
     }
     @Override
     public boolean isAccountNonExpired() {

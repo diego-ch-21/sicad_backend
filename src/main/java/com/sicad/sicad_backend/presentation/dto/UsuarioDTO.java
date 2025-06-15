@@ -16,6 +16,7 @@ import lombok.NonNull;
 public class UsuarioDTO {
     @NonNull
     private Integer idUsuario;
+    private String idRol;
     @JsonProperty(value = "user_name")
     @NonNull
     private String username;
@@ -25,6 +26,7 @@ public class UsuarioDTO {
     private String password;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private boolean enabled;
+    private String codigo;
     private String nombres;
     private String apellidos;
     private String email;

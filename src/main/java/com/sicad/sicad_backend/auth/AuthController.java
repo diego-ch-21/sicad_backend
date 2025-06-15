@@ -22,9 +22,19 @@ public class AuthController {
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @PostMapping(value = "register")
-    public ResponseEntity<GenericObjectResponse<AuthResponse>> register(@RequestBody RegisterRequest request) {
-        GenericObjectResponse<AuthResponse> response = authService.register(request);
+    @PostMapping(value = "register/admin")
+    public ResponseEntity<GenericObjectResponse<AuthResponse>> registerUserAdmin(@RequestBody RegisterRequest request) {
+        GenericObjectResponse<AuthResponse> response = authService.registerAdmin(request,1);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+    @PostMapping(value = "register/director")
+    public ResponseEntity<GenericObjectResponse<AuthResponse>> registerUserDirector(@RequestBody RegisterRequest request) {
+        GenericObjectResponse<AuthResponse> response = authService.registerAdmin(request,2);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+    @PostMapping(value = "register/profesor")
+    public ResponseEntity<GenericObjectResponse<AuthResponse>> registerUserProfesor(@RequestBody RegisterRequest request) {
+        GenericObjectResponse<AuthResponse> response = authService.registerAdmin(request,3);
         return ResponseEntity.status(response.status()).body(response);
     }
 
