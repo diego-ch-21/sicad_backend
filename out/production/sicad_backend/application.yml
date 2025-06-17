@@ -1,0 +1,22 @@
+server:
+    port: 8080
+
+application:
+  title: "SICAD"
+  version: "1.0.0"
+
+spring:
+  banner:
+    location: banner.txt
+  jpa:
+    database: postgresql
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  datasource:
+      driver-class-name: org.postgresql.Driver
+      url: jdbc:postgresql://localhost:5432/sicad_bd
+      username: postgres
+      password: admin
+
