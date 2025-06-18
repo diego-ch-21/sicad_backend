@@ -60,6 +60,9 @@ public class DocenteController {
         return ResponseEntity.noContent().build();
     }
 
+
+
+
     private DocenteDTO convertToDTO(Docente obj) {
         return modelMapper.map(obj, DocenteDTO.class);
     }
