@@ -1,6 +1,10 @@
 package com.sicad.sicad_backend.controller;
 
 
+import com.sicad.sicad_backend.auth.AuthResponse;
+import com.sicad.sicad_backend.auth.RegisterRequest;
+import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
+import com.sicad.sicad_backend.dto.request.insertarDocenteRequest;
 import com.sicad.sicad_backend.model.Docente;
 import com.sicad.sicad_backend.dto.DocenteDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
@@ -58,6 +62,12 @@ public class DocenteController {
     public ResponseEntity<Void> delete(@PathVariable("id") Integer id) throws Exception {
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/registrar/docente")
+    public ResponseEntity<GenericObjectResponse<DocenteDTO>> registrarDocente(@RequestBody insertarDocenteRequest request) {
+        GenericObjectResponse<DocenteDTO> response = service.registrarDocente(request);
+        return ResponseEntity.status(response.status()).body(response);
     }
 
 

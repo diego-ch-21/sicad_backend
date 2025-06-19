@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.util.Date;
 
 @Data
 @AllArgsConstructor
@@ -17,6 +18,6 @@ public class DocenteDTO {
     private Integer idCategoria;
     private Integer horasMaxLectivas;
     private Boolean tienePermisoExceso;
-    private ZonedDateTime fechaCreacion;
+    private Date fechaCreacion;
     private boolean enabled;
 }
