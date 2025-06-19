@@ -23,7 +23,10 @@ public class Disponibilidad {
     @JoinColumn(name = "id_docente",nullable = false,
             foreignKey = @ForeignKey(name = "FK_DISPONIBILIDAD_DOCENTE"))
     private Docente docente;
+    @Column(nullable = false, name = "dia_semana")
     private String diaSemana;
+    @Column(nullable = false, name = "hora_inicio")
     private Time horaInicio;
+    @Column(nullable = false, name = "hora_fin")
     private Time horaFin;
 }

@@ -1,6 +1,7 @@
 package com.sicad.sicad_backend.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -24,15 +25,11 @@ public class Usuario implements UserDetails {
     private Integer idUsuario;
 
     @ManyToOne
-    @JoinColumn(name = "id_rol",
+    @JoinColumn(name = "id_rol",nullable = false,
             foreignKey = @ForeignKey(name = "FK_USUARIO_ROL"))
     private Rol rol;
 
-    @Basic
-    @Column(nullable = false, length = 50, name = "user_name")
-    private String username;
-
-    @Column(nullable = false,length = 60,name="password")
+    @Column(nullable = false,name="password")
     private String password;
 
     @Column(nullable = false, length = 8, name = "codigo")
@@ -41,13 +38,14 @@ public class Usuario implements UserDetails {
     @Column(nullable = false,name="enabled")
     private boolean enabled;
 
-    @Column(nullable = false, length = 50, name = "nombres")
+    @Column(nullable = false, name = "nombres")
     private String nombres;
 
-    @Column(nullable = false, length = 50, name = "apellidos")
+    @Column(nullable = false, name = "apellidos")
     private String apellidos;
 
-    @Column(nullable = false, length = 100, name = "email")
+    @Column(nullable = false, name = "email")
+    @Email
     private String email;
 
     @Override
@@ -70,4 +68,9 @@ public class Usuario implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
 }

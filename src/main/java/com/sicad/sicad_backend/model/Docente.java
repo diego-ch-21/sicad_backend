@@ -6,6 +6,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.sql.Date;
+import java.time.LocalDateTime;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,12 +19,31 @@ public class Docente {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
+    @Column(name = "id_docente")
     private Integer idDocente;
     @ManyToOne
     @JoinColumn(name = "id_usuario", nullable = false,
             foreignKey = @ForeignKey(name = "FK_DOCENTE_USUARIO"))
     private Usuario idUsuario;
-    private String categoria;
+    @ManyToOne
+    @JoinColumn(name = "id_dedicacion", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_DOCENTE_DEDICACION"))
+    private Dedicacion dedicacion;
+    @ManyToOne
+    @JoinColumn(name = "id_categoria", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_DOCENTE_CATEGORIA"))
+    private Categoria categoria;
+
+    @Column(nullable = false, name = "hora_max_lectivas")
     private Integer horasMaxLectivas;
-    private boolean isPermiso;
+
+    @Column(nullable = false, name = "tiene_permiso_exceso")
+    private Boolean tienePermisoExceso;
+
+    @Column(nullable = false, name = "enabled")
+    private boolean enabled;
+
+    @Column(nullable = false, name = "created_at")
+    private LocalDateTime fechaCreacion;
+
 }

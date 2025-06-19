@@ -36,12 +36,12 @@ public class AuthService {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            request.getUsername(), request.getPassword())
+                            request.getEmail(), request.getPassword())
             );
-            Optional<Usuario> optionalUser = userRepository.findByUsername(request.getUsername());
+            Optional<Usuario> optionalUser = userRepository.findByEmail(request.getEmail());
 
             if (optionalUser.isEmpty()) {
-                return new GenericObjectResponse<>(404, "Usuario no encontrado", null);
+                return new GenericObjectResponse<>(404, "Email no encontrado", null);
             }
 
             Usuario usuario = optionalUser.get();
@@ -87,10 +87,6 @@ public class AuthService {
 
     //no se usara
     public GenericObjectResponse<AuthResponse> registerAdmin(RegisterRequest request, Integer idRol) {
-        // Verificar si el username ya existe
-        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            return new GenericObjectResponse<>(409, "El nombre de usuario ya está en uso", null);
-        }
 
         // Verificar si el email ya existe
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -113,11 +109,10 @@ public class AuthService {
         // Crear y guardar usuario
         Usuario user = Usuario.builder()
                 .codigo(codigo)
-                .username(request.getUsername())
+                .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .nombres(request.getNombres())
                 .apellidos(request.getApellidos())
-                .email(request.getEmail())
                 .enabled(true)
                 .rol(rolUsuario)
                 .build();
