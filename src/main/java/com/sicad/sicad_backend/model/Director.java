@@ -19,5 +19,6 @@ public class Director {
     @JoinColumn(name = "id_usuario", nullable = false,
             foreignKey = @ForeignKey(name = "FK_DIRECTOR_USUARIO"))
     private Usuario idUsuario;
-    private String carga;
+    @Column(nullable = false, name = "cargo")
+    private String cargo;
 }

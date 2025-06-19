@@ -4,13 +4,19 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class DocenteDTO {
     private Integer idDocente;
     private Integer idUsuario;
-    private String categoria;
+    private Integer idDedicacion;
+    private Integer idCategoria;
     private Integer horasMaxLectivas;
-    private boolean isPermiso;
+    private Boolean tienePermisoExceso;
+    private ZonedDateTime fechaCreacion;
+    private boolean enabled;
 }

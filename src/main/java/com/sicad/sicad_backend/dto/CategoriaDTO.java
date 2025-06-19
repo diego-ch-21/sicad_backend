@@ -9,10 +9,10 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AsignacionDTO {
-    private int idAsignacion;
-    private int idDocente;
-    private int idHorario;
+public class CategoriaDTO {
+    private String idCategoria;
+    private String idDocente;
+    private String idHorario;
     private String tipoAsignacion;
     private LocalDate fechaAsignacion;
     private boolean enabled;

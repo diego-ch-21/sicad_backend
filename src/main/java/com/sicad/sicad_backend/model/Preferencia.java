@@ -9,22 +9,25 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "preferencia")
-@IdClass(PreferenciaPK.class)
+@Table(name = "preferencia",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"id_docente", "id_curso"}))
 public class Preferencia {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_preferencia")
+    private Integer idPreferencia;
+
     @ManyToOne
     @JoinColumn(nullable = false, name = "id_docente",
             foreignKey = @ForeignKey(name = "PREFERENCIA_DOCENTE_CURSO_DOC"))
     private Docente docente;
 
-    @Id
     @ManyToOne
     @JoinColumn(nullable = false, name = "id_curso",
             foreignKey = @ForeignKey(name = "PREFERENCIA_DOCENTE_CURSO_CUR"))
     private Curso curso;
 
-    @Column(nullable = false,name = "enabled")
+    @Column(nullable = false, name = "enabled")
     private boolean enabled;
 }

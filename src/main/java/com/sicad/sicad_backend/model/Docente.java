@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.sql.Date;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Data
 @AllArgsConstructor
@@ -40,10 +41,12 @@ public class Docente {
     @Column(nullable = false, name = "tiene_permiso_exceso")
     private Boolean tienePermisoExceso;
 
+    @Column(nullable = false, name = "created_at")
+    private ZonedDateTime fechaCreacion;
+
     @Column(nullable = false, name = "enabled")
     private boolean enabled;
 
-    @Column(nullable = false, name = "created_at")
-    private LocalDateTime fechaCreacion;
+
 
 }
