@@ -57,11 +57,6 @@ public class CategoriaController {
         );
     }
 
-    @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") Integer id) throws Exception {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     private CategoriaDTO convertToDTO(Categoria obj) {
         return modelMapper.map(obj, CategoriaDTO.class);

@@ -1,19 +1,22 @@
 package com.sicad.sicad_backend.service.impl;
 
-import com.sicad.sicad_backend.auth.AuthResponse;
 import com.sicad.sicad_backend.dto.DocenteDTO;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
+import com.sicad.sicad_backend.dto.docente.insertarDocenteRequest;
 import com.sicad.sicad_backend.jwt.JwtService;
-import com.sicad.sicad_backend.model.Docente;
+import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.*;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.IDocenteService;
-import com.sicad.sicad_backend.service.interfaces.IUsuarioService;
+import com.sicad.sicad_backend.utils.CodigoGeneratorUtil;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.sql.Date;
+import java.time.ZonedDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -33,14 +36,15 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         return docenteRepo;
     }
 
-    public GenericObjectResponse<AuthResponse> registrarDocente(insertarDocenteRequest request) {
-        // 1. Validar email único
+    public GenericObjectResponse<DocenteDTO> registrarDocente(insertarDocenteRequest request) {
+
+        // 1. Verificar que el email no esté en uso
         if (usuarioRepo.findByEmail(request.getEmail()).isPresent()) {
             return new GenericObjectResponse<>(409, "El correo ya está en uso", null);
         }
 
         // 2. Validar existencia de rol, dedicación y categoría
-        Rol rol = rolRepo.findById(3).orElse(null); // 3: Rol DOCENTE
+        Rol rol = rolRepo.findById(3).orElse(null); // Rol DOCENTE
         if (rol == null)
             return new GenericObjectResponse<>(404, "Rol Docente no encontrado", null);
 
@@ -58,41 +62,35 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
             codigo = CodigoGeneratorUtil.generarCodigoNumerico(8);
         } while (usuarioRepo.existsByCodigo(codigo));
 
-        // 4. Crear Usuario
+        // 4. Crear y guardar Usuario
         Usuario usuario = Usuario.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .codigo(codigo)
                 .nombres(request.getNombres())
                 .apellidos(request.getApellidos())
-                .rol(rol)
                 .enabled(true)
+                .rol(rol)
                 .build();
         usuarioRepo.save(usuario);
 
-        // 5. Crear Docente
+        // 5. Crear y guardar Docente
         Docente docente = Docente.builder()
                 .idUsuario(usuario)
                 .dedicacion(dedicacion)
                 .categoria(categoria)
                 .horasMaxLectivas(request.getHorasMaxLectivas())
                 .tienePermisoExceso(request.getTienePermisoExceso())
-                .fechaCreacion(ZonedDateTime.now())
+                .fechaCreacion(Date.valueOf(ZonedDateTime.now().toLocalDate()))
                 .enabled(true)
                 .build();
         docenteRepo.save(docente);
 
-        // 6. Preparar respuesta
-        String token = jwtService.getToken(usuario);
-
-        AuthResponse authResponse = AuthResponse.builder()
-                .token(token)
-                .usuario(modelMapper.map(usuario, UsuarioDTO.class))
-                .docente(modelMapper.map(docente, DocenteDTO.class))
-                .build();
-
-        return new GenericObjectResponse<>(201, "Docente registrado exitosamente", authResponse);
+        // 6. Mapear y retornar
+        DocenteDTO docenteDTO = modelMapper.map(docente, DocenteDTO.class);
+        return new GenericObjectResponse<>(201, "Docente registrado exitosamente", docenteDTO);
     }
+
 
     private DocenteDTO convertToDTO(Docente obj) {
         return modelMapper.map(obj, DocenteDTO.class);

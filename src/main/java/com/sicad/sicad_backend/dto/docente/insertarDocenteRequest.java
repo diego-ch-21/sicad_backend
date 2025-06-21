@@ -1,12 +1,14 @@
-package com.sicad.sicad_backend.dto.request;
+package com.sicad.sicad_backend.dto.docente;
 
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.Size;
-import lombok.NonNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
-
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class insertarDocenteRequest {
     private String email;
     private String password;

@@ -54,11 +54,7 @@ public class HorarioCursoController {
                 new GenericReponse<>(200, "HorarioCurso actualizada", List.of(convertToDTO(obj)))
         );
     }
-    @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") Integer id) throws Exception {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
+
 
     private HorarioCursoDTO convertToDTO(HorarioCurso obj) {
         return modelMapper.map(obj, HorarioCursoDTO.class);

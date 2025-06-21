@@ -26,4 +26,6 @@ public class Curso {
     private String ciclo;
     @Column(nullable = false, name = "malla_curricular")
     private String mallaCurricular;
+    @Column(nullable = false, name = "enabled")
+    private Boolean enabled;
 }

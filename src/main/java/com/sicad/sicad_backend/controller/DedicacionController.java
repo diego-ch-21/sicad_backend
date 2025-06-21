@@ -57,11 +57,6 @@ public class DedicacionController {
         );
     }
 
-    @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") Integer id) throws Exception {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     private DedicacionDTO convertToDTO(Dedicacion obj) {
         return modelMapper.map(obj, DedicacionDTO.class);

@@ -57,12 +57,6 @@ public class PreferenciaController {
         );
     }
 
-    @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") Integer id) throws Exception {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
-
     private PreferenciaDTO convertToDTO(Preferencia obj) {
         return modelMapper.map(obj, PreferenciaDTO.class);
     }

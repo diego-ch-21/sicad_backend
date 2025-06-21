@@ -1,13 +1,12 @@
 package com.sicad.sicad_backend.controller;
 
 
-import com.sicad.sicad_backend.auth.AuthResponse;
-import com.sicad.sicad_backend.auth.RegisterRequest;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.dto.request.insertarDocenteRequest;
+import com.sicad.sicad_backend.dto.docente.insertarDocenteRequest;
 import com.sicad.sicad_backend.model.Docente;
 import com.sicad.sicad_backend.dto.DocenteDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.service.impl.DocenteServiceImpl;
 import com.sicad.sicad_backend.service.interfaces.IDocenteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DocenteController {
     private final IDocenteService service;
+    private final DocenteServiceImpl serviceImpl;
 
     private final ModelMapper modelMapper;
 
@@ -58,15 +58,10 @@ public class DocenteController {
                 new GenericReponse<>(200, "Docente actualizada", List.of(convertToDTO(obj)))
         );
     }
-    @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") Integer id) throws Exception {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @PostMapping("/registrar/docente")
     public ResponseEntity<GenericObjectResponse<DocenteDTO>> registrarDocente(@RequestBody insertarDocenteRequest request) {
-        GenericObjectResponse<DocenteDTO> response = service.registrarDocente(request);
+        GenericObjectResponse<DocenteDTO> response = serviceImpl.registrarDocente(request);
         return ResponseEntity.status(response.status()).body(response);
     }
 

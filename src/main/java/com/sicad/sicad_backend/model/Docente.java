@@ -1,10 +1,7 @@
 package com.sicad.sicad_backend.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.sql.Date;
 import java.time.LocalDateTime;
@@ -14,6 +11,7 @@ import java.time.ZonedDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name="docente")
 public class Docente {
@@ -42,11 +40,9 @@ public class Docente {
     private Boolean tienePermisoExceso;
 
     @Column(nullable = false, name = "created_at")
-    private ZonedDateTime fechaCreacion;
+    private Date fechaCreacion;
 
     @Column(nullable = false, name = "enabled")
     private boolean enabled;
-
-
 
 }

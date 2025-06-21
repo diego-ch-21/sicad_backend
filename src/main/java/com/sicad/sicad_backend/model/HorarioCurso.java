@@ -36,4 +36,6 @@ public class HorarioCurso {
     private String aula;
     @Column(nullable = false, name = "duracion_horas")
     private Integer duracionHoras;
+    @Column(nullable = false, name = "enabled")
+    private Boolean enabled;
 }

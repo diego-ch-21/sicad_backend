@@ -20,4 +20,6 @@ public class MallaCurricular {
     private Integer idMallaCurricular;
     @Column(nullable = false, name = "nombre")
     private String nombre;
+    @Column(nullable = false, name = "enabled")
+    private Boolean enabled;
 }

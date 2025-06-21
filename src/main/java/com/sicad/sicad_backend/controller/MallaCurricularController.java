@@ -57,12 +57,6 @@ public class MallaCurricularController {
         );
     }
 
-    @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") Integer id) throws Exception {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
-
     private MallaCurricularDTO convertToDTO(MallaCurricular obj) {
         return modelMapper.map(obj, MallaCurricularDTO.class);
     }

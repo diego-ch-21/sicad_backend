@@ -57,11 +57,6 @@ public class CicloController {
         );
     }
 
-    @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") Integer id) throws Exception {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     private CicloDTO convertToDTO(Ciclo obj) {
         return modelMapper.map(obj, CicloDTO.class);

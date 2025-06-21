@@ -54,11 +54,6 @@ public class RolController {
                 new GenericReponse<>(200, "Rol actualizada", List.of(convertToDTO(obj)))
         );
     }
-    @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") Integer id) throws Exception {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     private RolDTO convertToDTO(Rol obj) {
         return modelMapper.map(obj, RolDTO.class);

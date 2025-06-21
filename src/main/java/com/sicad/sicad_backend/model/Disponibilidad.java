@@ -29,4 +29,6 @@ public class Disponibilidad {
     private Time horaInicio;
     @Column(nullable = false, name = "hora_fin")
     private Time horaFin;
+    @Column(nullable = false, name = "enabled")
+    private Boolean enabled;
 }

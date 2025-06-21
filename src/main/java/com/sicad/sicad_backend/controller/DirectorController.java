@@ -57,12 +57,6 @@ public class DirectorController {
         );
     }
 
-    @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") Integer id) throws Exception {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
-
     private DirectorDTO convertToDTO(Director obj) {
         return modelMapper.map(obj, DirectorDTO.class);
     }

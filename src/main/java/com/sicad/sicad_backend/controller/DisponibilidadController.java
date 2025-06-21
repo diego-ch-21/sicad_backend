@@ -54,11 +54,6 @@ public class DisponibilidadController {
                 new GenericReponse<>(200, "Disponibilidad actualizada", List.of(convertToDTO(obj)))
         );
     }
-    @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") Integer id) throws Exception {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     private DisponibilidadDTO convertToDTO(Disponibilidad obj) {
         return modelMapper.map(obj, DisponibilidadDTO.class);

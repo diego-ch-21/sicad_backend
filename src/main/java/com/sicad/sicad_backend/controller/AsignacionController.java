@@ -54,11 +54,6 @@ public class AsignacionController {
                 new GenericReponse<>(200, "Asignacion actualizada", List.of(convertToDTO(obj)))
         );
     }
-    @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") Integer id) throws Exception {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     private AsignacionDTO convertToDTO(Asignacion obj) {
         return modelMapper.map(obj, AsignacionDTO.class);

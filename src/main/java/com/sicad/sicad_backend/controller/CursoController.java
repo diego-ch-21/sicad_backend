@@ -54,11 +54,6 @@ public class CursoController {
                 new GenericReponse<>(200, "Curso actualizada", List.of(convertToDTO(obj)))
         );
     }
-    @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") Integer id) throws Exception {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     private CursoDTO convertToDTO(Curso obj) {
         return modelMapper.map(obj, CursoDTO.class);

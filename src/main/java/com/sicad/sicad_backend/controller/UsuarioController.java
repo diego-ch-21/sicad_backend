@@ -56,11 +56,6 @@ public class UsuarioController {
                 new GenericReponse<>(200, "Usuario actualizada", List.of(convertToDTO(obj)))
         );
     }
-    @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") Integer id) throws Exception {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     private UsuarioDTO convertToDTO(Usuario obj) {
         return modelMapper.map(obj, UsuarioDTO.class);

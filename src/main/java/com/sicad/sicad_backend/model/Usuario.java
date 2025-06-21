@@ -35,9 +35,6 @@ public class Usuario implements UserDetails {
     @Column(nullable = false, length = 8, name = "codigo")
     private String codigo;
 
-    @Column(nullable = false,name="enabled")
-    private boolean enabled;
-
     @Column(nullable = false, name = "nombres")
     private String nombres;
 
@@ -47,6 +44,9 @@ public class Usuario implements UserDetails {
     @Column(nullable = false, name = "email")
     @Email
     private String email;
+
+    @Column(nullable = false, name = "enabled")
+    private Boolean enabled;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -21,4 +21,6 @@ public class Director {
     private Usuario idUsuario;
     @Column(nullable = false, name = "cargo")
     private String cargo;
+    @Column(nullable = false, name = "enabled")
+    private Boolean enabled;
 }
