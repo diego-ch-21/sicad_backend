@@ -16,14 +16,13 @@ import lombok.NonNull;
 public class UsuarioDTO {
     @NonNull
     private Integer idUsuario;
-    private String idRol;
+    private Integer idRol;
     @Email
     private String email;
     @NonNull
     @Size(min = 5, max=60)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private boolean enabled;
     private String codigo;
     private String nombres;

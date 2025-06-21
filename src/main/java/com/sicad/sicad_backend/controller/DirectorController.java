@@ -1,6 +1,6 @@
 package com.sicad.sicad_backend.controller;
 
-import com.sicad.sicad_backend.dto.DirectorDTO;
+import com.sicad.sicad_backend.dto.director.DirectorRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.model.Director;
 import com.sicad.sicad_backend.service.interfaces.IDirectorService;
@@ -22,8 +22,8 @@ public class DirectorController {
     private final ModelMapper modelMapper;
 
     @GetMapping("/listar")
-    public ResponseEntity<GenericReponse<DirectorDTO>> findAll() throws Exception {
-        List<DirectorDTO> lista = service.findAll()
+    public ResponseEntity<GenericReponse<DirectorRequestDTO>> findAll() throws Exception {
+        List<DirectorRequestDTO> lista = service.findAll()
                 .stream()
                 .map(this::convertToDTO)
                 .toList();
@@ -33,7 +33,7 @@ public class DirectorController {
     }
 
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericReponse<DirectorDTO>> findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericReponse<DirectorRequestDTO>> findById(@PathVariable("id") Integer id) throws Exception {
         Director obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Director encontrado", List.of(convertToDTO(obj)))
@@ -41,7 +41,7 @@ public class DirectorController {
     }
 
     @PostMapping("/guardar")
-    public ResponseEntity<GenericReponse<DirectorDTO>> save(@Valid @RequestBody DirectorDTO dto) throws Exception {
+    public ResponseEntity<GenericReponse<DirectorRequestDTO>> save(@Valid @RequestBody DirectorRequestDTO dto) throws Exception {
         Director obj = service.save(convertToEntity(dto));
         return new ResponseEntity<>(
                 new GenericReponse<>(201, "Director creado", List.of(convertToDTO(obj))),
@@ -50,18 +50,18 @@ public class DirectorController {
     }
 
     @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericReponse<DirectorDTO>> update(@PathVariable("id") Integer id, @Valid @RequestBody DirectorDTO dto) throws Exception {
+    public ResponseEntity<GenericReponse<DirectorRequestDTO>> update(@PathVariable("id") Integer id, @Valid @RequestBody DirectorRequestDTO dto) throws Exception {
         Director obj = service.update(id, convertToEntity(dto));
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Director actualizado", List.of(convertToDTO(obj)))
         );
     }
 
-    private DirectorDTO convertToDTO(Director obj) {
-        return modelMapper.map(obj, DirectorDTO.class);
+    private DirectorRequestDTO convertToDTO(Director obj) {
+        return modelMapper.map(obj, DirectorRequestDTO.class);
     }
 
-    private Director convertToEntity(DirectorDTO dto) {
+    private Director convertToEntity(DirectorRequestDTO dto) {
         return modelMapper.map(dto, Director.class);
     }
 }

@@ -17,7 +17,7 @@ public class Dedicacion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     @Column(name = "id_dedicacion")
-    private String idDedicacion;
+    private Integer idDedicacion;
     @Column(nullable = false, name = "nombre")
     private String nombre;
     @Column(nullable = false, name = "horas_totales")

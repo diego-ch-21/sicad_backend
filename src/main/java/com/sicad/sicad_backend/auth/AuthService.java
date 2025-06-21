@@ -7,7 +7,7 @@ import com.sicad.sicad_backend.model.Usuario;
 import com.sicad.sicad_backend.repository.interfaces.IDocenteRepo;
 import com.sicad.sicad_backend.repository.interfaces.IRolRepo;
 import com.sicad.sicad_backend.repository.interfaces.IUsuarioRepo;
-import com.sicad.sicad_backend.dto.DocenteDTO;
+import com.sicad.sicad_backend.dto.docente.DocenteRequestDTO;
 import com.sicad.sicad_backend.dto.UsuarioDTO;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.utils.CodigoGeneratorUtil;
@@ -57,16 +57,16 @@ public class AuthService {
                     docente =null;
                     break;
                 case 3: // Docente
-                    docente = docenteRepository.findByIdUsuario(usuario)
+                    docente = docenteRepository.findByUsuario(usuario)
                             .orElse(null);
                     break;
                 default:
                     docente =null;
                     break;
             }
-            DocenteDTO docenteDTO;
+            DocenteRequestDTO docenteDTO;
             if(docente != null){
-                docenteDTO = modelMapper.map(docente, DocenteDTO.class);
+                docenteDTO = modelMapper.map(docente, DocenteRequestDTO.class);
             } else {
                 docenteDTO = null;
             }

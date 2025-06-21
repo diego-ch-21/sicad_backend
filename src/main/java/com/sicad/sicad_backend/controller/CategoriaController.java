@@ -1,6 +1,6 @@
 package com.sicad.sicad_backend.controller;
 
-import com.sicad.sicad_backend.dto.CategoriaDTO;
+import com.sicad.sicad_backend.dto.categoria.CategoriaRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.model.Categoria;
 import com.sicad.sicad_backend.service.interfaces.ICategoriaService;
@@ -22,8 +22,8 @@ public class CategoriaController {
     private final ModelMapper modelMapper;
 
     @GetMapping("/listar")
-    public ResponseEntity<GenericReponse<CategoriaDTO>> findAll() throws Exception {
-        List<CategoriaDTO> lista = service.findAll()
+    public ResponseEntity<GenericReponse<CategoriaRequestDTO>> findAll() throws Exception {
+        List<CategoriaRequestDTO> lista = service.findAll()
                 .stream()
                 .map(this::convertToDTO)
                 .toList();
@@ -33,7 +33,7 @@ public class CategoriaController {
     }
 
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericReponse<CategoriaDTO>> findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericReponse<CategoriaRequestDTO>> findById(@PathVariable("id") Integer id) throws Exception {
         Categoria obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Categoría encontrada", List.of(convertToDTO(obj)))
@@ -41,7 +41,7 @@ public class CategoriaController {
     }
 
     @PostMapping("/guardar")
-    public ResponseEntity<GenericReponse<CategoriaDTO>> save(@Valid @RequestBody CategoriaDTO dto) throws Exception {
+    public ResponseEntity<GenericReponse<CategoriaRequestDTO>> save(@Valid @RequestBody CategoriaRequestDTO dto) throws Exception {
         Categoria obj = service.save(convertToEntity(dto));
         return new ResponseEntity<>(
                 new GenericReponse<>(201, "Categoría creada", List.of(convertToDTO(obj))),
@@ -50,7 +50,7 @@ public class CategoriaController {
     }
 
     @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericReponse<CategoriaDTO>> update(@PathVariable("id") Integer id, @Valid @RequestBody CategoriaDTO dto) throws Exception {
+    public ResponseEntity<GenericReponse<CategoriaRequestDTO>> update(@PathVariable("id") Integer id, @Valid @RequestBody CategoriaRequestDTO dto) throws Exception {
         Categoria obj = service.update(id, convertToEntity(dto));
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Categoría actualizada", List.of(convertToDTO(obj)))
@@ -58,11 +58,11 @@ public class CategoriaController {
     }
 
 
-    private CategoriaDTO convertToDTO(Categoria obj) {
-        return modelMapper.map(obj, CategoriaDTO.class);
+    private CategoriaRequestDTO convertToDTO(Categoria obj) {
+        return modelMapper.map(obj, CategoriaRequestDTO.class);
     }
 
-    private Categoria convertToEntity(CategoriaDTO dto) {
+    private Categoria convertToEntity(CategoriaRequestDTO dto) {
         return modelMapper.map(dto, Categoria.class);
     }
 }

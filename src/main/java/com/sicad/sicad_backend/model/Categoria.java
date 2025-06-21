@@ -17,7 +17,7 @@ public class Categoria {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     @Column(name = "id_categoria")
-    private String idCategoria;
+    private Integer idCategoria;
     @Column(nullable = false, name = "nombre")
     private String nombre;
     @Column(nullable = false, name = "descripcion")

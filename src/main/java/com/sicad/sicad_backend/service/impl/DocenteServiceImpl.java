@@ -1,8 +1,8 @@
 package com.sicad.sicad_backend.service.impl;
 
-import com.sicad.sicad_backend.dto.DocenteDTO;
+import com.sicad.sicad_backend.dto.docente.DocenteRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.dto.docente.insertarDocenteRequest;
+import com.sicad.sicad_backend.dto.docente.DocenteResponseDTO;
 import com.sicad.sicad_backend.jwt.JwtService;
 import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
@@ -36,15 +36,15 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         return docenteRepo;
     }
 
-    public GenericObjectResponse<DocenteDTO> registrarDocente(insertarDocenteRequest request) {
+    public GenericObjectResponse<DocenteResponseDTO> registrarDocente(DocenteRequestDTO request) {
 
-        // 1. Verificar que el email no esté en uso
+        // 1. Verificar si el email ya está registrado
         if (usuarioRepo.findByEmail(request.getEmail()).isPresent()) {
             return new GenericObjectResponse<>(409, "El correo ya está en uso", null);
         }
 
-        // 2. Validar existencia de rol, dedicación y categoría
-        Rol rol = rolRepo.findById(3).orElse(null); // Rol DOCENTE
+        // 2. Buscar entidades relacionadas
+        Rol rol = rolRepo.findById(3).orElse(null); // Suponiendo que 3 = DOCENTE
         if (rol == null)
             return new GenericObjectResponse<>(404, "Rol Docente no encontrado", null);
 
@@ -75,28 +75,30 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         usuarioRepo.save(usuario);
 
         // 5. Crear y guardar Docente
+        Date fecha = Date.valueOf(ZonedDateTime.now().toLocalDate());
+
         Docente docente = Docente.builder()
-                .idUsuario(usuario)
+                .usuario(usuario)
                 .dedicacion(dedicacion)
                 .categoria(categoria)
                 .horasMaxLectivas(request.getHorasMaxLectivas())
                 .tienePermisoExceso(request.getTienePermisoExceso())
-                .fechaCreacion(Date.valueOf(ZonedDateTime.now().toLocalDate()))
+                .createdAt(fecha)
                 .enabled(true)
                 .build();
         docenteRepo.save(docente);
 
         // 6. Mapear y retornar
-        DocenteDTO docenteDTO = modelMapper.map(docente, DocenteDTO.class);
+        DocenteResponseDTO docenteDTO = modelMapper.map(docente, DocenteResponseDTO.class);
+
         return new GenericObjectResponse<>(201, "Docente registrado exitosamente", docenteDTO);
     }
 
-
-    private DocenteDTO convertToDTO(Docente obj) {
-        return modelMapper.map(obj, DocenteDTO.class);
+    private DocenteRequestDTO convertToDTO(Docente obj) {
+        return modelMapper.map(obj, DocenteRequestDTO.class);
     }
 
-    private Docente convertToEntity(DocenteDTO dto) {
+    private Docente convertToEntity(DocenteRequestDTO dto) {
         return modelMapper.map(dto, Docente.class);
     }
 }

@@ -14,7 +14,7 @@ public class Director {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
-    private String idDirector;
+    private Integer idDirector;
     @ManyToOne
     @JoinColumn(name = "id_usuario", nullable = false,
             foreignKey = @ForeignKey(name = "FK_DIRECTOR_USUARIO"))

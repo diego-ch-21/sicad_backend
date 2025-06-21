@@ -1,6 +1,6 @@
 package com.sicad.sicad_backend.controller;
 
-import com.sicad.sicad_backend.dto.CicloDTO;
+import com.sicad.sicad_backend.dto.ciclo.CicloRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.model.Ciclo;
 import com.sicad.sicad_backend.service.interfaces.ICicloService;
@@ -22,8 +22,8 @@ public class CicloController {
     private final ModelMapper modelMapper;
 
     @GetMapping("/listar")
-    public ResponseEntity<GenericReponse<CicloDTO>> findAll() throws Exception {
-        List<CicloDTO> lista = service.findAll()
+    public ResponseEntity<GenericReponse<CicloRequestDTO>> findAll() throws Exception {
+        List<CicloRequestDTO> lista = service.findAll()
                 .stream()
                 .map(this::convertToDTO)
                 .toList();
@@ -33,7 +33,7 @@ public class CicloController {
     }
 
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericReponse<CicloDTO>> findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericReponse<CicloRequestDTO>> findById(@PathVariable("id") Integer id) throws Exception {
         Ciclo obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Ciclo encontrado", List.of(convertToDTO(obj)))
@@ -41,7 +41,7 @@ public class CicloController {
     }
 
     @PostMapping("/guardar")
-    public ResponseEntity<GenericReponse<CicloDTO>> save(@Valid @RequestBody CicloDTO dto) throws Exception {
+    public ResponseEntity<GenericReponse<CicloRequestDTO>> save(@Valid @RequestBody CicloRequestDTO dto) throws Exception {
         Ciclo obj = service.save(convertToEntity(dto));
         return new ResponseEntity<>(
                 new GenericReponse<>(201, "Ciclo creado", List.of(convertToDTO(obj))),
@@ -50,7 +50,7 @@ public class CicloController {
     }
 
     @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericReponse<CicloDTO>> update(@PathVariable("id") Integer id, @Valid @RequestBody CicloDTO dto) throws Exception {
+    public ResponseEntity<GenericReponse<CicloRequestDTO>> update(@PathVariable("id") Integer id, @Valid @RequestBody CicloRequestDTO dto) throws Exception {
         Ciclo obj = service.update(id, convertToEntity(dto));
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Ciclo actualizado", List.of(convertToDTO(obj)))
@@ -58,11 +58,11 @@ public class CicloController {
     }
 
 
-    private CicloDTO convertToDTO(Ciclo obj) {
-        return modelMapper.map(obj, CicloDTO.class);
+    private CicloRequestDTO convertToDTO(Ciclo obj) {
+        return modelMapper.map(obj, CicloRequestDTO.class);
     }
 
-    private Ciclo convertToEntity(CicloDTO dto) {
+    private Ciclo convertToEntity(CicloRequestDTO dto) {
         return modelMapper.map(dto, Ciclo.class);
     }
 }

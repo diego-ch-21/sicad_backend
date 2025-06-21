@@ -23,7 +23,8 @@ public class Docente {
     @ManyToOne
     @JoinColumn(name = "id_usuario", nullable = false,
             foreignKey = @ForeignKey(name = "FK_DOCENTE_USUARIO"))
-    private Usuario idUsuario;
+    private Usuario usuario;
+
     @ManyToOne
     @JoinColumn(name = "id_dedicacion", nullable = false,
             foreignKey = @ForeignKey(name = "FK_DOCENTE_DEDICACION"))
@@ -33,14 +34,14 @@ public class Docente {
             foreignKey = @ForeignKey(name = "FK_DOCENTE_CATEGORIA"))
     private Categoria categoria;
 
-    @Column(nullable = false, name = "hora_max_lectivas")
+    @Column(name = "hora_max_lectivas")
     private Integer horasMaxLectivas;
 
-    @Column(nullable = false, name = "tiene_permiso_exceso")
+    @Column(name = "tiene_permiso_exceso")
     private Boolean tienePermisoExceso;
 
-    @Column(nullable = false, name = "created_at")
-    private Date fechaCreacion;
+    @Column(nullable = false, name = "createdAt")
+    private Date createdAt;
 
     @Column(nullable = false, name = "enabled")
     private boolean enabled;

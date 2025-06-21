@@ -1,6 +1,6 @@
 package com.sicad.sicad_backend.controller;
 
-import com.sicad.sicad_backend.dto.DedicacionDTO;
+import com.sicad.sicad_backend.dto.dedicacion.DedicacionRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.model.Dedicacion;
 import com.sicad.sicad_backend.service.interfaces.IDedicacionService;
@@ -22,8 +22,8 @@ public class DedicacionController {
     private final ModelMapper modelMapper;
 
     @GetMapping("/listar")
-    public ResponseEntity<GenericReponse<DedicacionDTO>> findAll() throws Exception {
-        List<DedicacionDTO> lista = service.findAll()
+    public ResponseEntity<GenericReponse<DedicacionRequestDTO>> findAll() throws Exception {
+        List<DedicacionRequestDTO> lista = service.findAll()
                 .stream()
                 .map(this::convertToDTO)
                 .toList();
@@ -33,7 +33,7 @@ public class DedicacionController {
     }
 
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericReponse<DedicacionDTO>> findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericReponse<DedicacionRequestDTO>> findById(@PathVariable("id") Integer id) throws Exception {
         Dedicacion obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Dedicación encontrada", List.of(convertToDTO(obj)))
@@ -41,7 +41,7 @@ public class DedicacionController {
     }
 
     @PostMapping("/guardar")
-    public ResponseEntity<GenericReponse<DedicacionDTO>> save(@Valid @RequestBody DedicacionDTO dto) throws Exception {
+    public ResponseEntity<GenericReponse<DedicacionRequestDTO>> save(@Valid @RequestBody DedicacionRequestDTO dto) throws Exception {
         Dedicacion obj = service.save(convertToEntity(dto));
         return new ResponseEntity<>(
                 new GenericReponse<>(201, "Dedicación creada", List.of(convertToDTO(obj))),
@@ -50,7 +50,7 @@ public class DedicacionController {
     }
 
     @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericReponse<DedicacionDTO>> update(@PathVariable("id") Integer id, @Valid @RequestBody DedicacionDTO dto) throws Exception {
+    public ResponseEntity<GenericReponse<DedicacionRequestDTO>> update(@PathVariable("id") Integer id, @Valid @RequestBody DedicacionRequestDTO dto) throws Exception {
         Dedicacion obj = service.update(id, convertToEntity(dto));
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Dedicación actualizada", List.of(convertToDTO(obj)))
@@ -58,11 +58,11 @@ public class DedicacionController {
     }
 
 
-    private DedicacionDTO convertToDTO(Dedicacion obj) {
-        return modelMapper.map(obj, DedicacionDTO.class);
+    private DedicacionRequestDTO convertToDTO(Dedicacion obj) {
+        return modelMapper.map(obj, DedicacionRequestDTO.class);
     }
 
-    private Dedicacion convertToEntity(DedicacionDTO dto) {
+    private Dedicacion convertToEntity(DedicacionRequestDTO dto) {
         return modelMapper.map(dto, Dedicacion.class);
     }
 }

@@ -2,7 +2,7 @@ package com.sicad.sicad_backend.controller;
 
 
 import com.sicad.sicad_backend.model.Curso;
-import com.sicad.sicad_backend.dto.CursoDTO;
+import com.sicad.sicad_backend.dto.curso.CursoRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.service.interfaces.ICursoService;
 import jakarta.validation.Valid;
@@ -23,8 +23,8 @@ public class CursoController {
     private final ModelMapper modelMapper;
 
     @GetMapping("/listar")
-    public ResponseEntity<GenericReponse<CursoDTO>> findAll() throws Exception {
-        List<CursoDTO> lista = service.findAll()
+    public ResponseEntity<GenericReponse<CursoRequestDTO>> findAll() throws Exception {
+        List<CursoRequestDTO> lista = service.findAll()
                 .stream()
                 .map(this::convertToDTO)
                 .toList();
@@ -34,31 +34,31 @@ public class CursoController {
         );
     }
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericReponse<CursoDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericReponse<CursoRequestDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
         Curso obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Curso encontrada", List.of(convertToDTO(obj)))
         );
     }
     @PostMapping("/guardar")
-    public ResponseEntity<GenericReponse<CursoDTO>> save(@Valid @RequestBody CursoDTO dto) throws Exception {
+    public ResponseEntity<GenericReponse<CursoRequestDTO>> save(@Valid @RequestBody CursoRequestDTO dto) throws Exception {
         Curso obj = service.save(convertToEntity(dto));
         return new ResponseEntity<>(new GenericReponse<>(
                 201, "Curso creada", List.of(convertToDTO(obj))
         ), HttpStatus.CREATED);
     }
     @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericReponse<CursoDTO>> update(@Valid @PathVariable("id") Integer id, @RequestBody CursoDTO dto) throws Exception {
+    public ResponseEntity<GenericReponse<CursoRequestDTO>> update(@Valid @PathVariable("id") Integer id, @RequestBody CursoRequestDTO dto) throws Exception {
         Curso obj = service.update(id,convertToEntity(dto));
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Curso actualizada", List.of(convertToDTO(obj)))
         );
     }
 
-    private CursoDTO convertToDTO(Curso obj) {
-        return modelMapper.map(obj, CursoDTO.class);
+    private CursoRequestDTO convertToDTO(Curso obj) {
+        return modelMapper.map(obj, CursoRequestDTO.class);
     }
-    private Curso convertToEntity(CursoDTO dto) {
+    private Curso convertToEntity(CursoRequestDTO dto) {
         return modelMapper.map(dto, Curso.class);
     }
 }

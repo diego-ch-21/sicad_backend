@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface IDocenteRepo extends IGenericRepo<Docente, Integer> {
     //optener docente usando el usuario
-    Optional<Docente> findByIdUsuario(Usuario usuario);
+    Optional<Docente> findByUsuario(Usuario usuario);
+
 
 }

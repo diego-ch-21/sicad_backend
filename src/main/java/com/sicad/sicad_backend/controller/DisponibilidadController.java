@@ -2,7 +2,7 @@ package com.sicad.sicad_backend.controller;
 
 
 import com.sicad.sicad_backend.model.Disponibilidad;
-import com.sicad.sicad_backend.dto.DisponibilidadDTO;
+import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.service.interfaces.IDisponibilidadService;
 import jakarta.validation.Valid;
@@ -23,8 +23,8 @@ public class DisponibilidadController {
     private final ModelMapper modelMapper;
 
     @GetMapping("/listar")
-    public ResponseEntity<GenericReponse<DisponibilidadDTO>> findAll() throws Exception {
-        List<DisponibilidadDTO> lista = service.findAll()
+    public ResponseEntity<GenericReponse<DisponibilidadRequestDTO>> findAll() throws Exception {
+        List<DisponibilidadRequestDTO> lista = service.findAll()
                 .stream()
                 .map(this::convertToDTO)
                 .toList();
@@ -34,31 +34,31 @@ public class DisponibilidadController {
         );
     }
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericReponse<DisponibilidadDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericReponse<DisponibilidadRequestDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
         Disponibilidad obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Disponibilidad encontrada", List.of(convertToDTO(obj)))
         );
     }
     @PostMapping("/guardar")
-    public ResponseEntity<GenericReponse<DisponibilidadDTO>> save(@Valid @RequestBody DisponibilidadDTO dto) throws Exception {
+    public ResponseEntity<GenericReponse<DisponibilidadRequestDTO>> save(@Valid @RequestBody DisponibilidadRequestDTO dto) throws Exception {
         Disponibilidad obj = service.save(convertToEntity(dto));
         return new ResponseEntity<>(new GenericReponse<>(
                 201, "Disponibilidad creada", List.of(convertToDTO(obj))
         ), HttpStatus.CREATED);
     }
     @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericReponse<DisponibilidadDTO>> update(@Valid @PathVariable("id") Integer id, @RequestBody DisponibilidadDTO dto) throws Exception {
+    public ResponseEntity<GenericReponse<DisponibilidadRequestDTO>> update(@Valid @PathVariable("id") Integer id, @RequestBody DisponibilidadRequestDTO dto) throws Exception {
         Disponibilidad obj = service.update(id,convertToEntity(dto));
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Disponibilidad actualizada", List.of(convertToDTO(obj)))
         );
     }
 
-    private DisponibilidadDTO convertToDTO(Disponibilidad obj) {
-        return modelMapper.map(obj, DisponibilidadDTO.class);
+    private DisponibilidadRequestDTO convertToDTO(Disponibilidad obj) {
+        return modelMapper.map(obj, DisponibilidadRequestDTO.class);
     }
-    private Disponibilidad convertToEntity(DisponibilidadDTO dto) {
+    private Disponibilidad convertToEntity(DisponibilidadRequestDTO dto) {
         return modelMapper.map(dto, Disponibilidad.class);
     }
 }

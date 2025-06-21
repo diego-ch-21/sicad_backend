@@ -1,6 +1,6 @@
 package com.sicad.sicad_backend.controller;
 
-import com.sicad.sicad_backend.dto.PreferenciaDTO;
+import com.sicad.sicad_backend.dto.preferencia.PreferenciaRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.model.Preferencia;
 import com.sicad.sicad_backend.service.interfaces.IPreferenciaService;
@@ -22,8 +22,8 @@ public class PreferenciaController {
     private final ModelMapper modelMapper;
 
     @GetMapping("/listar")
-    public ResponseEntity<GenericReponse<PreferenciaDTO>> findAll() throws Exception {
-        List<PreferenciaDTO> lista = service.findAll()
+    public ResponseEntity<GenericReponse<PreferenciaRequestDTO>> findAll() throws Exception {
+        List<PreferenciaRequestDTO> lista = service.findAll()
                 .stream()
                 .map(this::convertToDTO)
                 .toList();
@@ -33,7 +33,7 @@ public class PreferenciaController {
     }
 
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericReponse<PreferenciaDTO>> findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericReponse<PreferenciaRequestDTO>> findById(@PathVariable("id") Integer id) throws Exception {
         Preferencia obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Preferencia encontrada", List.of(convertToDTO(obj)))
@@ -41,7 +41,7 @@ public class PreferenciaController {
     }
 
     @PostMapping("/guardar")
-    public ResponseEntity<GenericReponse<PreferenciaDTO>> save(@Valid @RequestBody PreferenciaDTO dto) throws Exception {
+    public ResponseEntity<GenericReponse<PreferenciaRequestDTO>> save(@Valid @RequestBody PreferenciaRequestDTO dto) throws Exception {
         Preferencia obj = service.save(convertToEntity(dto));
         return new ResponseEntity<>(
                 new GenericReponse<>(201, "Preferencia creada", List.of(convertToDTO(obj))),
@@ -50,18 +50,18 @@ public class PreferenciaController {
     }
 
     @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericReponse<PreferenciaDTO>> update(@PathVariable("id") Integer id, @Valid @RequestBody PreferenciaDTO dto) throws Exception {
+    public ResponseEntity<GenericReponse<PreferenciaRequestDTO>> update(@PathVariable("id") Integer id, @Valid @RequestBody PreferenciaRequestDTO dto) throws Exception {
         Preferencia obj = service.update(id, convertToEntity(dto));
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Preferencia actualizada", List.of(convertToDTO(obj)))
         );
     }
 
-    private PreferenciaDTO convertToDTO(Preferencia obj) {
-        return modelMapper.map(obj, PreferenciaDTO.class);
+    private PreferenciaRequestDTO convertToDTO(Preferencia obj) {
+        return modelMapper.map(obj, PreferenciaRequestDTO.class);
     }
 
-    private Preferencia convertToEntity(PreferenciaDTO dto) {
+    private Preferencia convertToEntity(PreferenciaRequestDTO dto) {
         return modelMapper.map(dto, Preferencia.class);
     }
 }
