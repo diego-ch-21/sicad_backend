@@ -76,17 +76,22 @@ public class GlobalErrorHandler extends ResponseEntityExceptionHandler {
             HttpStatusCode status,
             WebRequest request) {
 
-        CustomErrorResponse cer = new CustomErrorResponse(
-                LocalDateTime.now(),
-                ex.getMessage(),
-                request.getDescription(false)
-        );
+        List<CustomErrorResponse> errores = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> new CustomErrorResponse(
+                        LocalDateTime.now(),
+                        error.getDefaultMessage(), // Este es el mensaje personalizado de @NotBlank
+                        request.getDescription(false)
+                ))
+                .toList();
 
         return new ResponseEntity<>(
-                new GenericReponse<>(400, "Error de validación", List.of(cer)),
+                new GenericReponse<>(400, "Error de validación", errores),
                 HttpStatus.BAD_REQUEST
         );
     }
+
 
     // Manejo de excepciones de validación
     /*@ExceptionHandler(MethodArgumentNotValidException.class)

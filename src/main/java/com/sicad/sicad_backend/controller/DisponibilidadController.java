@@ -1,6 +1,7 @@
 package com.sicad.sicad_backend.controller;
 
 
+import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.model.Disponibilidad;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
@@ -34,10 +35,10 @@ public class DisponibilidadController {
         );
     }
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericReponse<DisponibilidadRequestDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericObjectResponse<DisponibilidadRequestDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
         Disponibilidad obj = service.findById(id);
         return ResponseEntity.ok(
-                new GenericReponse<>(200, "Disponibilidad encontrada", List.of(convertToDTO(obj)))
+                new GenericObjectResponse<>(200, "Disponibilidad encontrada", convertToDTO(obj))
         );
     }
     @PostMapping("/guardar")

@@ -111,8 +111,8 @@ public class AuthService {
                 .codigo(codigo)
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .nombres(request.getNombres())
-                .apellidos(request.getApellidos())
+                .nombre(request.getNombre())
+                .apellido(request.getApellido())
                 .enabled(true)
                 .rol(rolUsuario)
                 .build();

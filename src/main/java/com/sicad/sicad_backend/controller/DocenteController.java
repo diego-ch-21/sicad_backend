@@ -38,35 +38,25 @@ public class DocenteController {
         );
     }
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericReponse<DocenteRequestDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericObjectResponse<DocenteResponseDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
         Docente obj = service.findById(id);
         return ResponseEntity.ok(
-                new GenericReponse<>(200, "Docente encontrada", List.of(convertToDTO(obj)))
+                new GenericObjectResponse<>(200, "Docente encontrada", convertToResponseDTO(obj))
         );
     }
-    @PostMapping("/guardar")
-    public ResponseEntity<GenericReponse<DocenteRequestDTO>> save(@Valid @RequestBody DocenteRequestDTO dto) throws Exception {
-        Docente obj = service.save(convertToEntity(dto));
-        return new ResponseEntity<>(new GenericReponse<>(
-                201, "Docente creada", List.of(convertToDTO(obj))
-        ), HttpStatus.CREATED);
-    }
-    @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericReponse<DocenteRequestDTO>> update(@Valid @PathVariable("id") Integer id, @RequestBody DocenteRequestDTO dto) throws Exception {
-        Docente obj = service.update(id,convertToEntity(dto));
-        return ResponseEntity.ok(
-                new GenericReponse<>(200, "Docente actualizada", List.of(convertToDTO(obj)))
-        );
-    }
-
     @PostMapping("/registrar")
-    public ResponseEntity<GenericObjectResponse<DocenteResponseDTO>> registrarDocente(@RequestBody DocenteRequestDTO request) {
+    public ResponseEntity<GenericObjectResponse<DocenteResponseDTO>> registrarDocente(@Valid @RequestBody DocenteRequestDTO request) {
         GenericObjectResponse<DocenteResponseDTO> response = serviceImpl.registrarDocente(request);
         return ResponseEntity.status(response.status()).body(response);
     }
+    @PutMapping("/actualizar/{id}")
+    public ResponseEntity<GenericObjectResponse<DocenteResponseDTO>> update(
+            @Valid @PathVariable("id") Integer id,@Valid
+            @RequestBody DocenteRequestDTO dto) throws Exception {
 
-
-
+        GenericObjectResponse<DocenteResponseDTO> response = serviceImpl.actualizarDocente(id, dto);
+        return ResponseEntity.status(response.status()).body(response);
+    }
 
     private DocenteRequestDTO convertToDTO(Docente obj) {
         return modelMapper.map(obj, DocenteRequestDTO.class);

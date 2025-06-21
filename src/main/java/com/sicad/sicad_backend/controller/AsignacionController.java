@@ -1,6 +1,7 @@
 package com.sicad.sicad_backend.controller;
 
 
+import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.model.Asignacion;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
@@ -34,10 +35,10 @@ public class AsignacionController {
         );
     }
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericReponse<AsignacionRequestDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericObjectResponse<AsignacionRequestDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
         Asignacion obj = service.findById(id);
         return ResponseEntity.ok(
-                new GenericReponse<>(200, "Asignacion encontrada", List.of(convertToDTO(obj)))
+                new GenericObjectResponse<>(200, "Asignacion encontrada", convertToDTO(obj))
         );
     }
     @PostMapping("/guardar")

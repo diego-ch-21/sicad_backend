@@ -35,11 +35,11 @@ public class Usuario implements UserDetails {
     @Column(nullable = false, length = 8, name = "codigo")
     private String codigo;
 
-    @Column(nullable = false, name = "nombres")
-    private String nombres;
+    @Column(nullable = false, name = "nombre")
+    private String nombre;
 
-    @Column(nullable = false, name = "apellidos")
-    private String apellidos;
+    @Column(nullable = false, name = "apellido")
+    private String apellido;
 
     @Column(nullable = false, name = "email")
     @Email

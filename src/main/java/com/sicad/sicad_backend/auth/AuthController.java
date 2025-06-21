@@ -1,6 +1,7 @@
 package com.sicad.sicad_backend.auth;
 
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,16 +16,18 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("login")
-    public ResponseEntity<GenericObjectResponse<AuthResponse>> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<GenericObjectResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
         GenericObjectResponse<AuthResponse> response = authService.login(request);
         return ResponseEntity.status(response.status()).body(response);
     }
 
     @PostMapping(value = "register/admin")
-    public ResponseEntity<GenericObjectResponse<AuthResponse>> registerUserAdmin(@RequestBody RegisterRequest request) {
+    public ResponseEntity<GenericObjectResponse<AuthResponse>> registerUserAdmin(@Valid @RequestBody RegisterRequest request) {
         GenericObjectResponse<AuthResponse> response = authService.registerAdmin(request,1);
         return ResponseEntity.status(response.status()).body(response);
     }
+
+    /*
     @PostMapping(value = "register/director")
     public ResponseEntity<GenericObjectResponse<AuthResponse>> registerUserDirector(@RequestBody RegisterRequest request) {
         GenericObjectResponse<AuthResponse> response = authService.registerAdmin(request,2);
@@ -35,5 +38,7 @@ public class AuthController {
         GenericObjectResponse<AuthResponse> response = authService.registerAdmin(request,3);
         return ResponseEntity.status(response.status()).body(response);
     }
+
+     */
 
 }

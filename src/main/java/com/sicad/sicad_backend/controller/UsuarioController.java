@@ -1,6 +1,7 @@
 package com.sicad.sicad_backend.controller;
 
 
+import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.model.Usuario;
 import com.sicad.sicad_backend.dto.UsuarioDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
@@ -35,10 +36,10 @@ public class UsuarioController {
     }
     //para el login
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericReponse<UsuarioDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericObjectResponse<UsuarioDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
         Usuario obj = service.findById(id);
         return ResponseEntity.ok(
-                new GenericReponse<>(200, "Usuario encontrada", List.of(convertToDTO(obj)))
+                new GenericObjectResponse<>(200, "Usuario encontrada", convertToDTO(obj))
         );
     }
     @PostMapping("/guardar")

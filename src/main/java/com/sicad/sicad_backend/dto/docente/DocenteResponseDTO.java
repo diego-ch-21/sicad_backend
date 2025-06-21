@@ -21,7 +21,7 @@ public class DocenteResponseDTO {
     private CategoriaRequestDTO categoria;
     private Integer horasMaxLectivas;
     private Boolean tienePermisoExceso;
-    private Date fechaCreacion;
+    private Date createdAt;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private boolean enabled;
 }

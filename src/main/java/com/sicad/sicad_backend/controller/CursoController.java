@@ -1,6 +1,7 @@
 package com.sicad.sicad_backend.controller;
 
 
+import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.model.Curso;
 import com.sicad.sicad_backend.dto.curso.CursoRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
@@ -34,10 +35,10 @@ public class CursoController {
         );
     }
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericReponse<CursoRequestDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericObjectResponse<CursoRequestDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
         Curso obj = service.findById(id);
         return ResponseEntity.ok(
-                new GenericReponse<>(200, "Curso encontrada", List.of(convertToDTO(obj)))
+                new GenericObjectResponse<>(200, "Curso encontrada", convertToDTO(obj))
         );
     }
     @PostMapping("/guardar")

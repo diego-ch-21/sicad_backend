@@ -1,5 +1,6 @@
 package com.sicad.sicad_backend.controller;
 
+import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.ciclo.CicloRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.model.Ciclo;
@@ -33,10 +34,10 @@ public class CicloController {
     }
 
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericReponse<CicloRequestDTO>> findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericObjectResponse<CicloRequestDTO>> findById(@PathVariable("id") Integer id) throws Exception {
         Ciclo obj = service.findById(id);
         return ResponseEntity.ok(
-                new GenericReponse<>(200, "Ciclo encontrado", List.of(convertToDTO(obj)))
+                new GenericObjectResponse<>(200, "Ciclo encontrado", convertToDTO(obj))
         );
     }
 

@@ -1,5 +1,6 @@
 package com.sicad.sicad_backend.controller;
 
+import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.mallaCurriculara.MallaCurricularRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.model.MallaCurricular;
@@ -33,10 +34,10 @@ public class MallaCurricularController {
     }
 
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericReponse<MallaCurricularRequestDTO>> findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericObjectResponse<MallaCurricularRequestDTO>> findById(@PathVariable("id") Integer id) throws Exception {
         MallaCurricular obj = service.findById(id);
         return ResponseEntity.ok(
-                new GenericReponse<>(200, "Malla Curricular encontrada", List.of(convertToDTO(obj)))
+                new GenericObjectResponse<>(200, "Malla Curricular encontrada", convertToDTO(obj))
         );
     }
 

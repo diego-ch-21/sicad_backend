@@ -13,4 +13,6 @@ public class DirectorRequestDTO {
     private Integer idDirector;
     private Integer idUsuario;
     private String cargo;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private boolean enabled=true;
 }

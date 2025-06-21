@@ -15,4 +15,6 @@ public class CursoRequestDTO {
     private String nombre;
     private String ciclo;
     private String mallaCurricular;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private boolean enabled=true;
 }

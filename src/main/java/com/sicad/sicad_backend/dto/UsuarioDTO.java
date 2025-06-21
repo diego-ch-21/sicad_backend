@@ -25,7 +25,7 @@ public class UsuarioDTO {
     private String password;
     private boolean enabled;
     private String codigo;
-    private String nombres;
-    private String apellidos;
+    private String nombre;
+    private String apellido;
 
 }

@@ -1,5 +1,6 @@
 package com.sicad.sicad_backend.controller;
 
+import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.categoria.CategoriaRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.model.Categoria;
@@ -33,14 +34,14 @@ public class CategoriaController {
     }
 
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericReponse<CategoriaRequestDTO>> findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericObjectResponse<CategoriaRequestDTO>> findById(@PathVariable("id") Integer id) throws Exception {
         Categoria obj = service.findById(id);
         return ResponseEntity.ok(
-                new GenericReponse<>(200, "Categoría encontrada", List.of(convertToDTO(obj)))
+                new GenericObjectResponse<>(200, "Categoría encontrada", convertToDTO(obj))
         );
     }
 
-    @PostMapping("/guardar")
+    @PostMapping("/insertar")
     public ResponseEntity<GenericReponse<CategoriaRequestDTO>> save(@Valid @RequestBody CategoriaRequestDTO dto) throws Exception {
         Categoria obj = service.save(convertToEntity(dto));
         return new ResponseEntity<>(

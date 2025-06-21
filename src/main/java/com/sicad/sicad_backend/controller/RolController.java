@@ -1,6 +1,7 @@
 package com.sicad.sicad_backend.controller;
 
 
+import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.model.Rol;
 import com.sicad.sicad_backend.dto.RolDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
@@ -34,10 +35,10 @@ public class RolController {
         );
     }
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericReponse<RolDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericObjectResponse<RolDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
         Rol obj = service.findById(id);
         return ResponseEntity.ok(
-                new GenericReponse<>(200, "Rol encontrada", List.of(convertToDTO(obj)))
+                new GenericObjectResponse<>(200, "Rol encontrada", convertToDTO(obj))
         );
     }
     @PostMapping("/guardar")

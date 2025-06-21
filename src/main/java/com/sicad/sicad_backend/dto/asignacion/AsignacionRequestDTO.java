@@ -18,5 +18,5 @@ public class AsignacionRequestDTO {
     private String tipoAsignacion;
     private LocalDate fechaAsignacion;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private boolean enabled;
+    private boolean enabled=true;
 }

@@ -67,8 +67,8 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .codigo(codigo)
-                .nombres(request.getNombres())
-                .apellidos(request.getApellidos())
+                .nombre(request.getNombre())
+                .apellido(request.getApellido())
                 .enabled(true)
                 .rol(rol)
                 .build();
@@ -93,6 +93,51 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
 
         return new GenericObjectResponse<>(201, "Docente registrado exitosamente", docenteDTO);
     }
+    public GenericObjectResponse<DocenteResponseDTO> actualizarDocente(Integer idDocente, DocenteRequestDTO request) {
+
+        // 1. Verificar existencia del docente
+        Docente docente = docenteRepo.findById(idDocente).orElse(null);
+        if (docente == null) {
+            return new GenericObjectResponse<>(404, "Docente no encontrado", null);
+        }
+
+        // 2. Validar email si ha cambiado
+        if (!docente.getUsuario().getEmail().equals(request.getEmail()) &&
+                usuarioRepo.findByEmail(request.getEmail()).isPresent()) {
+            return new GenericObjectResponse<>(409, "El correo ya está en uso", null);
+        }
+
+        // 3. Buscar entidades relacionadas
+        Dedicacion dedicacion = dedicacionRepo.findById(request.getIdDedicacion()).orElse(null);
+        if (dedicacion == null)
+            return new GenericObjectResponse<>(404, "Dedicación no encontrada", null);
+
+        Categoria categoria = categoriaRepo.findById(request.getIdCategoria()).orElse(null);
+        if (categoria == null)
+            return new GenericObjectResponse<>(404, "Categoría no encontrada", null);
+
+        // 4. Actualizar datos del Usuario
+        Usuario usuario = docente.getUsuario();
+        usuario.setEmail(request.getEmail());
+        usuario.setNombre(request.getNombre());
+        usuario.setApellido(request.getApellido());
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            usuario.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        usuarioRepo.save(usuario);
+
+        // 5. Actualizar datos del Docente
+        docente.setDedicacion(dedicacion);
+        docente.setCategoria(categoria);
+        docente.setHorasMaxLectivas(request.getHorasMaxLectivas());
+        docente.setTienePermisoExceso(request.getTienePermisoExceso());
+        docenteRepo.save(docente);
+
+        // 6. Mapear y retornar
+        DocenteResponseDTO docenteDTO = modelMapper.map(docente, DocenteResponseDTO.class);
+        return new GenericObjectResponse<>(200, "Docente actualizado exitosamente", docenteDTO);
+    }
+
 
     private DocenteRequestDTO convertToDTO(Docente obj) {
         return modelMapper.map(obj, DocenteRequestDTO.class);

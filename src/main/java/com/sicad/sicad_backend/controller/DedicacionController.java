@@ -1,5 +1,6 @@
 package com.sicad.sicad_backend.controller;
 
+import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.dedicacion.DedicacionRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.model.Dedicacion;
@@ -33,10 +34,10 @@ public class DedicacionController {
     }
 
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericReponse<DedicacionRequestDTO>> findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericObjectResponse<DedicacionRequestDTO>> findById(@PathVariable("id") Integer id) throws Exception {
         Dedicacion obj = service.findById(id);
         return ResponseEntity.ok(
-                new GenericReponse<>(200, "Dedicación encontrada", List.of(convertToDTO(obj)))
+                new GenericObjectResponse<>(200, "Dedicación encontrada", convertToDTO(obj))
         );
     }
 

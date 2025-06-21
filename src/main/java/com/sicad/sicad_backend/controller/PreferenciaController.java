@@ -1,5 +1,6 @@
 package com.sicad.sicad_backend.controller;
 
+import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.model.Preferencia;
@@ -33,10 +34,10 @@ public class PreferenciaController {
     }
 
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericReponse<PreferenciaRequestDTO>> findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericObjectResponse<PreferenciaRequestDTO>> findById(@PathVariable("id") Integer id) throws Exception {
         Preferencia obj = service.findById(id);
         return ResponseEntity.ok(
-                new GenericReponse<>(200, "Preferencia encontrada", List.of(convertToDTO(obj)))
+                new GenericObjectResponse<>(200, "Preferencia encontrada", convertToDTO(obj))
         );
     }
 

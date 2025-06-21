@@ -1,5 +1,6 @@
 package com.sicad.sicad_backend.controller;
 
+import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.director.DirectorRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.model.Director;
@@ -33,10 +34,10 @@ public class DirectorController {
     }
 
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericReponse<DirectorRequestDTO>> findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericObjectResponse<DirectorRequestDTO>> findById(@PathVariable("id") Integer id) throws Exception {
         Director obj = service.findById(id);
         return ResponseEntity.ok(
-                new GenericReponse<>(200, "Director encontrado", List.of(convertToDTO(obj)))
+                new GenericObjectResponse<>(200, "Director encontrado", convertToDTO(obj))
         );
     }
 

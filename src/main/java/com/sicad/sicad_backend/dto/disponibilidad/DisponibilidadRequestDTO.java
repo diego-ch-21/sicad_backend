@@ -17,4 +17,6 @@ public class DisponibilidadRequestDTO {
     private String diaSemana;
     private Time horaInicio;
     private Time horaFin;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private boolean enabled=true;
 }
