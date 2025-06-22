@@ -22,5 +22,4 @@ public class DocenteUpdateRequestDTO {
     @NotNull(message = "El idCategoria es un campo obligatorio")
     private Integer idCategoria;
     private Integer horasMaxLectivas;
-    private Boolean tienePermisoExceso=false;
 }

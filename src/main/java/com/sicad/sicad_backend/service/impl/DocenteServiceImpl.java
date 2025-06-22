@@ -78,12 +78,20 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         // 5. Crear y guardar Docente
         Date fecha = Date.valueOf(ZonedDateTime.now().toLocalDate());
 
+        Integer horasMaxLectivas = request.getHorasMaxLectivas() != null ? request.getHorasMaxLectivas() : 0;
+        boolean tienePermisoExceso = false;
+        if(horasMaxLectivas>12){
+            tienePermisoExceso = true;
+        } else {
+            tienePermisoExceso = false;
+        }
+
         Docente docente = Docente.builder()
                 .usuario(usuario)
                 .dedicacion(dedicacion)
                 .categoria(categoria)
                 .horasMaxLectivas(request.getHorasMaxLectivas())
-                .tienePermisoExceso(request.getTienePermisoExceso())
+                .tienePermisoExceso(tienePermisoExceso)
                 .createdAt(fecha)
                 .enabled(true)
                 .build();
@@ -127,11 +135,19 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         }
         usuarioRepo.save(usuario);
 
+        Integer horasMaxLectivas = request.getHorasMaxLectivas() != null ? request.getHorasMaxLectivas() : 0;
+        boolean tienePermisoExceso = false;
+        if(horasMaxLectivas>12){
+            tienePermisoExceso = true;
+        } else {
+            tienePermisoExceso = false;
+        }
+
         // 5. Actualizar datos del Docente
         docente.setDedicacion(dedicacion);
         docente.setCategoria(categoria);
         docente.setHorasMaxLectivas(request.getHorasMaxLectivas());
-        docente.setTienePermisoExceso(request.getTienePermisoExceso());
+        docente.setTienePermisoExceso(tienePermisoExceso);
         docenteRepo.save(docente);
 
         // 6. Mapear y retornar
