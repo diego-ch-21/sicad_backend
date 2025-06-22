@@ -24,8 +24,6 @@ public class Dedicacion {
     private Integer horasTotales;
     @Column(nullable = false, name = "horas_lectivas_minima")
     private Integer horasLectivasMinima;
-    @Column(nullable = false, name = "porcentaje_lectivo_minimo")
-    private Double porcentajeLectivoMinimo;
     @Column(nullable = false, name = "enabled")
     private Boolean enabled;
 }

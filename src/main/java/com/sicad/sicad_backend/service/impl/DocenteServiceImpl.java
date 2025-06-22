@@ -3,6 +3,7 @@ package com.sicad.sicad_backend.service.impl;
 import com.sicad.sicad_backend.dto.docente.DocenteRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.docente.DocenteResponseDTO;
+import com.sicad.sicad_backend.dto.docente.DocenteUpdateRequestDTO;
 import com.sicad.sicad_backend.jwt.JwtService;
 import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
@@ -93,7 +94,7 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
 
         return new GenericObjectResponse<>(201, "Docente registrado exitosamente", docenteDTO);
     }
-    public GenericObjectResponse<DocenteResponseDTO> actualizarDocente(Integer idDocente, DocenteRequestDTO request) {
+    public GenericObjectResponse<DocenteResponseDTO> actualizarDocente(Integer idDocente, DocenteUpdateRequestDTO request) {
 
         // 1. Verificar existencia del docente
         Docente docente = docenteRepo.findById(idDocente).orElse(null);
@@ -137,8 +138,29 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         DocenteResponseDTO docenteDTO = modelMapper.map(docente, DocenteResponseDTO.class);
         return new GenericObjectResponse<>(200, "Docente actualizado exitosamente", docenteDTO);
     }
+    //service para obtener un docente por usuario
+    public GenericObjectResponse<DocenteResponseDTO> obtenerDocentePorUsuario(Integer idUsuario) {
+        Usuario usuario = usuarioRepo.findById(idUsuario)
+                .orElseThrow(() -> null);
+        if(usuario == null) {
+            return new GenericObjectResponse<>(404, "Usuario no encontrado", null);
+        }
+        if(usuario.getRol().getIdRol() != 3) {
+            return new GenericObjectResponse<>(404, "El usuario no es un docente", null);
 
+        }
+        Docente docente = docenteRepo.findByUsuario(usuario)
+                .orElseThrow(() ->(null));
+        if(docente == null) {
+            return new GenericObjectResponse<>(404, "Docente no encontrado", null);
+        }
+        DocenteResponseDTO docenteDTO = modelMapper.map(docente, DocenteResponseDTO.class);
+        return new GenericObjectResponse<>(201, "Docente encontrado exitosamente", docenteDTO);
+    }
 
+    private DocenteResponseDTO convertToResponseDTO(Docente obj) {
+        return modelMapper.map(obj, DocenteResponseDTO.class);
+    }
     private DocenteRequestDTO convertToDTO(Docente obj) {
         return modelMapper.map(obj, DocenteRequestDTO.class);
     }

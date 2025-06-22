@@ -3,6 +3,7 @@ package com.sicad.sicad_backend.controller;
 
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.docente.DocenteResponseDTO;
+import com.sicad.sicad_backend.dto.docente.DocenteUpdateRequestDTO;
 import com.sicad.sicad_backend.model.Docente;
 import com.sicad.sicad_backend.dto.docente.DocenteRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
@@ -44,16 +45,18 @@ public class DocenteController {
                 new GenericObjectResponse<>(200, "Docente encontrada", convertToResponseDTO(obj))
         );
     }
+    @GetMapping("/usuario/buscar/{id}")
+    public ResponseEntity<GenericObjectResponse<DocenteResponseDTO>>  findByIdUsuario(@PathVariable("id") Integer id) throws Exception {
+        GenericObjectResponse<DocenteResponseDTO> response = serviceImpl.obtenerDocentePorUsuario(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
     @PostMapping("/registrar")
     public ResponseEntity<GenericObjectResponse<DocenteResponseDTO>> registrarDocente(@Valid @RequestBody DocenteRequestDTO request) {
         GenericObjectResponse<DocenteResponseDTO> response = serviceImpl.registrarDocente(request);
         return ResponseEntity.status(response.status()).body(response);
     }
     @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericObjectResponse<DocenteResponseDTO>> update(
-            @Valid @PathVariable("id") Integer id,@Valid
-            @RequestBody DocenteRequestDTO dto) throws Exception {
-
+    public ResponseEntity<GenericObjectResponse<DocenteResponseDTO>> update(@Valid @PathVariable("id") Integer id,@Valid @RequestBody DocenteUpdateRequestDTO dto) throws Exception {
         GenericObjectResponse<DocenteResponseDTO> response = serviceImpl.actualizarDocente(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }

@@ -20,7 +20,7 @@ public class Categoria {
     private Integer idCategoria;
     @Column(nullable = false, name = "nombre")
     private String nombre;
-    @Column(nullable = false, name = "descripcion")
+    @Column(name = "descripcion")
     private String descripcion;
     @Column(nullable = false, name = "enabled")
     private Boolean enabled;

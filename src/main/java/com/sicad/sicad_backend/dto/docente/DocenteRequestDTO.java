@@ -31,6 +31,4 @@ public class DocenteRequestDTO {
     private Integer idCategoria;
     private Integer horasMaxLectivas;
     private Boolean tienePermisoExceso=false;
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private boolean enabled=true;
 }

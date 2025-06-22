@@ -14,7 +14,7 @@ public class CategoriaRequestDTO {
     private Integer idCategoria;
     @NotBlank(message = "El nombre es un campo obligatorio")
     private String nombre;
-    @NotBlank(message = "La descripcion es un campo obligatorio")
+    //@NotBlank(message = "La descripcion es un campo obligatorio")
     private String descripcion;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private boolean enabled=true;

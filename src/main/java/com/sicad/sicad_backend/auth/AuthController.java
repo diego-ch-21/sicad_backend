@@ -1,5 +1,8 @@
 package com.sicad.sicad_backend.auth;
 
+import com.sicad.sicad_backend.auth.dto.AuthResponse;
+import com.sicad.sicad_backend.auth.dto.LoginRequest;
+import com.sicad.sicad_backend.auth.dto.RegisterRequest;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +26,7 @@ public class AuthController {
 
     @PostMapping(value = "register/admin")
     public ResponseEntity<GenericObjectResponse<AuthResponse>> registerUserAdmin(@Valid @RequestBody RegisterRequest request) {
-        GenericObjectResponse<AuthResponse> response = authService.registerAdmin(request,1);
+        GenericObjectResponse<AuthResponse> response = authService.registerAdmin(request);
         return ResponseEntity.status(response.status()).body(response);
     }
 

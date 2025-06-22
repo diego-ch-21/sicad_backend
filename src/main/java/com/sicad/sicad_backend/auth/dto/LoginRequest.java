@@ -1,4 +1,4 @@
-package com.sicad.sicad_backend.auth;
+package com.sicad.sicad_backend.auth.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

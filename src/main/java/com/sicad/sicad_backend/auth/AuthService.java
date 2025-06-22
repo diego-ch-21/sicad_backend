@@ -1,13 +1,21 @@
 package com.sicad.sicad_backend.auth;
 
+import com.sicad.sicad_backend.auth.dto.AuthResponse;
+import com.sicad.sicad_backend.auth.dto.LoginRequest;
+import com.sicad.sicad_backend.auth.dto.RegisterRequest;
+import com.sicad.sicad_backend.auth.dto.RolesResponse;
+import com.sicad.sicad_backend.dto.director.DirectorUResponseDTO;
+import com.sicad.sicad_backend.dto.docente.DocenteResponseDTO;
+import com.sicad.sicad_backend.dto.docente.DocenteUResponseDTO;
 import com.sicad.sicad_backend.jwt.JwtService;
+import com.sicad.sicad_backend.model.Director;
 import com.sicad.sicad_backend.model.Docente;
 import com.sicad.sicad_backend.model.Rol;
 import com.sicad.sicad_backend.model.Usuario;
+import com.sicad.sicad_backend.repository.interfaces.IDirectorRepo;
 import com.sicad.sicad_backend.repository.interfaces.IDocenteRepo;
 import com.sicad.sicad_backend.repository.interfaces.IRolRepo;
 import com.sicad.sicad_backend.repository.interfaces.IUsuarioRepo;
-import com.sicad.sicad_backend.dto.docente.DocenteRequestDTO;
 import com.sicad.sicad_backend.dto.UsuarioDTO;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.utils.CodigoGeneratorUtil;
@@ -26,6 +34,7 @@ import java.util.Optional;
 public class AuthService {
     private final IUsuarioRepo userRepository;
     private final IDocenteRepo docenteRepository;
+    private final IDirectorRepo directorRepository;
     private final IRolRepo rolRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
@@ -48,13 +57,14 @@ public class AuthService {
             String token = jwtService.getToken(usuario);
             UsuarioDTO usuarioDTO = convertToDTO(usuario);
             Integer idRol = usuario.getRol().getIdRol();
-            Docente docente;
+            Docente docente=null;
+            Director director = null;
             switch (idRol){
                 case 1: // Admin
-                    docente =null;
                     break;
                 case 2: // Director
-                    docente =null;
+                    director = directorRepository.findByUsuario(usuario)
+                            .orElse(null);
                     break;
                 case 3: // Docente
                     docente = docenteRepository.findByUsuario(usuario)
@@ -64,18 +74,29 @@ public class AuthService {
                     docente =null;
                     break;
             }
-            DocenteRequestDTO docenteDTO;
+            DocenteUResponseDTO docenteResponseDTO;
             if(docente != null){
-                docenteDTO = modelMapper.map(docente, DocenteRequestDTO.class);
+                docenteResponseDTO = convertToUResponseDTO(docente);
             } else {
-                docenteDTO = null;
+                docenteResponseDTO = null;
             }
+            DirectorUResponseDTO directorResponseDTO;
+            if(director != null){
+                directorResponseDTO = convertToDirectorUResponseDTO(director);
+            } else {
+                directorResponseDTO = null;
+            }
+
+            RolesResponse rolesResponse = RolesResponse.builder()
+                    .docente(docenteResponseDTO)
+                    .director(directorResponseDTO)
+                    .build();
 
 
             AuthResponse authResponse = AuthResponse.builder()
                     .token(token)
                     .usuario(usuarioDTO)
-                    .docente(docenteDTO)
+                    .roles(rolesResponse)
                     .build();
 
             return new GenericObjectResponse<>(200, "Inicio de sesión exitoso", authResponse);
@@ -86,8 +107,8 @@ public class AuthService {
     }
 
     //no se usara
-    public GenericObjectResponse<AuthResponse> registerAdmin(RegisterRequest request, Integer idRol) {
-
+    public GenericObjectResponse<AuthResponse> registerAdmin(RegisterRequest request) {
+        Integer idRol =1;
         // Verificar si el email ya existe
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             return new GenericObjectResponse<>(409, "El correo electrónico ya está en uso", null);
@@ -134,7 +155,17 @@ public class AuthService {
     private UsuarioDTO convertToDTO(Usuario obj) {
         return modelMapper.map(obj, UsuarioDTO.class);
     }
+    private DocenteResponseDTO convertToResponseDTO(Docente obj) {
+        return modelMapper.map(obj, DocenteResponseDTO.class);
+    }
+    private DocenteUResponseDTO convertToUResponseDTO(Docente obj) {
+        return modelMapper.map(obj, DocenteUResponseDTO.class);
+    }
+    private DirectorUResponseDTO convertToDirectorUResponseDTO(Director obj) {
+        return modelMapper.map(obj, DirectorUResponseDTO.class);
+    }
     private Usuario convertToEntity(UsuarioDTO dto) {
         return modelMapper.map(dto, Usuario.class);
     }
+
 }

@@ -5,5 +5,4 @@ import com.sicad.sicad_backend.model.Docente;
 import com.sicad.sicad_backend.service.base.ICRUD;
 
 public interface IDocenteService extends ICRUD<Docente, Integer> {
-
 }
