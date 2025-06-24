@@ -3,10 +3,8 @@ package com.sicad.sicad_backend.model;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import javax.print.Doc;
 import java.time.LocalDate;
 
 @Data
@@ -30,7 +28,7 @@ public class Asignacion {
     @ManyToOne
     @JoinColumn(nullable = false, name = "id_horario",
             foreignKey = @ForeignKey(name = "ASIGNACION_HORARIO"))
-    private HorarioCurso horario;
+    private Curso horario;
 
     @Column(nullable = false, name = "tipo_asignacion")
     private String tipoAsignacion;

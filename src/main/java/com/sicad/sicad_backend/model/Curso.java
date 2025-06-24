@@ -18,14 +18,24 @@ public class Curso {
     @EqualsAndHashCode.Include
     @Column(name = "id_curso")
     private Integer idCurso;
-    @Column(nullable = false, name = "codigo")
-    private String codigo;
-    @Column(nullable = false, name = "nombre")
-    private String nombre;
-    @Column(nullable = false, name = "ciclo")
-    private String ciclo;
-    @Column(nullable = false, name = "malla_curricular")
-    private String mallaCurricular;
+    @ManyToOne
+    @JoinColumn(name = "id_curso", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_HORARIO_CURSO_ASIGNACION"))
+    private Asignatura asignatura;
+    @Column(nullable = false, name = "grupo")
+    private String grupo;
+    @Column(nullable = false, name = "tipo_sesion")
+    private String tipoSesion;
+    @Column(nullable = false, name = "dia_semana")
+    private String diaSemana;
+    @Column(nullable = false, name = "hora_inicio")
+    private String horaInicio;
+    @Column(nullable = false, name = "hora_fin")
+    private String horaFin;
+    @Column(nullable = false, name = "aula")
+    private String aula;
+    @Column(nullable = false, name = "duracion_horas")
+    private Integer duracionHoras;
     @Column(nullable = false, name = "enabled")
     private Boolean enabled;
 }

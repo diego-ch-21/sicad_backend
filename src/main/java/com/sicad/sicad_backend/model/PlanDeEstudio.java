@@ -11,13 +11,20 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name="ciclo")
-public class Ciclo {
+@Table(name="plan_de_estudio")
+public class PlanDeEstudio {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
-    @Column(name = "id_ciclo")
-    private Integer idCiclo;
+    @Column(name = "id_plan_de_estudio")
+    private Integer idPlanDeEstudio;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_facultad", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_plan_de_estudio_facultad"))
+    private Facultad facultad;
+
+    @Column(nullable = false, name = "codigo")
+    private Integer codigo;
     @Column(nullable = false, name = "nombre")
     private String nombre;
     @Column(nullable = false, name = "enabled")

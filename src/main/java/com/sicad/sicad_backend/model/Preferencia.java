@@ -20,13 +20,13 @@ public class Preferencia {
 
     @ManyToOne
     @JoinColumn(nullable = false, name = "id_docente",
-            foreignKey = @ForeignKey(name = "PREFERENCIA_DOCENTE_CURSO_DOC"))
+            foreignKey = @ForeignKey(name = "FK_PREFERENCIA_DOCENTE_CURSO_DOC"))
     private Docente docente;
 
     @ManyToOne
     @JoinColumn(nullable = false, name = "id_curso",
-            foreignKey = @ForeignKey(name = "PREFERENCIA_DOCENTE_CURSO_CUR"))
-    private Curso curso;
+            foreignKey = @ForeignKey(name = "FK_PREFERENCIA_DOCENTE_CURSO_CUR"))
+    private Asignatura asignatura;
 
     @Column(nullable = false, name = "enabled")
     private boolean enabled;

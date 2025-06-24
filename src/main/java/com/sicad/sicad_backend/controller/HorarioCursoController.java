@@ -2,7 +2,7 @@ package com.sicad.sicad_backend.controller;
 
 
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.model.HorarioCurso;
+import com.sicad.sicad_backend.model.Curso;
 import com.sicad.sicad_backend.dto.horarioCurso.HorarioCursoRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.service.interfaces.IHorarioCursoService;
@@ -36,31 +36,31 @@ public class HorarioCursoController {
     }
     @GetMapping("/buscar/{id}")
     public ResponseEntity<GenericObjectResponse<HorarioCursoRequestDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
-        HorarioCurso obj = service.findById(id);
+        Curso obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericObjectResponse<>(200, "HorarioCurso encontrada", convertToDTO(obj))
         );
     }
     @PostMapping("/guardar")
     public ResponseEntity<GenericReponse<HorarioCursoRequestDTO>> save(@Valid @RequestBody HorarioCursoRequestDTO dto) throws Exception {
-        HorarioCurso obj = service.save(convertToEntity(dto));
+        Curso obj = service.save(convertToEntity(dto));
         return new ResponseEntity<>(new GenericReponse<>(
                 201, "HorarioCurso creada", List.of(convertToDTO(obj))
         ), HttpStatus.CREATED);
     }
     @PutMapping("/actualizar/{id}")
     public ResponseEntity<GenericReponse<HorarioCursoRequestDTO>> update(@Valid @PathVariable("id") Integer id, @RequestBody HorarioCursoRequestDTO dto) throws Exception {
-        HorarioCurso obj = service.update(id,convertToEntity(dto));
+        Curso obj = service.update(id,convertToEntity(dto));
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "HorarioCurso actualizada", List.of(convertToDTO(obj)))
         );
     }
 
 
-    private HorarioCursoRequestDTO convertToDTO(HorarioCurso obj) {
+    private HorarioCursoRequestDTO convertToDTO(Curso obj) {
         return modelMapper.map(obj, HorarioCursoRequestDTO.class);
     }
-    private HorarioCurso convertToEntity(HorarioCursoRequestDTO dto) {
-        return modelMapper.map(dto, HorarioCurso.class);
+    private Curso convertToEntity(HorarioCursoRequestDTO dto) {
+        return modelMapper.map(dto, Curso.class);
     }
 }
