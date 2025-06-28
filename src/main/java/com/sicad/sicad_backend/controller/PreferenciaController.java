@@ -41,7 +41,7 @@ public class PreferenciaController {
         );
     }
 
-    @PostMapping("/guardar")
+    @PostMapping("/insertar")
     public ResponseEntity<GenericReponse<PreferenciaRequestDTO>> save(@Valid @RequestBody PreferenciaRequestDTO dto) throws Exception {
         Preferencia obj = service.save(convertToEntity(dto));
         return new ResponseEntity<>(

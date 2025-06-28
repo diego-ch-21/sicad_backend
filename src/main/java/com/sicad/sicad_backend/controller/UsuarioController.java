@@ -42,7 +42,7 @@ public class UsuarioController {
                 new GenericObjectResponse<>(200, "Usuario encontrada", convertToDTO(obj))
         );
     }
-    @PostMapping("/guardar")
+    @PostMapping("/insertar")
     public ResponseEntity<GenericReponse<UsuarioDTO>> save(@Valid @RequestBody UsuarioDTO dto) throws Exception {
         Usuario obj = service.save(convertToEntity(dto));
         return new ResponseEntity<>(new GenericReponse<>(

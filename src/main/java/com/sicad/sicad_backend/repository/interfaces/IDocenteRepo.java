@@ -9,8 +9,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface IDocenteRepo extends IGenericRepo<Docente, Integer> {
-    //optener docente usando el usuario
     Optional<Docente> findByUsuario(Usuario usuario);
+    boolean existsByCodigo(String codigo);
 
 
 }

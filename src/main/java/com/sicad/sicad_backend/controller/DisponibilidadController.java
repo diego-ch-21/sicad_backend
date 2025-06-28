@@ -41,7 +41,7 @@ public class DisponibilidadController {
                 new GenericObjectResponse<>(200, "Disponibilidad encontrada", convertToDTO(obj))
         );
     }
-    @PostMapping("/guardar")
+    @PostMapping("/insertar")
     public ResponseEntity<GenericReponse<DisponibilidadRequestDTO>> save(@Valid @RequestBody DisponibilidadRequestDTO dto) throws Exception {
         Disponibilidad obj = service.save(convertToEntity(dto));
         return new ResponseEntity<>(new GenericReponse<>(

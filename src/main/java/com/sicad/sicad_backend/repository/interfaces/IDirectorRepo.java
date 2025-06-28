@@ -8,4 +8,5 @@ import java.util.Optional;
 
 public interface IDirectorRepo extends IGenericRepo<Director, Integer> {
     Optional<Director> findByUsuario(Usuario usuario);
+    boolean existsByCodigo(String codigo);
 }

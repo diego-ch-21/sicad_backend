@@ -41,7 +41,7 @@ public class RolController {
                 new GenericObjectResponse<>(200, "Rol encontrada", convertToDTO(obj))
         );
     }
-    @PostMapping("/guardar")
+    @PostMapping("/insertar")
     public ResponseEntity<GenericReponse<RolDTO>> save(@Valid @RequestBody RolDTO dto) throws Exception {
         Rol obj = service.save(convertToEntity(dto));
         return new ResponseEntity<>(new GenericReponse<>(

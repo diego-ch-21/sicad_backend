@@ -5,6 +5,7 @@ import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.model.Asignatura;
 import com.sicad.sicad_backend.dto.curso.CursoRequestDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.model.Curso;
 import com.sicad.sicad_backend.service.interfaces.ICursoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,30 +37,30 @@ public class CursoController {
     }
     @GetMapping("/buscar/{id}")
     public ResponseEntity<GenericObjectResponse<CursoRequestDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
-        Asignatura obj = service.findById(id);
+        Curso obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericObjectResponse<>(200, "Curso encontrada", convertToDTO(obj))
         );
     }
-    @PostMapping("/guardar")
+    @PostMapping("/insertar")
     public ResponseEntity<GenericReponse<CursoRequestDTO>> save(@Valid @RequestBody CursoRequestDTO dto) throws Exception {
-        Asignatura obj = service.save(convertToEntity(dto));
+        Curso obj = service.save(convertToEntity(dto));
         return new ResponseEntity<>(new GenericReponse<>(
                 201, "Curso creada", List.of(convertToDTO(obj))
         ), HttpStatus.CREATED);
     }
     @PutMapping("/actualizar/{id}")
     public ResponseEntity<GenericReponse<CursoRequestDTO>> update(@Valid @PathVariable("id") Integer id, @RequestBody CursoRequestDTO dto) throws Exception {
-        Asignatura obj = service.update(id,convertToEntity(dto));
+        Curso obj = service.update(id,convertToEntity(dto));
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Curso actualizada", List.of(convertToDTO(obj)))
         );
     }
 
-    private CursoRequestDTO convertToDTO(Asignatura obj) {
+    private CursoRequestDTO convertToDTO(Curso obj) {
         return modelMapper.map(obj, CursoRequestDTO.class);
     }
-    private Asignatura convertToEntity(CursoRequestDTO dto) {
-        return modelMapper.map(dto, Asignatura.class);
+    private Curso convertToEntity(CursoRequestDTO dto) {
+        return modelMapper.map(dto, Curso.class);
     }
 }

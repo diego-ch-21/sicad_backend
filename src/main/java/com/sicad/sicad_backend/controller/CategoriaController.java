@@ -1,8 +1,10 @@
 package com.sicad.sicad_backend.controller;
 
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.dto.categoria.CategoriaRequestDTO;
+import com.sicad.sicad_backend.dto.categoria.CategoriaCreateRequest;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.dto.categoria.CategoriaDetalleResponse;
+import com.sicad.sicad_backend.dto.categoria.CategoriaResumenResponse;
 import com.sicad.sicad_backend.model.Categoria;
 import com.sicad.sicad_backend.service.interfaces.ICategoriaService;
 import jakarta.validation.Valid;
@@ -23,10 +25,10 @@ public class CategoriaController {
     private final ModelMapper modelMapper;
 
     @GetMapping("/listar")
-    public ResponseEntity<GenericReponse<CategoriaRequestDTO>> findAll() throws Exception {
-        List<CategoriaRequestDTO> lista = service.findAll()
+    public ResponseEntity<GenericReponse<CategoriaDetalleResponse>> findAll() throws Exception {
+        List<CategoriaDetalleResponse> lista = service.findAll()
                 .stream()
-                .map(this::convertToDTO)
+                .map(this::convertToDetalle)
                 .toList();
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Lista de Categorías", lista)
@@ -34,36 +36,36 @@ public class CategoriaController {
     }
 
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<CategoriaRequestDTO>> findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericObjectResponse<CategoriaDetalleResponse>> findById(@PathVariable("id") Integer id) throws Exception {
         Categoria obj = service.findById(id);
         return ResponseEntity.ok(
-                new GenericObjectResponse<>(200, "Categoría encontrada", convertToDTO(obj))
+                new GenericObjectResponse<>(200, "Categoría encontrada", convertToDetalle(obj))
         );
     }
 
     @PostMapping("/insertar")
-    public ResponseEntity<GenericReponse<CategoriaRequestDTO>> save(@Valid @RequestBody CategoriaRequestDTO dto) throws Exception {
+    public ResponseEntity<GenericReponse<CategoriaDetalleResponse>> save(@Valid @RequestBody CategoriaCreateRequest dto) throws Exception {
         Categoria obj = service.save(convertToEntity(dto));
         return new ResponseEntity<>(
-                new GenericReponse<>(201, "Categoría creada", List.of(convertToDTO(obj))),
+                new GenericReponse<>(201, "Categoría creada", List.of(convertToDetalle(obj))),
                 HttpStatus.CREATED
         );
     }
 
     @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericReponse<CategoriaRequestDTO>> update(@PathVariable("id") Integer id, @Valid @RequestBody CategoriaRequestDTO dto) throws Exception {
+    public ResponseEntity<GenericReponse<CategoriaDetalleResponse>> update(@PathVariable("id") Integer id, @Valid @RequestBody CategoriaCreateRequest dto) throws Exception {
         Categoria obj = service.update(id, convertToEntity(dto));
         return ResponseEntity.ok(
-                new GenericReponse<>(200, "Categoría actualizada", List.of(convertToDTO(obj)))
+                new GenericReponse<>(200, "Categoría actualizada", List.of(convertToDetalle(obj)))
         );
     }
 
 
-    private CategoriaRequestDTO convertToDTO(Categoria obj) {
-        return modelMapper.map(obj, CategoriaRequestDTO.class);
+    private CategoriaDetalleResponse convertToDetalle(Categoria obj) {
+        return modelMapper.map(obj, CategoriaDetalleResponse.class);
     }
 
-    private Categoria convertToEntity(CategoriaRequestDTO dto) {
+    private Categoria convertToEntity(CategoriaCreateRequest dto) {
         return modelMapper.map(dto, Categoria.class);
     }
 }

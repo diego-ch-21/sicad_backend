@@ -41,7 +41,7 @@ public class AsignacionController {
                 new GenericObjectResponse<>(200, "Asignacion encontrada", convertToDTO(obj))
         );
     }
-    @PostMapping("/guardar")
+    @PostMapping("/insertar")
     public ResponseEntity<GenericReponse<AsignacionRequestDTO>> save(@Valid @RequestBody AsignacionRequestDTO dto) throws Exception {
         Asignacion obj = service.save(convertToEntity(dto));
         return new ResponseEntity<>(new GenericReponse<>(

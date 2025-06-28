@@ -1,9 +1,9 @@
 package com.sicad.sicad_backend.service.impl;
 
-import com.sicad.sicad_backend.dto.docente.DocenteRequestDTO;
+import com.sicad.sicad_backend.dto.docente.DocenteCreateRequest;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.dto.docente.DocenteResponseDTO;
-import com.sicad.sicad_backend.dto.docente.DocenteUpdateRequestDTO;
+import com.sicad.sicad_backend.dto.docente.DocenteDetalleResponse;
+import com.sicad.sicad_backend.dto.docente.DocenteUpdateRequest;
 import com.sicad.sicad_backend.jwt.JwtService;
 import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
@@ -16,8 +16,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.sql.Date;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +36,7 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         return docenteRepo;
     }
 
-    public GenericObjectResponse<DocenteResponseDTO> registrarDocente(DocenteRequestDTO request) {
+    public GenericObjectResponse<DocenteDetalleResponse> registrarDocente(DocenteCreateRequest request) {
 
         // 1. Verificar si el email ya está registrado
         if (usuarioRepo.findByEmail(request.getEmail()).isPresent()) {
@@ -58,25 +57,28 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
             return new GenericObjectResponse<>(404, "Categoría no encontrada", null);
 
         // 3. Generar código único
-        String codigo;
+        String codigoUsuario;
         do {
-            codigo = CodigoGeneratorUtil.generarCodigoNumerico(8);
-        } while (usuarioRepo.existsByCodigo(codigo));
+            codigoUsuario = CodigoGeneratorUtil.generarCodigoNumerico(6);
+        } while (usuarioRepo.existsByCodigo(codigoUsuario));
+
+        // 5. Crear y guardar Docente
+        LocalDate fecha = LocalDate.now();
 
         // 4. Crear y guardar Usuario
         Usuario usuario = Usuario.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .codigo(codigo)
+                .codigo(codigoUsuario)
                 .nombre(request.getNombre())
                 .apellido(request.getApellido())
                 .enabled(true)
+                .cretedAt(fecha)
                 .rol(rol)
                 .build();
         usuarioRepo.save(usuario);
 
-        // 5. Crear y guardar Docente
-        Date fecha = Date.valueOf(ZonedDateTime.now().toLocalDate());
+
 
         Integer horasMaxLectivas = request.getHorasMaxLectivas() != null ? request.getHorasMaxLectivas() : 0;
         boolean tienePermisoExceso = false;
@@ -86,23 +88,29 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
             tienePermisoExceso = false;
         }
 
+        String codigoDocente;
+        do {
+            codigoDocente = CodigoGeneratorUtil.generarCodigoNumerico(6);
+        } while (docenteRepo.existsByCodigo(codigoDocente));
+
+
         Docente docente = Docente.builder()
                 .usuario(usuario)
                 .dedicacion(dedicacion)
                 .categoria(categoria)
                 .horasMaxLectivas(request.getHorasMaxLectivas())
                 .tienePermisoExceso(tienePermisoExceso)
-                .createdAt(fecha)
+                .codigo(codigoDocente)
                 .enabled(true)
                 .build();
         docenteRepo.save(docente);
 
         // 6. Mapear y retornar
-        DocenteResponseDTO docenteDTO = modelMapper.map(docente, DocenteResponseDTO.class);
+        DocenteDetalleResponse docenteDTO = modelMapper.map(docente, DocenteDetalleResponse.class);
 
         return new GenericObjectResponse<>(201, "Docente registrado exitosamente", docenteDTO);
     }
-    public GenericObjectResponse<DocenteResponseDTO> actualizarDocente(Integer idDocente, DocenteUpdateRequestDTO request) {
+    public GenericObjectResponse<DocenteDetalleResponse> actualizarDocente(Integer idDocente, DocenteUpdateRequest request) {
 
         // 1. Verificar existencia del docente
         Docente docente = docenteRepo.findById(idDocente).orElse(null);
@@ -151,11 +159,11 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         docenteRepo.save(docente);
 
         // 6. Mapear y retornar
-        DocenteResponseDTO docenteDTO = modelMapper.map(docente, DocenteResponseDTO.class);
+        DocenteDetalleResponse docenteDTO = modelMapper.map(docente, DocenteDetalleResponse.class);
         return new GenericObjectResponse<>(200, "Docente actualizado exitosamente", docenteDTO);
     }
     //service para obtener un docente por usuario
-    public GenericObjectResponse<DocenteResponseDTO> obtenerDocentePorUsuario(Integer idUsuario) {
+    public GenericObjectResponse<DocenteDetalleResponse> obtenerDocentePorUsuario(Integer idUsuario) {
         Usuario usuario = usuarioRepo.findById(idUsuario)
                 .orElseThrow(() -> null);
         if(usuario == null) {
@@ -170,18 +178,18 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         if(docente == null) {
             return new GenericObjectResponse<>(404, "Docente no encontrado", null);
         }
-        DocenteResponseDTO docenteDTO = modelMapper.map(docente, DocenteResponseDTO.class);
+        DocenteDetalleResponse docenteDTO = modelMapper.map(docente, DocenteDetalleResponse.class);
         return new GenericObjectResponse<>(201, "Docente encontrado exitosamente", docenteDTO);
     }
 
-    private DocenteResponseDTO convertToResponseDTO(Docente obj) {
-        return modelMapper.map(obj, DocenteResponseDTO.class);
+    private DocenteDetalleResponse convertToResponseDTO(Docente obj) {
+        return modelMapper.map(obj, DocenteDetalleResponse.class);
     }
-    private DocenteRequestDTO convertToDTO(Docente obj) {
-        return modelMapper.map(obj, DocenteRequestDTO.class);
+    private DocenteCreateRequest convertToDTO(Docente obj) {
+        return modelMapper.map(obj, DocenteCreateRequest.class);
     }
 
-    private Docente convertToEntity(DocenteRequestDTO dto) {
+    private Docente convertToEntity(DocenteCreateRequest dto) {
         return modelMapper.map(dto, Docente.class);
     }
 }

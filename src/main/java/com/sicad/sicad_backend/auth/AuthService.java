@@ -4,9 +4,9 @@ import com.sicad.sicad_backend.auth.dto.AuthResponse;
 import com.sicad.sicad_backend.auth.dto.LoginRequest;
 import com.sicad.sicad_backend.auth.dto.RegisterRequest;
 import com.sicad.sicad_backend.auth.dto.RolesResponse;
-import com.sicad.sicad_backend.dto.director.DirectorUResponseDTO;
-import com.sicad.sicad_backend.dto.docente.DocenteResponseDTO;
-import com.sicad.sicad_backend.dto.docente.DocenteUResponseDTO;
+import com.sicad.sicad_backend.dto.director.DirectorUsuarioResponse;
+import com.sicad.sicad_backend.dto.docente.DocenteDetalleResponse;
+import com.sicad.sicad_backend.dto.docente.DocenteUsuarioResponse;
 import com.sicad.sicad_backend.jwt.JwtService;
 import com.sicad.sicad_backend.model.Director;
 import com.sicad.sicad_backend.model.Docente;
@@ -27,6 +27,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
@@ -74,13 +75,13 @@ public class AuthService {
                     docente =null;
                     break;
             }
-            DocenteUResponseDTO docenteResponseDTO;
+            DocenteUsuarioResponse docenteResponseDTO;
             if(docente != null){
                 docenteResponseDTO = convertToUResponseDTO(docente);
             } else {
                 docenteResponseDTO = null;
             }
-            DirectorUResponseDTO directorResponseDTO;
+            DirectorUsuarioResponse directorResponseDTO;
             if(director != null){
                 directorResponseDTO = convertToDirectorUResponseDTO(director);
             } else {
@@ -124,8 +125,10 @@ public class AuthService {
         // Generar código único y verificar duplicado
         String codigo;
         do {
-            codigo = CodigoGeneratorUtil.generarCodigoNumerico(8);
+            codigo = CodigoGeneratorUtil.generarCodigoNumerico(6);
         } while (userRepository.existsByCodigo(codigo));
+
+        LocalDate createdAt = LocalDate.now();
 
         // Crear y guardar usuario
         Usuario user = Usuario.builder()
@@ -135,6 +138,7 @@ public class AuthService {
                 .nombre(request.getNombre())
                 .apellido(request.getApellido())
                 .enabled(true)
+                .cretedAt(createdAt)
                 .rol(rolUsuario)
                 .build();
 
@@ -155,14 +159,14 @@ public class AuthService {
     private UsuarioDTO convertToDTO(Usuario obj) {
         return modelMapper.map(obj, UsuarioDTO.class);
     }
-    private DocenteResponseDTO convertToResponseDTO(Docente obj) {
-        return modelMapper.map(obj, DocenteResponseDTO.class);
+    private DocenteDetalleResponse convertToResponseDTO(Docente obj) {
+        return modelMapper.map(obj, DocenteDetalleResponse.class);
     }
-    private DocenteUResponseDTO convertToUResponseDTO(Docente obj) {
-        return modelMapper.map(obj, DocenteUResponseDTO.class);
+    private DocenteUsuarioResponse convertToUResponseDTO(Docente obj) {
+        return modelMapper.map(obj, DocenteUsuarioResponse.class);
     }
-    private DirectorUResponseDTO convertToDirectorUResponseDTO(Director obj) {
-        return modelMapper.map(obj, DirectorUResponseDTO.class);
+    private DirectorUsuarioResponse convertToDirectorUResponseDTO(Director obj) {
+        return modelMapper.map(obj, DirectorUsuarioResponse.class);
     }
     private Usuario convertToEntity(UsuarioDTO dto) {
         return modelMapper.map(dto, Usuario.class);
