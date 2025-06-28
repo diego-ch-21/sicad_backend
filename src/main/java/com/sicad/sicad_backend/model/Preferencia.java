@@ -28,6 +28,11 @@ public class Preferencia {
             foreignKey = @ForeignKey(name = "FK_PREFERENCIA_DOCENTE_CURSO_CUR"))
     private Asignatura asignatura;
 
+    @ManyToOne
+    @JoinColumn(name = "id_carga_electiva", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_PREFERENCIA_CARGA_ELECTIVA"))
+    private CargaElectiva cargaElectiva;
+
     @Column(nullable = false, name = "enabled")
     private boolean enabled;
 }

@@ -18,10 +18,13 @@ public class Categoria {
     @EqualsAndHashCode.Include
     @Column(name = "id_categoria")
     private Integer idCategoria;
+
     @Column(nullable = false, name = "nombre")
     private String nombre;
+
     @Column(name = "descripcion")
     private String descripcion;
+
     @Column(nullable = false, name = "enabled")
     private Boolean enabled;
 }

@@ -18,17 +18,28 @@ public class Disponibilidad {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
+    @Column(name = "id_disponibilidad")
     private Integer idDisponibilidad;
+
     @ManyToOne
     @JoinColumn(name = "id_docente",nullable = false,
             foreignKey = @ForeignKey(name = "FK_DISPONIBILIDAD_DOCENTE"))
     private Docente docente;
+
+    @ManyToOne
+    @JoinColumn(name = "id_carga_electiva", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_DISPONIBILIDAD_CARGA_ELECTIVA"))
+    private CargaElectiva cargaElectiva;
+
     @Column(nullable = false, name = "dia_semana")
     private String diaSemana;
+
     @Column(nullable = false, name = "hora_inicio")
     private Time horaInicio;
+
     @Column(nullable = false, name = "hora_fin")
     private Time horaFin;
+
     @Column(nullable = false, name = "enabled")
     private Boolean enabled;
 }

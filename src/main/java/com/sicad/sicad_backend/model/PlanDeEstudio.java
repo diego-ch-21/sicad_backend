@@ -18,15 +18,18 @@ public class PlanDeEstudio {
     @EqualsAndHashCode.Include
     @Column(name = "id_plan_de_estudio")
     private Integer idPlanDeEstudio;
-    @ManyToOne(optional = false)
+
+    @ManyToOne
     @JoinColumn(name = "id_facultad", nullable = false,
             foreignKey = @ForeignKey(name = "FK_plan_de_estudio_facultad"))
     private Facultad facultad;
 
     @Column(nullable = false, name = "codigo")
     private Integer codigo;
+
     @Column(nullable = false, name = "nombre")
     private String nombre;
+
     @Column(nullable = false, name = "enabled")
     private Boolean enabled;
 }

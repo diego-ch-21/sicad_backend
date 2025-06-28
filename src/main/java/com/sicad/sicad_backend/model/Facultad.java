@@ -17,9 +17,12 @@ public class Facultad {
     @Column(name = "id_facultad")
     private Integer idFacultad;
 
-    @Column(nullable = false, unique = true, length = 8, name = "codigo")
+    @Column(nullable = false, unique = true, length = 6, name = "codigo")
     private String codigo;
 
     @Column(nullable = false, name = "nombre")
     private String nombre;
+
+    @Column(nullable = false, name = "enabled")
+    private boolean enabled;
 }

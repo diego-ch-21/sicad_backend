@@ -20,15 +20,20 @@ public class Docente {
     @EqualsAndHashCode.Include
     @Column(name = "id_docente")
     private Integer idDocente;
+
     @ManyToOne
     @JoinColumn(name = "id_usuario", nullable = false,
             foreignKey = @ForeignKey(name = "FK_DOCENTE_USUARIO"))
     private Usuario usuario;
 
+    @Column(nullable = false, unique = true, length = 6, name = "codigo")
+    private String codigo;
+
     @ManyToOne
     @JoinColumn(name = "id_dedicacion", nullable = false,
             foreignKey = @ForeignKey(name = "FK_DOCENTE_DEDICACION"))
     private Dedicacion dedicacion;
+
     @ManyToOne
     @JoinColumn(name = "id_categoria", nullable = false,
             foreignKey = @ForeignKey(name = "FK_DOCENTE_CATEGORIA"))
@@ -39,9 +44,6 @@ public class Docente {
 
     @Column(name = "tiene_permiso_exceso")
     private Boolean tienePermisoExceso;
-
-    @Column(nullable = false, name = "createdAt")
-    private Date createdAt;
 
     @Column(nullable = false, name = "enabled")
     private boolean enabled;

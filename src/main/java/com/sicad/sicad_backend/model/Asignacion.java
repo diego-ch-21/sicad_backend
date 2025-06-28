@@ -22,13 +22,18 @@ public class Asignacion {
 
     @ManyToOne
     @JoinColumn(nullable = false, name = "id_docente",
-            foreignKey = @ForeignKey(name = "ASIGNACION_DOCENTE"))
+            foreignKey = @ForeignKey(name = "FK_ASIGNACION_DOCENTE"))
     private Docente docente;
 
     @ManyToOne
-    @JoinColumn(nullable = false, name = "id_horario",
-            foreignKey = @ForeignKey(name = "ASIGNACION_HORARIO"))
-    private Curso horario;
+    @JoinColumn(nullable = false, name = "id_curso",
+            foreignKey = @ForeignKey(name = "FK_ASIGNACION_CURSO"))
+    private Curso curso;
+
+    @ManyToOne
+    @JoinColumn(name = "id_carga_electiva", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_ASIGNACION_CARGA_ELECTIVA"))
+    private CargaElectiva cargaElectiva;
 
     @Column(nullable = false, name = "tipo_asignacion")
     private String tipoAsignacion;

@@ -17,14 +17,13 @@ public class Escuela {
     @Column(name = "id_escuela")
     private Integer idEscuela;
 
-    @Column(nullable = false, unique = true, length = 8, name = "codigo")
+    @Column(nullable = false, unique = true, length = 6, name = "codigo")
     private String codigo;
 
     @Column(nullable = false, name = "nombre")
     private String nombre;
 
-    //@ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @ManyToOne(optional = false)
+    @ManyToOne
     @JoinColumn(name = "id_facultad", nullable = false,
             foreignKey = @ForeignKey(name = "FK_ESCUELA_FACULTAD"))
     private Facultad facultad;

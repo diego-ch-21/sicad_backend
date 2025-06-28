@@ -18,12 +18,16 @@ public class Dedicacion {
     @EqualsAndHashCode.Include
     @Column(name = "id_dedicacion")
     private Integer idDedicacion;
+
     @Column(nullable = false, name = "nombre")
     private String nombre;
+
     @Column(nullable = false, name = "horas_totales")
     private Integer horasTotales;
+
     @Column(nullable = false, name = "horas_lectivas_minima")
     private Integer horasLectivasMinima;
+
     @Column(nullable = false, name = "enabled")
     private Boolean enabled;
 }
