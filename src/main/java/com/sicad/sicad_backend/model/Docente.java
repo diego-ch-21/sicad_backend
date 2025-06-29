@@ -21,9 +21,8 @@ public class Docente {
     @Column(name = "id_docente")
     private Integer idDocente;
 
-    @ManyToOne
-    @JoinColumn(name = "id_usuario", nullable = false,
-            foreignKey = @ForeignKey(name = "FK_DOCENTE_USUARIO"))
+    @OneToOne
+    @JoinColumn(name = "id_usuario", nullable = false, unique = true)
     private Usuario usuario;
 
     @Column(nullable = false, unique = true, length = 6, name = "codigo")

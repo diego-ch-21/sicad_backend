@@ -14,5 +14,5 @@ public class CategoriaCreateRequest {
     private String nombre;
     private String descripcion;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private boolean enabled=true;
+    private boolean enabled = true;
 }

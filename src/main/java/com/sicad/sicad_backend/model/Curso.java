@@ -34,6 +34,11 @@ public class Curso {
             foreignKey = @ForeignKey(name = "FK_CURSO_ESCUELA"))
     private Escuela escuela;
 
+    @ManyToOne
+    @JoinColumn(name = "id_ciclo_academico", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_CURSO_CICLO_ACADEMICO"))
+    private CicloAcademico cicloAcademico;
+
     @Column(nullable = false, name = "grupo")
     private String grupo;
 

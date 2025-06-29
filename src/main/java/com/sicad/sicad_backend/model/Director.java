@@ -15,9 +15,9 @@ public class Director {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Integer idDirector;
-    @ManyToOne
-    @JoinColumn(name = "id_usuario", nullable = false,
-            foreignKey = @ForeignKey(name = "FK_DIRECTOR_USUARIO"))
+
+    @OneToOne
+    @JoinColumn(name = "id_usuario", nullable = false, unique = true)
     private Usuario usuario;
 
     @Column(nullable = false, unique = true, length = 6, name = "codigo")

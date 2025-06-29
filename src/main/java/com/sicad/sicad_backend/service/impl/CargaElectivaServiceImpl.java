@@ -13,9 +13,9 @@ import org.springframework.stereotype.Service;
 public class CargaElectivaServiceImpl
     extends CRUDImpl<CargaElectiva, Integer>
     implements ICargaElectivaService {
-    private final ICargaElectivaRepo repo;
+    private final ICargaElectivaRepo cargaElectivaRepo;
     @Override
     protected IGenericRepo<CargaElectiva, Integer> getRepo() {
-        return repo;
+        return cargaElectivaRepo;
     }
 }
