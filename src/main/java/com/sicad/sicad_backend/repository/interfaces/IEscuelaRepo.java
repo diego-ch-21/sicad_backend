@@ -5,4 +5,5 @@ import com.sicad.sicad_backend.repository.base.IGenericRepo;
 
 public interface IEscuelaRepo extends IGenericRepo<Escuela, Integer> {
 
+    boolean existsByCodigo(String codigo);
 }

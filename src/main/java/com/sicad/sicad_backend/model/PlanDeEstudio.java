@@ -1,14 +1,12 @@
 package com.sicad.sicad_backend.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Entity
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name="plan_de_estudio")

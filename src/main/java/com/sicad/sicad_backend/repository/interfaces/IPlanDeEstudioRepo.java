@@ -5,4 +5,5 @@ import com.sicad.sicad_backend.repository.base.IGenericRepo;
 
 public interface IPlanDeEstudioRepo extends IGenericRepo<PlanDeEstudio, Integer> {
 
+    boolean existsByCodigo(Integer codigo);
 }
