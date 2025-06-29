@@ -1,11 +1,17 @@
 package com.sicad.sicad_backend.service.impl;
 
+import com.sicad.sicad_backend.dto.asignatura.AsignaturaCreateRequest;
+import com.sicad.sicad_backend.dto.asignatura.AsignaturaDetalleResponse;
+import com.sicad.sicad_backend.dto.asignatura.AsignaturaUpdateRequest;
+import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.model.Asignatura;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.IAsignaturaRepo;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.IAsignaturaService;
+import com.sicad.sicad_backend.utils.CodigoGeneratorUtil;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,9 +19,47 @@ import org.springframework.stereotype.Service;
 public class AsignaturaServiceImpl
     extends CRUDImpl<Asignatura, Integer>
     implements IAsignaturaService {
-    private final IAsignaturaRepo repo;
+
+    private final IAsignaturaRepo asignaturaRepo;
+    private final ModelMapper modelMapper;
+
     @Override
     protected IGenericRepo<Asignatura, Integer> getRepo() {
-        return repo;
+        return asignaturaRepo;
+    }
+    public GenericObjectResponse<AsignaturaDetalleResponse> registrarAsignatura(AsignaturaCreateRequest request) {
+        // Generar código único
+        String codigo;
+        do {
+            codigo = CodigoGeneratorUtil.generarCodigoNumerico(6);
+        } while (asignaturaRepo.existsByCodigo(codigo));
+
+        // Crear y guardar asignatura
+        Asignatura asignatura = Asignatura.builder()
+                .codigo(codigo)
+                .nombre(request.getNombre())
+                .enabled(true)
+                .build();
+
+        asignaturaRepo.save(asignatura);
+
+        AsignaturaDetalleResponse dto = modelMapper.map(asignatura, AsignaturaDetalleResponse.class);
+        return new GenericObjectResponse<>(201, "Asignatura registrada exitosamente", dto);
+    }
+
+    public GenericObjectResponse<AsignaturaDetalleResponse> actualizarAsignatura(Integer id, AsignaturaUpdateRequest request) {
+        Asignatura asignatura = asignaturaRepo.findById(id).orElse(null);
+        if (asignatura == null) {
+            return new GenericObjectResponse<>(404, "Asignatura no encontrada", null);
+        }
+
+        if (request.getNombre() != null && !request.getNombre().isBlank()) {
+            asignatura.setNombre(request.getNombre());
+        }
+
+        asignaturaRepo.save(asignatura);
+
+        AsignaturaDetalleResponse dto = modelMapper.map(asignatura, AsignaturaDetalleResponse.class);
+        return new GenericObjectResponse<>(200, "Asignatura actualizada exitosamente", dto);
     }
 }

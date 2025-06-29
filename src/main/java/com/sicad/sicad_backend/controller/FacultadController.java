@@ -4,6 +4,7 @@ import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.dto.facultad.FacultadCreateRequest;
 import com.sicad.sicad_backend.dto.facultad.FacultadDetalleResponse;
+import com.sicad.sicad_backend.dto.facultad.FacultadUpdateRequest;
 import com.sicad.sicad_backend.model.Facultad;
 import com.sicad.sicad_backend.repository.interfaces.IFacultadRepo;
 import com.sicad.sicad_backend.service.impl.FacultadServiceImpl;
@@ -54,7 +55,7 @@ public class FacultadController {
     }
 
     @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericReponse<FacultadDetalleResponse>> update(@PathVariable("id") Integer id, @Valid @RequestBody FacultadCreateRequest dto) throws Exception {
+    public ResponseEntity<GenericReponse<FacultadDetalleResponse>> update(@PathVariable("id") Integer id, @Valid @RequestBody FacultadUpdateRequest dto) throws Exception {
         Facultad obj = service.update(id, convertToEntity(dto));
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Facultad actualizada", List.of(convertToDetalle(obj)))
@@ -68,6 +69,8 @@ public class FacultadController {
     private Facultad convertToEntity(FacultadCreateRequest dto) {
         return modelMapper.map(dto, Facultad.class);
     }
+    private Facultad convertToEntity(FacultadUpdateRequest dto) {
+        return modelMapper.map(dto, Facultad.class);
 
-
+    }
 }
