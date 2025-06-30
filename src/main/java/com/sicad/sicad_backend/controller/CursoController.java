@@ -2,10 +2,12 @@ package com.sicad.sicad_backend.controller;
 
 
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.model.Asignatura;
-import com.sicad.sicad_backend.dto.curso.CursoRequestDTO;
+import com.sicad.sicad_backend.dto.curso.CursoCreateRequest;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.dto.curso.CursoDetalleResponse;
+import com.sicad.sicad_backend.dto.curso.CursoUpdateRequest;
 import com.sicad.sicad_backend.model.Curso;
+import com.sicad.sicad_backend.service.impl.CursoServiceImpl;
 import com.sicad.sicad_backend.service.interfaces.ICursoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,47 +22,45 @@ import java.util.List;
 @RequestMapping("/curso")
 @RequiredArgsConstructor
 public class CursoController {
-    private final ICursoService service;
 
+    private final ICursoService service;
+    private final CursoServiceImpl cursoServiceImpl;
     private final ModelMapper modelMapper;
 
     @GetMapping("/listar")
-    public ResponseEntity<GenericReponse<CursoRequestDTO>> findAll() throws Exception {
-        List<CursoRequestDTO> lista = service.findAll()
+    public ResponseEntity<GenericReponse<CursoDetalleResponse>> findAll() throws Exception {
+        List<CursoDetalleResponse> lista = service.findAll()
                 .stream()
-                .map(this::convertToDTO)
+                .map(this::convertToDetalle)
                 .toList();
 
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Lista de Cursos", lista)
         );
     }
+
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<CursoRequestDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
-        Curso obj = service.findById(id);
+    public ResponseEntity<GenericObjectResponse<CursoDetalleResponse>> findById(@PathVariable("id") Integer id) throws Exception {
+        Curso curso = service.findById(id);
         return ResponseEntity.ok(
-                new GenericObjectResponse<>(200, "Curso encontrada", convertToDTO(obj))
-        );
-    }
-    @PostMapping("/insertar")
-    public ResponseEntity<GenericReponse<CursoRequestDTO>> save(@Valid @RequestBody CursoRequestDTO dto) throws Exception {
-        Curso obj = service.save(convertToEntity(dto));
-        return new ResponseEntity<>(new GenericReponse<>(
-                201, "Curso creada", List.of(convertToDTO(obj))
-        ), HttpStatus.CREATED);
-    }
-    @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericReponse<CursoRequestDTO>> update(@Valid @PathVariable("id") Integer id, @RequestBody CursoRequestDTO dto) throws Exception {
-        Curso obj = service.update(id,convertToEntity(dto));
-        return ResponseEntity.ok(
-                new GenericReponse<>(200, "Curso actualizada", List.of(convertToDTO(obj)))
+                new GenericObjectResponse<>(200, "Curso encontrado", convertToDetalle(curso))
         );
     }
 
-    private CursoRequestDTO convertToDTO(Curso obj) {
-        return modelMapper.map(obj, CursoRequestDTO.class);
+    @PostMapping("/insertar")
+    public ResponseEntity<GenericObjectResponse<CursoDetalleResponse>> save(@Valid @RequestBody CursoCreateRequest request) {
+        GenericObjectResponse<CursoDetalleResponse> response = cursoServiceImpl.registrarCurso(request);
+        return ResponseEntity.status(response.status()).body(response);
     }
-    private Curso convertToEntity(CursoRequestDTO dto) {
-        return modelMapper.map(dto, Curso.class);
+
+    @PutMapping("/actualizar/{id}")
+    public ResponseEntity<GenericObjectResponse<CursoDetalleResponse>> update(@PathVariable("id") Integer id,
+                                                                              @Valid @RequestBody CursoUpdateRequest request) {
+        GenericObjectResponse<CursoDetalleResponse> response = cursoServiceImpl.actualizarCurso(id, request);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
+    private CursoDetalleResponse convertToDetalle(Curso curso) {
+        return modelMapper.map(curso, CursoDetalleResponse.class);
     }
 }

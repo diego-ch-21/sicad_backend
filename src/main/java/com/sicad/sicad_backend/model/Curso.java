@@ -1,15 +1,15 @@
 package com.sicad.sicad_backend.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.sql.Time;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name="curso")
 public class Curso {
@@ -39,6 +39,9 @@ public class Curso {
             foreignKey = @ForeignKey(name = "FK_CURSO_CICLO_ACADEMICO"))
     private CicloAcademico cicloAcademico;
 
+    @Column(nullable = false, unique = true, name = "codigo")
+    private String codigo;
+
     @Column(nullable = false, name = "grupo")
     private String grupo;
 
@@ -48,11 +51,11 @@ public class Curso {
     @Column(nullable = false, name = "dia_semana")
     private String diaSemana;
 
-    @Column(nullable = false, name = "hora_inicio")
-    private String horaInicio;
+    @Column(name = "hora_inicio", nullable = false, columnDefinition = "TIME(6)")
+    private Time horaInicio;
 
-    @Column(nullable = false, name = "hora_fin")
-    private String horaFin;
+    @Column(name = "hora_fin", nullable = false, columnDefinition = "TIME(6)")
+    private Time horaFin;
 
     @Column(nullable = false, name = "aula")
     private String aula;
@@ -60,7 +63,7 @@ public class Curso {
     @Column(nullable = false, name = "duracion_horas")
     private Integer duracionHoras;
 
-    @Column(nullable = false, name = "carga")
+    @Column(name = "carga")
     private Integer Carga;
 
     @Column(nullable = false, name = "enabled")
