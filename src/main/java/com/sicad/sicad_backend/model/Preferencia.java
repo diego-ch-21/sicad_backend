@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "preferencia",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"id_docente", "id_curso"}))
+@Table(name = "preferencia")
 public class Preferencia {
 
     @Id
@@ -20,12 +19,12 @@ public class Preferencia {
 
     @ManyToOne
     @JoinColumn(nullable = false, name = "id_docente",
-            foreignKey = @ForeignKey(name = "FK_PREFERENCIA_DOCENTE_CURSO_DOC"))
+            foreignKey = @ForeignKey(name = "FK_PREFERENCIA_DOCENTE"))
     private Docente docente;
 
     @ManyToOne
     @JoinColumn(nullable = false, name = "id_curso",
-            foreignKey = @ForeignKey(name = "FK_PREFERENCIA_DOCENTE_CURSO_CUR"))
+            foreignKey = @ForeignKey(name = "FK_PREFERENCIA_ASIGNATURA"))
     private Asignatura asignatura;
 
     @ManyToOne

@@ -3,7 +3,7 @@ package com.sicad.sicad_backend.controller;
 
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.model.Usuario;
-import com.sicad.sicad_backend.dto.UsuarioDTO;
+import com.sicad.sicad_backend.dto.usuario.UsuarioDTO;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.service.interfaces.IUsuarioService;
 import jakarta.validation.Valid;

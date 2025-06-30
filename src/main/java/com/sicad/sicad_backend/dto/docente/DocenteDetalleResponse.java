@@ -1,8 +1,7 @@
 package com.sicad.sicad_backend.dto.docente;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sicad.sicad_backend.dto.UsuarioDTO;
+import com.sicad.sicad_backend.dto.usuario.UsuarioDTO;
 import com.sicad.sicad_backend.dto.categoria.CategoriaResumenResponse;
 import com.sicad.sicad_backend.dto.dedicacion.DedicacionResumenResponse;
 import lombok.AllArgsConstructor;

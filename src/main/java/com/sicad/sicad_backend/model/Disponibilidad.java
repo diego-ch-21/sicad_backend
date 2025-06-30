@@ -1,10 +1,7 @@
 package com.sicad.sicad_backend.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.sql.Time;
 
@@ -12,6 +9,7 @@ import java.sql.Time;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name="disponibilidad")
 public class Disponibilidad {

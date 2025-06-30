@@ -14,9 +14,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CursoCreateRequest {
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private Integer idCurso;
-
     @NotNull(message = "El idAsignatura es un campo obligatorio")
     private Integer idAsignatura;
 
@@ -36,7 +33,7 @@ public class CursoCreateRequest {
     private String tipoSesion;
 
     @NotBlank(message = "El día de la semana es obligatorio")
-    @Pattern(regexp = "^(lunes|martes|miércoles|jueves|viernes|sábado|domingo)$", message = "Día de la semana inválido")
+    @Pattern(regexp = "^(lunes|martes|miercoles|jueves|viernes|sabado|domingo)$", message = "Día de la semana inválido")
     private String diaSemana;
 
     @NotBlank(message = "La hora de inicio es obligatoria")

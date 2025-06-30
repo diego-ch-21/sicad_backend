@@ -16,7 +16,7 @@ import com.sicad.sicad_backend.repository.interfaces.IDirectorRepo;
 import com.sicad.sicad_backend.repository.interfaces.IDocenteRepo;
 import com.sicad.sicad_backend.repository.interfaces.IRolRepo;
 import com.sicad.sicad_backend.repository.interfaces.IUsuarioRepo;
-import com.sicad.sicad_backend.dto.UsuarioDTO;
+import com.sicad.sicad_backend.dto.usuario.UsuarioDTO;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.utils.CodigoGeneratorUtil;
 import lombok.RequiredArgsConstructor;
