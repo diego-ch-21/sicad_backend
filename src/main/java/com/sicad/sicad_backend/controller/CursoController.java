@@ -5,7 +5,9 @@ import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.curso.CursoCreateRequest;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.dto.curso.CursoDetalleResponse;
+import com.sicad.sicad_backend.dto.curso.CursoPeriodoAcademicoResponse;
 import com.sicad.sicad_backend.dto.curso.CursoUpdateRequest;
+import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadResumenResponse;
 import com.sicad.sicad_backend.model.Curso;
 import com.sicad.sicad_backend.service.impl.CursoServiceImpl;
 import com.sicad.sicad_backend.service.interfaces.ICursoService;
@@ -57,6 +59,13 @@ public class CursoController {
     public ResponseEntity<GenericObjectResponse<CursoDetalleResponse>> update(@PathVariable("id") Integer id,
                                                                               @Valid @RequestBody CursoUpdateRequest request) {
         GenericObjectResponse<CursoDetalleResponse> response = cursoServiceImpl.actualizarCurso(id, request);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
+    @GetMapping("/listar/{idPeriodoAcademico}")
+    public ResponseEntity<GenericObjectResponse<List<CursoPeriodoAcademicoResponse>>> findByDocenteAndCargaElectiva(
+            @PathVariable("idPeriodoAcademico") Integer idPeriodoAcademico) {
+        GenericObjectResponse<List<CursoPeriodoAcademicoResponse>>  response = cursoServiceImpl.listarCursoPeriodoAcademico(idPeriodoAcademico);
         return ResponseEntity.status(response.status()).body(response);
     }
 

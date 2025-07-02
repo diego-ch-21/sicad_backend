@@ -3,6 +3,7 @@ package com.sicad.sicad_backend.controller;
 
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadDetalleResponse;
+import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadResumenResponse;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadUpdateRequest;
 import com.sicad.sicad_backend.model.Disponibilidad;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadCreateRequest;
@@ -25,6 +26,14 @@ public class DisponibilidadController {
     private final IDisponibilidadService service;
     private final DisponibilidadServiceImpl disponibilidadServiceImpl;
     private final ModelMapper modelMapper;
+
+    @GetMapping("/listar/{idDocente}/{idCargaElectiva}")
+    public ResponseEntity<GenericObjectResponse<List<DisponibilidadResumenResponse>>> findByDocenteAndCargaElectiva(
+            @PathVariable("idDocente") Integer idDocente,
+            @PathVariable("idCargaElectiva") Integer idCargaElectiva) throws Exception {
+        GenericObjectResponse<List<DisponibilidadResumenResponse>>  response = disponibilidadServiceImpl.listarDisponibilidadDocente(idDocente, idCargaElectiva);
+        return ResponseEntity.status(response.status()).body(response);
+    }
 
     @GetMapping("/listar")
     public ResponseEntity<GenericReponse<DisponibilidadDetalleResponse>> findAll() throws Exception {

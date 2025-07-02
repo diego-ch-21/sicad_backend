@@ -3,6 +3,7 @@ package com.sicad.sicad_backend.service.impl;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.curso.CursoCreateRequest;
 import com.sicad.sicad_backend.dto.curso.CursoDetalleResponse;
+import com.sicad.sicad_backend.dto.curso.CursoPeriodoAcademicoResponse;
 import com.sicad.sicad_backend.dto.curso.CursoUpdateRequest;
 import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
@@ -15,6 +16,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.sql.Time;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -167,5 +169,15 @@ public class CursoServiceImpl
         CursoDetalleResponse dto = modelMapper.map(curso, CursoDetalleResponse.class);
         return new GenericObjectResponse<>(200, "Curso actualizado exitosamente", dto);
     }
+    public GenericObjectResponse<List<CursoPeriodoAcademicoResponse>> listarCursoPeriodoAcademico(Integer idCicloAcademico) {
+        List<Curso> cursos = cursoRepo.buscarPorPeriodoAcademico(idCicloAcademico);
+
+        List<CursoPeriodoAcademicoResponse> listaDTO = cursos.stream()
+                .map(curso -> modelMapper.map(curso, CursoPeriodoAcademicoResponse.class))
+                .toList();
+
+        return new GenericObjectResponse<>(200, "Cursos obtenidos correctamente", listaDTO);
+    }
+
 
 }

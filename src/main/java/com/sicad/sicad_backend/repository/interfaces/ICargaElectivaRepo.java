@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface ICargaElectivaRepo extends IGenericRepo<CargaElectiva, Integer> {
     Optional<CargaElectiva> findByCicloAcademico_IdCicloAcademico(Integer idCicloAcademico);
+    boolean existsByIdCargaElectiva(Integer idCargaElectiva);
 }

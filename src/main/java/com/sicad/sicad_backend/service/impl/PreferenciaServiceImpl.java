@@ -3,6 +3,7 @@ package com.sicad.sicad_backend.service.impl;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaCreateRequest;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaDetalleResponse;
+import com.sicad.sicad_backend.dto.preferencia.PreferenciaResumenResponse;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaUpdateRequest;
 import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
@@ -16,6 +17,9 @@ import com.sicad.sicad_backend.service.interfaces.IPreferenciaService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -98,6 +102,33 @@ public class PreferenciaServiceImpl
         PreferenciaDetalleResponse dto = modelMapper.map(preferencia, PreferenciaDetalleResponse.class);
         return new GenericObjectResponse<>(200, "Preferencia actualizada exitosamente", dto);
     }
+    public GenericObjectResponse<List<PreferenciaResumenResponse>> listarPreferenciaDocente(Integer idDocente, Integer idCargaElectiva) {
+        System.out.println("idDocente: " + idDocente + " y id carga electiva: " + idCargaElectiva);
+        // Validar existencia de docente
+        if (!docenteRepo.existsByIdDocente(idDocente)) {
+            return new GenericObjectResponse<>(400, "Docente no encontrado", null);
+        }
+
+        // Validar existencia de carga electiva
+        if (!cargaElectivaRepo.existsByIdCargaElectiva(idCargaElectiva)) {
+            return new GenericObjectResponse<>(400, "Carga electiva no encontrada", null);
+        }
+
+        // Obtener preferencias filtradas
+        List<Preferencia> preferencias = preferenciaRepo.buscarPorDocenteYCargaElectiva(idDocente, idCargaElectiva);
+
+        // Convertir a DTOs
+        List<PreferenciaResumenResponse> listaDTO = preferencias.stream()
+                .map(p -> modelMapper.map(p, PreferenciaResumenResponse.class))
+                .collect(Collectors.toList());
+
+        String mensaje = listaDTO.isEmpty()
+                ? "No hay preferencias registradas para este docente en esta carga electiva"
+                : "Lista obtenida correctamente";
+
+        return new GenericObjectResponse<>(200, mensaje, listaDTO);
+    }
+
 
 
 

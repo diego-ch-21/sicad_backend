@@ -3,6 +3,7 @@ package com.sicad.sicad_backend.service.impl;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadCreateRequest;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadDetalleResponse;
+import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadResumenResponse;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadUpdateRequest;
 import com.sicad.sicad_backend.model.CargaElectiva;
 import com.sicad.sicad_backend.model.Disponibilidad;
@@ -18,6 +19,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.sql.Time;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -115,4 +118,24 @@ public class DisponibilidadServiceImpl extends CRUDImpl<Disponibilidad, Integer>
         DisponibilidadDetalleResponse response = modelMapper.map(disponibilidad, DisponibilidadDetalleResponse.class);
         return new GenericObjectResponse<>(200, "Disponibilidad actualizada exitosamente", response);
     }
+    public GenericObjectResponse<List<DisponibilidadResumenResponse>> listarDisponibilidadDocente(Integer idDocente, Integer idCargaElectiva) {
+
+        if (!docenteRepo.existsByIdDocente(idDocente)) {
+            return new GenericObjectResponse<>(400, "Docente no encontrado", null);
+        }
+        if (!cargaElectivaRepo.existsByIdCargaElectiva(idCargaElectiva)) {
+            return new GenericObjectResponse<>(400, "Carga electiva no encontrada", null);
+        }
+
+        List<Disponibilidad> disponibilidades = disponibilidadRepo.buscarPorDocenteYCargaElectiva(idDocente, idCargaElectiva);
+
+        List<DisponibilidadResumenResponse> listaDTO = disponibilidades.stream()
+                .map(disponibilidad -> modelMapper.map(disponibilidad, DisponibilidadResumenResponse.class))
+                .collect(Collectors.toList());
+
+        return new GenericObjectResponse<>(200, "Lista obtenida correctamente", listaDTO);
+    }
+
+
+
 }

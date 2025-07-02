@@ -11,6 +11,5 @@ import java.util.Optional;
 public interface IDocenteRepo extends IGenericRepo<Docente, Integer> {
     Optional<Docente> findByUsuario(Usuario usuario);
     boolean existsByCodigo(String codigo);
-
-
+    boolean existsByIdDocente(Integer idDocente);
 }

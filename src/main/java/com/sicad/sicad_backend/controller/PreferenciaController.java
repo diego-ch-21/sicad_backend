@@ -1,9 +1,11 @@
 package com.sicad.sicad_backend.controller;
 
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
+import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadResumenResponse;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaCreateRequest;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaDetalleResponse;
+import com.sicad.sicad_backend.dto.preferencia.PreferenciaResumenResponse;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaUpdateRequest;
 import com.sicad.sicad_backend.model.Preferencia;
 import com.sicad.sicad_backend.service.impl.PreferenciaServiceImpl;
@@ -24,6 +26,14 @@ public class PreferenciaController {
     private final IPreferenciaService service;
     private final ModelMapper modelMapper;
     private final PreferenciaServiceImpl preferenciaServiceImpl;
+
+    @GetMapping("/listar/{idDocente}/{idCargaElectiva}")
+    public ResponseEntity<GenericObjectResponse<List<PreferenciaResumenResponse>>> findByDocenteAndCargaElectiva(
+            @PathVariable("idDocente") Integer idDocente,
+            @PathVariable("idCargaElectiva") Integer idCargaElectiva) throws Exception {
+        GenericObjectResponse<List<PreferenciaResumenResponse>>  response = preferenciaServiceImpl.listarPreferenciaDocente(idDocente, idCargaElectiva);
+        return ResponseEntity.status(response.status()).body(response);
+    }
 
     @GetMapping("/listar")
     public ResponseEntity<GenericReponse<PreferenciaDetalleResponse>> findAll() throws Exception {

@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AsignaturaResumenResponse {
-    private String idAsignatura;
+    private Integer idAsignatura;
     private String nombre;
 }
