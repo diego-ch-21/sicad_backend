@@ -38,8 +38,8 @@ public class Asignacion {
     @Column(nullable = false, name = "tipo_asignacion")
     private String tipoAsignacion;
 
-    @Column(nullable = false, name = "fecha_asignacion")
-    private LocalDate fechaAsignacion;
+    @Column(nullable = false, name = "created_at")
+    private LocalDate createdAt;
 
     @Column(nullable = false, name = "enabled")
     private Boolean enabled;

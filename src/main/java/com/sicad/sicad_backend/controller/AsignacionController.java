@@ -1,10 +1,13 @@
 package com.sicad.sicad_backend.controller;
 
 
+import com.sicad.sicad_backend.dto.asignacion.AsignacionDetalleResponse;
+import com.sicad.sicad_backend.dto.asignacion.AsignacionUpdateRequest;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.model.Asignacion;
-import com.sicad.sicad_backend.dto.asignacion.AsignacionRequestDTO;
+import com.sicad.sicad_backend.dto.asignacion.AsignacionCreateRequest;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.service.impl.AsignacionServiceImpl;
 import com.sicad.sicad_backend.service.interfaces.IAsignacionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,12 +23,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AsignacionController {
     private final IAsignacionService service;
+    private final AsignacionServiceImpl asignacionServiceImpl;
 
     private final ModelMapper modelMapper;
 
     @GetMapping("/listar")
-    public ResponseEntity<GenericReponse<AsignacionRequestDTO>> findAll() throws Exception {
-        List<AsignacionRequestDTO> lista = service.findAll()
+    public ResponseEntity<GenericReponse<AsignacionDetalleResponse>> findAll() throws Exception {
+        List<AsignacionDetalleResponse> lista = service.findAll()
                 .stream()
                 .map(this::convertToDTO)
                 .toList();
@@ -35,31 +39,24 @@ public class AsignacionController {
         );
     }
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<AsignacionRequestDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<GenericObjectResponse<AsignacionDetalleResponse>>  findById(@PathVariable("id") Integer id) throws Exception {
         Asignacion obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericObjectResponse<>(200, "Asignacion encontrada", convertToDTO(obj))
         );
     }
     @PostMapping("/insertar")
-    public ResponseEntity<GenericReponse<AsignacionRequestDTO>> save(@Valid @RequestBody AsignacionRequestDTO dto) throws Exception {
-        Asignacion obj = service.save(convertToEntity(dto));
-        return new ResponseEntity<>(new GenericReponse<>(
-                201, "Asignacion creada", List.of(convertToDTO(obj))
-        ), HttpStatus.CREATED);
+    public ResponseEntity<GenericObjectResponse<AsignacionDetalleResponse>> save(@Valid @RequestBody AsignacionCreateRequest request){
+        GenericObjectResponse<AsignacionDetalleResponse> response = asignacionServiceImpl.registrarAsignacion(request);
+        return ResponseEntity.status(response.status()).body(response);
+
     }
     @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericReponse<AsignacionRequestDTO>> update(@Valid @PathVariable("id") Integer id, @RequestBody AsignacionRequestDTO dto) throws Exception {
-        Asignacion obj = service.update(id,convertToEntity(dto));
-        return ResponseEntity.ok(
-                new GenericReponse<>(200, "Asignacion actualizada", List.of(convertToDTO(obj)))
-        );
+    public ResponseEntity<GenericObjectResponse<AsignacionDetalleResponse>> update(@Valid @PathVariable("id") Integer id, @RequestBody AsignacionUpdateRequest request){
+        GenericObjectResponse<AsignacionDetalleResponse> response = asignacionServiceImpl.actualizarAsignacion(id, request);
+        return ResponseEntity.status(response.status()).body(response);
     }
-
-    private AsignacionRequestDTO convertToDTO(Asignacion obj) {
-        return modelMapper.map(obj, AsignacionRequestDTO.class);
-    }
-    private Asignacion convertToEntity(AsignacionRequestDTO dto) {
-        return modelMapper.map(dto, Asignacion.class);
+    private AsignacionDetalleResponse convertToDTO(Asignacion obj) {
+        return modelMapper.map(obj, AsignacionDetalleResponse.class);
     }
 }
