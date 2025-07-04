@@ -1,6 +1,7 @@
 package com.sicad.sicad_backend.service.impl;
 
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
+import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaCreateRequest;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaDetalleResponse;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaResumenResponse;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,6 +66,26 @@ public class PreferenciaServiceImpl
         PreferenciaDetalleResponse dto = modelMapper.map(preferencia, PreferenciaDetalleResponse.class);
         return new GenericObjectResponse<>(201, "Preferencia registrada", dto);
     }
+
+    public GenericReponse<PreferenciaDetalleResponse> registrarVariosPreferencias(List<PreferenciaCreateRequest> requests){
+        List<PreferenciaDetalleResponse> registrados = new ArrayList<>();
+        int errorCount = 0;
+
+        for(PreferenciaCreateRequest request: requests){
+            GenericObjectResponse<PreferenciaDetalleResponse>  response = registrarPreferencia(request);
+            System.out.println("status: "+response.status());
+            if(response.status() == 201 || response.data() != null){
+                registrados.add(response.data());
+            } else {
+                errorCount++;
+            }
+        }
+        String mensaje = String.format("Preferencia registrados: %d. Fallidos: %d.", registrados.size(), errorCount);
+        return new GenericReponse<>(200, mensaje, registrados);
+    }
+
+
+
     public GenericObjectResponse<PreferenciaDetalleResponse> actualizarPreferencia(Integer id, PreferenciaUpdateRequest request) {
         Preferencia preferencia = preferenciaRepo.findById(id).orElse(null);
         if (preferencia == null) {

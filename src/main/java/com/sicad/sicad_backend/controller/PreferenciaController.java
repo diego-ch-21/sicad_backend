@@ -59,6 +59,11 @@ public class PreferenciaController {
         GenericObjectResponse<PreferenciaDetalleResponse> response = preferenciaServiceImpl.registrarPreferencia(request);
         return ResponseEntity.status(response.status()).body(response);
     }
+    @PostMapping("/insertar-all")
+    public ResponseEntity<GenericReponse<PreferenciaDetalleResponse>> saveAll(@Valid @RequestBody List<PreferenciaCreateRequest> requests){
+        GenericReponse<PreferenciaDetalleResponse> response = preferenciaServiceImpl.registrarVariosPreferencias(requests);
+        return ResponseEntity.status(response.status()).body(response);
+    }
 
     @PutMapping("/actualizar/{id}")
     public ResponseEntity<GenericObjectResponse<PreferenciaDetalleResponse>> update(@PathVariable("id") Integer id, @Valid @RequestBody PreferenciaUpdateRequest request) throws Exception {
