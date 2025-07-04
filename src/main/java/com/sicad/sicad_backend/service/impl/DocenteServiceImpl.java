@@ -1,5 +1,6 @@
 package com.sicad.sicad_backend.service.impl;
 
+import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.dto.docente.DocenteCreateRequest;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.docente.DocenteDetalleResponse;
@@ -17,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -181,6 +183,89 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         DocenteDetalleResponse docenteDTO = modelMapper.map(docente, DocenteDetalleResponse.class);
         return new GenericObjectResponse<>(201, "Docente encontrado exitosamente", docenteDTO);
     }
+    private DocenteDetalleResponse registrarDocenteInterno(DocenteCreateRequest request) {
+
+        // Validación: correo existente
+        if (usuarioRepo.findByEmail(request.getEmail()).isPresent()) {
+            return null; // ya existe
+        }
+
+        // Relacionados
+        Rol rol = rolRepo.findById(3).orElse(null);
+        Dedicacion dedicacion = dedicacionRepo.findById(request.getIdDedicacion()).orElse(null);
+        Categoria categoria = categoriaRepo.findById(request.getIdCategoria()).orElse(null);
+        if (rol == null || dedicacion == null || categoria == null) {
+            return null;
+        }
+
+        // Código único usuario
+        String codigoUsuario;
+        do {
+            codigoUsuario = CodigoGeneratorUtil.generarCodigoNumerico(6);
+        } while (usuarioRepo.existsByCodigo(codigoUsuario));
+
+        Usuario usuario = Usuario.builder()
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .codigo(codigoUsuario)
+                .nombre(request.getNombre())
+                .apellido(request.getApellido())
+                .enabled(true)
+                .cretedAt(LocalDate.now())
+                .rol(rol)
+                .build();
+        usuarioRepo.save(usuario);
+
+        // Permiso por horas
+        Integer horasMaxLectivas = request.getHorasMaxLectivas() != null ? request.getHorasMaxLectivas() : 0;
+        boolean tienePermisoExceso = horasMaxLectivas > 12;
+
+        // Código docente
+        String codigoDocente;
+        do {
+            codigoDocente = CodigoGeneratorUtil.generarCodigoNumerico(6);
+        } while (docenteRepo.existsByCodigo(codigoDocente));
+
+        Docente docente = Docente.builder()
+                .usuario(usuario)
+                .dedicacion(dedicacion)
+                .categoria(categoria)
+                .horasMaxLectivas(horasMaxLectivas)
+                .tienePermisoExceso(tienePermisoExceso)
+                .codigo(codigoDocente)
+                .enabled(true)
+                .build();
+        docenteRepo.save(docente);
+
+        return modelMapper.map(docente, DocenteDetalleResponse.class);
+    }
+
+
+    public GenericReponse<DocenteDetalleResponse> registrarDocentes(List<DocenteCreateRequest> requestList) {
+        List<DocenteDetalleResponse> registrados = requestList.stream()
+                .map(this::registrarDocenteInterno)
+                .filter(dto -> dto != null)
+                .toList();
+
+        int total = requestList.size();
+        int exitosos = registrados.size();
+        int fallidos = total - exitosos;
+
+        String mensaje;
+        if (exitosos == 0) {
+            mensaje = "No se registró ningún docente. Todos los registros fallaron.";
+            return new GenericReponse<>(409, mensaje, null);
+        } else if (fallidos == 0) {
+            mensaje =  exitosos + "docentes registrados exitosamente.";
+        } else {
+            mensaje = exitosos + " docentes registrados exitosamente. " + fallidos + " registros fallaron (posible correo duplicado o datos inválidos).";
+        }
+
+        return new GenericReponse<>(201, mensaje, registrados);
+    }
+
+
+
 
     private DocenteDetalleResponse convertToResponseDTO(Docente obj) {
         return modelMapper.map(obj, DocenteDetalleResponse.class);

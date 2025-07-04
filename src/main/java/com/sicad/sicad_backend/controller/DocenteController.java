@@ -54,6 +54,13 @@ public class DocenteController {
         GenericObjectResponse<DocenteDetalleResponse> response = serviceImpl.registrarDocente(request);
         return ResponseEntity.status(response.status()).body(response);
     }
+    @PostMapping("/insertar-all")
+    public ResponseEntity<GenericReponse<DocenteDetalleResponse>> registrarDocentes(@Valid @RequestBody List<DocenteCreateRequest> requestAll) {
+        GenericReponse<DocenteDetalleResponse> response = serviceImpl.registrarDocentes(requestAll);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
+
     @PutMapping("/actualizar/{id}")
     public ResponseEntity<GenericObjectResponse<DocenteDetalleResponse>> update(@Valid @PathVariable("id") Integer id, @Valid @RequestBody DocenteUpdateRequest dto) throws Exception {
         GenericObjectResponse<DocenteDetalleResponse> response = serviceImpl.actualizarDocente(id, dto);

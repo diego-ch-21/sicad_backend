@@ -10,7 +10,17 @@ import java.util.List;
 
 public interface ICursoRepo extends IGenericRepo<Curso, Integer> {
     boolean existsByCodigo(String codigo);
-    @Query("SELECT c FROM Curso c WHERE c.cicloAcademico.idCicloAcademico = :idCicloAcademico AND c.enabled = true")
+
+    @Query("""
+    SELECT DISTINCT c 
+    FROM Curso c 
+    LEFT JOIN FETCH c.cursoHorario 
+    WHERE c.cicloAcademico.idCicloAcademico = :idCicloAcademico 
+      AND c.enabled = true
+    """)
     List<Curso> buscarPorPeriodoAcademico(@Param("idCicloAcademico") Integer idCicloAcademico);
+
+    @Query("SELECT DISTINCT c FROM Curso c LEFT JOIN FETCH c.cursoHorario")
+    List<Curso> findAllWithHorarios();
 
 }

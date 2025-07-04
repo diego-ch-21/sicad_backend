@@ -6,6 +6,7 @@ import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.dto.categoria.CategoriaDetalleResponse;
 import com.sicad.sicad_backend.dto.categoria.CategoriaResumenResponse;
 import com.sicad.sicad_backend.model.Categoria;
+import com.sicad.sicad_backend.service.impl.CategoriaServiceImpl;
 import com.sicad.sicad_backend.service.interfaces.ICategoriaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class CategoriaController {
 
     private final ICategoriaService service;
     private final ModelMapper modelMapper;
+    private final CategoriaServiceImpl categoriaService;
 
     @GetMapping("/listar")
     public ResponseEntity<GenericReponse<CategoriaDetalleResponse>> findAll() throws Exception {
@@ -50,6 +52,11 @@ public class CategoriaController {
                 new GenericReponse<>(201, "Categoría creada", List.of(convertToDetalle(obj))),
                 HttpStatus.CREATED
         );
+    }
+    @PostMapping("/insertar-all")
+    public ResponseEntity<GenericReponse<CategoriaDetalleResponse>> saveAll(@Valid @RequestBody List<CategoriaCreateRequest> lista) throws Exception {
+        GenericReponse<CategoriaDetalleResponse> response = categoriaService.saveAll(lista);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PutMapping("/actualizar/{id}")

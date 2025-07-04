@@ -1,6 +1,7 @@
 package com.sicad.sicad_backend.service.impl;
 
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
+import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioCreateRequest;
 import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioDetalleResponse;
 import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioUpdateRequest;
@@ -15,6 +16,9 @@ import com.sicad.sicad_backend.utils.CodigoGeneratorUtil;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -80,5 +84,21 @@ public class PlanDeEstudioServiceImpl extends CRUDImpl<PlanDeEstudio, Integer> i
 
         PlanDeEstudioDetalleResponse dto = modelMapper.map(plan, PlanDeEstudioDetalleResponse.class);
         return new GenericObjectResponse<>(200, "Plan de Estudio actualizado exitosamente", dto);
+    }
+    public GenericReponse<PlanDeEstudioDetalleResponse> registrarPlanesMultiples(List<PlanDeEstudioCreateRequest> requests) {
+        List<PlanDeEstudioDetalleResponse> registrados = new ArrayList<>();
+        int errorCount = 0;
+
+        for (PlanDeEstudioCreateRequest request : requests) {
+            GenericObjectResponse<PlanDeEstudioDetalleResponse> response = registrarPlan(request);
+            if (response.status() == 201 && response.data() != null) {
+                registrados.add(response.data());
+            } else {
+                errorCount++;
+            }
+        }
+
+        String mensaje = String.format("Planes registrados: %d. Fallidos: %d.", registrados.size(), errorCount);
+        return new GenericReponse<>(201, mensaje, registrados.isEmpty() ? null : registrados);
     }
 }

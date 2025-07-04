@@ -3,7 +3,8 @@ package com.sicad.sicad_backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.sql.Time;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -45,26 +46,11 @@ public class Curso {
     @Column(nullable = false, name = "grupo")
     private String grupo;
 
-    @Column(nullable = false, name = "tipo_sesion")
-    private String tipoSesion;
-
-    @Column(nullable = false, name = "dia_semana")
-    private String diaSemana;
-
-    @Column(name = "hora_inicio", nullable = false, columnDefinition = "TIME(6)")
-    private Time horaInicio;
-
-    @Column(name = "hora_fin", nullable = false, columnDefinition = "TIME(6)")
-    private Time horaFin;
-
-    @Column(nullable = false, name = "aula")
-    private String aula;
-
-    @Column(nullable = false, name = "duracion_horas")
-    private Integer duracionHoras;
-
     @Column(name = "carga")
     private Integer Carga;
+
+    @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<CursoHorario> cursoHorario = new ArrayList<>();
 
     @Column(nullable = false, name = "enabled")
     private Boolean enabled;

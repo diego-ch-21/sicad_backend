@@ -49,6 +49,11 @@ public class AsignaturaController {
         GenericObjectResponse<AsignaturaDetalleResponse> response = serviceImpl.registrarAsignatura(dto);
         return ResponseEntity.status(response.status()).body(response);
     }
+    @PostMapping("/insertar-all")
+    public ResponseEntity<GenericReponse<AsignaturaDetalleResponse>> registrarAll(@Valid @RequestBody List<AsignaturaCreateRequest> dto) {
+        GenericReponse<AsignaturaDetalleResponse> response = serviceImpl.registrarAsignaturasMultiples(dto);
+        return ResponseEntity.status(response.status()).body(response);
+    }
 
     @PutMapping("/actualizar/{id}")
     public ResponseEntity<GenericObjectResponse<AsignaturaDetalleResponse>> actualizar(@PathVariable("id") Integer id, @Valid @RequestBody AsignaturaUpdateRequest dto) {

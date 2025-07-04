@@ -14,11 +14,5 @@ public class CursoResumenResponse {
     private Integer idEscuela;
     private Integer idCicloAcademico;
     private String grupo;
-    private String tipoSesion;
-    private String diaSemana;
-    private String horaInicio;
-    private String horaFin;
-    private String aula;
-    private Integer duracionHoras;
     private boolean enabled;
 }

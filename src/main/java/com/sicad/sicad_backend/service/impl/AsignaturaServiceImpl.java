@@ -4,6 +4,7 @@ import com.sicad.sicad_backend.dto.asignatura.AsignaturaCreateRequest;
 import com.sicad.sicad_backend.dto.asignatura.AsignaturaDetalleResponse;
 import com.sicad.sicad_backend.dto.asignatura.AsignaturaUpdateRequest;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
+import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.model.Asignatura;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.IAsignaturaRepo;
@@ -13,6 +14,9 @@ import com.sicad.sicad_backend.utils.CodigoGeneratorUtil;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -62,4 +66,20 @@ public class AsignaturaServiceImpl
         AsignaturaDetalleResponse dto = modelMapper.map(asignatura, AsignaturaDetalleResponse.class);
         return new GenericObjectResponse<>(200, "Asignatura actualizada exitosamente", dto);
     }
+    public GenericReponse<AsignaturaDetalleResponse> registrarAsignaturasMultiples(List<AsignaturaCreateRequest> requests) {
+        List<AsignaturaDetalleResponse> registrados = new ArrayList<>();
+        int errores = 0;
+        for (AsignaturaCreateRequest request : requests) {
+            GenericObjectResponse<AsignaturaDetalleResponse> response = registrarAsignatura(request);
+            if (response.status() == 201 && response.data() != null) {
+                registrados.add(response.data());
+            } else {
+                errores++;
+            }
+        }
+
+        String mensaje = String.format("Asignaturas registradas: %d. Fallidos: %d.", registrados.size(), errores);
+        return new GenericReponse<>(201, mensaje, registrados.isEmpty() ? null : registrados);
+    }
+
 }

@@ -18,6 +18,5 @@ public class CursoUpdateRequest {
     private String diaSemana;
     private String horaInicio;
     private String horaFin;
-    private String aula;
     private Integer duracionHoras;
 }
