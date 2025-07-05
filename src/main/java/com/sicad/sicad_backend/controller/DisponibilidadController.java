@@ -5,6 +5,8 @@ import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadDetalleResponse;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadResumenResponse;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadUpdateRequest;
+import com.sicad.sicad_backend.dto.preferencia.PreferenciaCreateRequest;
+import com.sicad.sicad_backend.dto.preferencia.PreferenciaDetalleResponse;
 import com.sicad.sicad_backend.model.Disponibilidad;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadCreateRequest;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
@@ -58,6 +60,11 @@ public class DisponibilidadController {
             @Valid @RequestBody DisponibilidadCreateRequest request) {
         GenericObjectResponse<DisponibilidadDetalleResponse> response =
                 disponibilidadServiceImpl.registrarDisponibilidad(request);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+    @PostMapping("/insertar-all")
+    public ResponseEntity<GenericReponse<DisponibilidadDetalleResponse>> saveAll(@Valid @RequestBody List<DisponibilidadCreateRequest> requests){
+        GenericReponse<DisponibilidadDetalleResponse> response = disponibilidadServiceImpl.registrarVariosDisponiblidadAll(requests);
         return ResponseEntity.status(response.status()).body(response);
     }
 

@@ -1,10 +1,13 @@
 package com.sicad.sicad_backend.service.impl;
 
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
+import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadCreateRequest;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadDetalleResponse;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadResumenResponse;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadUpdateRequest;
+import com.sicad.sicad_backend.dto.preferencia.PreferenciaCreateRequest;
+import com.sicad.sicad_backend.dto.preferencia.PreferenciaDetalleResponse;
 import com.sicad.sicad_backend.model.CargaElectiva;
 import com.sicad.sicad_backend.model.Disponibilidad;
 import com.sicad.sicad_backend.model.Docente;
@@ -19,6 +22,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,6 +76,21 @@ public class DisponibilidadServiceImpl extends CRUDImpl<Disponibilidad, Integer>
         } catch (IllegalArgumentException e) {
             return new GenericObjectResponse<>(400, "Formato de hora inválido (debe ser HH:mm)", null);
         }
+    }
+    public GenericReponse<DisponibilidadDetalleResponse> registrarVariosDisponiblidadAll(List<DisponibilidadCreateRequest> requests){
+        List<DisponibilidadDetalleResponse> registrados = new ArrayList<>();
+        int errorCount = 0;
+
+        for(DisponibilidadCreateRequest request: requests){
+            GenericObjectResponse<DisponibilidadDetalleResponse>  response = registrarDisponibilidad(request);
+            if(response.status() == 201 || response.data() != null){
+                registrados.add(response.data());
+            } else {
+                errorCount++;
+            }
+        }
+        String mensaje = String.format("disponibilidad registrados: %d. Fallidos: %d.", registrados.size(), errorCount);
+        return new GenericReponse<>(200, mensaje, registrados);
     }
 
     public GenericObjectResponse<DisponibilidadDetalleResponse> actualizarDisponibilidad(Integer id, DisponibilidadUpdateRequest request) {
@@ -135,7 +154,6 @@ public class DisponibilidadServiceImpl extends CRUDImpl<Disponibilidad, Integer>
 
         return new GenericObjectResponse<>(200, "Lista obtenida correctamente", listaDTO);
     }
-
 
 
 }

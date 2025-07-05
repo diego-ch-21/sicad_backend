@@ -2,11 +2,9 @@ package com.sicad.sicad_backend.service.impl;
 
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.dto.curso.CursoDetalleResponse;
-import com.sicad.sicad_backend.dto.docente.DocenteCreateRequest;
+import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadResumenResponse;
+import com.sicad.sicad_backend.dto.docente.*;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.dto.docente.DocenteDetalleResponse;
-import com.sicad.sicad_backend.dto.docente.DocentePreferenciaResponse;
-import com.sicad.sicad_backend.dto.docente.DocenteUpdateRequest;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaDetalleResponse;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaResumenResponse;
 import com.sicad.sicad_backend.jwt.JwtService;
@@ -268,7 +266,7 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
 
         return new GenericReponse<>(201, mensaje, registrados);
     }
-
+    /*
     public GenericReponse<DocentePreferenciaResponse> listarDocentesPreferencia(Integer idCargaElectiva) {
         List<Docente> docentes = docenteRepo.findAllWithPreferenciasByCargaElectiva(idCargaElectiva);
 
@@ -282,6 +280,8 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
 
         return new GenericReponse<>(200, "Lista de docentes", responseList);
     }
+
+     */
     /*
     public GenericReponse<DocentePreferenciaResponse> listarDocentesConPreferencias() {
         List<Docente> docentes = docenteRepo.findAllWithDocentes();
@@ -298,7 +298,7 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
 
      */
     public GenericReponse<DocentePreferenciaResponse> listarDocentesConPreferencias(Integer idCargaElectiva) {
-        List<Docente> docentes = docenteRepo.findAllWithDocentes(); // trae docentes + preferencias
+        List<Docente> docentes = docenteRepo.findAllWithDocentesPreferencia(); // trae docentes + preferencias
 
         if(docentes.isEmpty()) {
             return new GenericReponse<>(200, "No se encontraron docentes", null);
@@ -317,6 +317,33 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
                             .toList();
 
                     dto.setPreferencias(preferenciasFiltradas);
+
+                    return dto;
+                })
+                .toList();
+
+        return new GenericReponse<>(200, "Lista de docentes con preferencias", responseList);
+    }
+    public GenericReponse<DocenteDisponibilidadResponse> listarDocentesConDisponibilidad(Integer idCargaElectiva) {
+        List<Docente> docentes = docenteRepo.findAllWithDocentesDisponibilidad(); // trae docentes + disponibilidad
+
+        if(docentes.isEmpty()) {
+            return new GenericReponse<>(200, "No se encontraron docentes", null);
+        }
+
+        List<DocenteDisponibilidadResponse> responseList = docentes.stream()
+                .map(docente -> {
+                    // Mapear entidad Docente a DTO
+                    DocenteDisponibilidadResponse dto = modelMapper.map(docente, DocenteDisponibilidadResponse.class);
+
+                    // Filtrar preferencias por idCargaElectiva
+                    List<DisponibilidadResumenResponse> disponibilidadFiltradas = docente.getDisponibilidad().stream()
+                            .filter(dis -> dis.getCargaElectiva() != null &&
+                                    dis.getCargaElectiva().getIdCargaElectiva().equals(idCargaElectiva))
+                            .map(dis -> modelMapper.map(dis, DisponibilidadResumenResponse.class))
+                            .toList();
+
+                    dto.setDisponibilidad(disponibilidadFiltradas);
 
                     return dto;
                 })

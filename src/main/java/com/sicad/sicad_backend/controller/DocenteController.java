@@ -2,11 +2,8 @@ package com.sicad.sicad_backend.controller;
 
 
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.dto.docente.DocenteDetalleResponse;
-import com.sicad.sicad_backend.dto.docente.DocentePreferenciaResponse;
-import com.sicad.sicad_backend.dto.docente.DocenteUpdateRequest;
+import com.sicad.sicad_backend.dto.docente.*;
 import com.sicad.sicad_backend.model.Docente;
-import com.sicad.sicad_backend.dto.docente.DocenteCreateRequest;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.service.impl.DocenteServiceImpl;
 import com.sicad.sicad_backend.service.interfaces.IDocenteService;
@@ -78,6 +75,11 @@ public class DocenteController {
     @GetMapping("/preferencias/{idCargaElectiva}")
     public ResponseEntity<GenericReponse<DocentePreferenciaResponse>>  docentesPreferencias(@PathVariable("idCargaElectiva") Integer id) throws Exception {
         GenericReponse<DocentePreferenciaResponse> response = serviceImpl.listarDocentesConPreferencias(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+    @GetMapping("/disponibilidades/{idCargaElectiva}")
+    public ResponseEntity<GenericReponse<DocenteDisponibilidadResponse>>  docentesDisponibilidad(@PathVariable("idCargaElectiva") Integer id) throws Exception {
+        GenericReponse<DocenteDisponibilidadResponse> response = serviceImpl.listarDocentesConDisponibilidad(id);
         return ResponseEntity.status(response.status()).body(response);
     }
 

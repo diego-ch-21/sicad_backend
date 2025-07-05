@@ -15,13 +15,9 @@ public interface IDocenteRepo extends IGenericRepo<Docente, Integer> {
     boolean existsByCodigo(String codigo);
     boolean existsByIdDocente(Integer idDocente);
 
-    @Query("""
-    SELECT DISTINCT d FROM Docente d
-    LEFT JOIN FETCH d.preferencias p
-    WHERE p.cargaElectiva.idCargaElectiva = :idCargaElectiva
-""")
-    List<Docente> findAllWithPreferenciasByCargaElectiva(@Param("idCargaElectiva") Integer idCargaElectiva);
-
     @Query("SELECT DISTINCT c FROM Docente c LEFT JOIN FETCH c.preferencias")
-    List<Docente> findAllWithDocentes();
+    List<Docente> findAllWithDocentesPreferencia();
+
+    @Query("SELECT DISTINCT c FROM Docente c LEFT JOIN FETCH c.disponibilidad")
+    List<Docente> findAllWithDocentesDisponibilidad();
 }
