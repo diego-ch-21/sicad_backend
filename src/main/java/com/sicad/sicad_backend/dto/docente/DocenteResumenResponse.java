@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DocenteResumenResponse {
     private Integer idDocente;
+    private String codigo;
     private UsuarioResumenResponse usuario;
 }

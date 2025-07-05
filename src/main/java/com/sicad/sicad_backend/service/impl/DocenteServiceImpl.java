@@ -1,5 +1,6 @@
 package com.sicad.sicad_backend.service.impl;
 
+import com.sicad.sicad_backend.dto.asignacion.AsignacionResumenResponse;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.dto.curso.CursoDetalleResponse;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadResumenResponse;
@@ -350,6 +351,34 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
                 .toList();
 
         return new GenericReponse<>(200, "Lista de docentes con preferencias", responseList);
+    }
+
+    public GenericReponse<DocenteAsignacionResponse> listarDocentesConAsingaciones(Integer idCargaElectiva) {
+        List<Docente> docentes = docenteRepo.findAllWithDocentesAsignacion(); // trae docentes + disponibilidad
+
+        if(docentes.isEmpty()) {
+            return new GenericReponse<>(200, "No se encontraron docentes", null);
+        }
+
+        List<DocenteAsignacionResponse> responseList = docentes.stream()
+                .map(docente -> {
+                    // Mapear entidad Docente a DTO
+                    DocenteAsignacionResponse dto = modelMapper.map(docente, DocenteAsignacionResponse.class);
+
+                    // Filtrar preferencias por idCargaElectiva
+                    List<AsignacionResumenResponse> asignacionFiltradas = docente.getAsignaciones().stream()
+                            .filter(asic -> asic.getCargaElectiva() != null &&
+                                    asic.getCargaElectiva().getIdCargaElectiva().equals(idCargaElectiva))
+                            .map(asic -> modelMapper.map(asic, AsignacionResumenResponse.class))
+                            .toList();
+
+                    dto.setAsignaciones(asignacionFiltradas);
+
+                    return dto;
+                })
+                .toList();
+
+        return new GenericReponse<>(200, "Lista de docentes con asignaciones", responseList);
     }
 
 

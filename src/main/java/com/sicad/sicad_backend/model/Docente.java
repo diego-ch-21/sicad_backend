@@ -52,6 +52,9 @@ public class Docente {
     @OneToMany(mappedBy = "docente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Disponibilidad> disponibilidad = new ArrayList<>();
 
+    @OneToMany(mappedBy = "docente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Asignacion> asignaciones = new ArrayList<>();
+
 
     @Column(nullable = false, name = "enabled")
     private boolean enabled;
