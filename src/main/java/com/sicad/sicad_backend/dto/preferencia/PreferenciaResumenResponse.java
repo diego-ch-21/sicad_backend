@@ -13,5 +13,6 @@ import lombok.NoArgsConstructor;
 public class PreferenciaResumenResponse {
     private Integer idPreferencia;
     private AsignaturaResumenResponse asignatura;
+    //private CargaElectivaResumenResponse cargaElectiva;
     private boolean enabled;
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.sicad.sicad_backend.dto.categoria.CategoriaResumenResponse;
 import com.sicad.sicad_backend.dto.dedicacion.DedicacionResumenResponse;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaDetalleResponse;
+import com.sicad.sicad_backend.dto.preferencia.PreferenciaResumenResponse;
 import com.sicad.sicad_backend.dto.usuario.UsuarioDTO;
 import com.sicad.sicad_backend.dto.usuario.UsuarioResumenResponse;
 import lombok.AllArgsConstructor;
@@ -20,7 +21,6 @@ import java.util.List;
 public class DocentePreferenciaResponse {
     private Integer idDocente;
     private UsuarioResumenResponse usuario;
-    private DedicacionResumenResponse dedicacion;
-    private List<PreferenciaDetalleResponse> preferencias;
+    private List<PreferenciaResumenResponse> preferencias;
     private boolean enabled;
 }

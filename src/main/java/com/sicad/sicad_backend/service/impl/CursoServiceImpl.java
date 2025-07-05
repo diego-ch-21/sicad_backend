@@ -42,6 +42,9 @@ public class CursoServiceImpl
 
     public GenericReponse<CursoDetalleResponse> listarCursosConHorarios() {
         List<Curso> cursos = cursoRepo.findAllWithHorarios();
+        if(cursos.isEmpty()) {
+            return new GenericReponse<>(200, "No se encontraron cursos", null);
+        }
 
         List<CursoDetalleResponse> responseList = cursos.stream()
                 .map(curso -> modelMapper.map(curso, CursoDetalleResponse.class))

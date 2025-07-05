@@ -6,6 +6,8 @@ import lombok.*;
 import java.sql.Date;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -43,6 +45,9 @@ public class Docente {
 
     @Column(name = "tiene_permiso_exceso")
     private Boolean tienePermisoExceso;
+
+    @OneToMany(mappedBy = "docente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Preferencia> preferencias = new ArrayList<>();
 
     @Column(nullable = false, name = "enabled")
     private boolean enabled;

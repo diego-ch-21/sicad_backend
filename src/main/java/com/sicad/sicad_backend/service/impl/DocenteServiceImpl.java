@@ -1,10 +1,14 @@
 package com.sicad.sicad_backend.service.impl;
 
 import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.dto.curso.CursoDetalleResponse;
 import com.sicad.sicad_backend.dto.docente.DocenteCreateRequest;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.docente.DocenteDetalleResponse;
+import com.sicad.sicad_backend.dto.docente.DocentePreferenciaResponse;
 import com.sicad.sicad_backend.dto.docente.DocenteUpdateRequest;
+import com.sicad.sicad_backend.dto.preferencia.PreferenciaDetalleResponse;
+import com.sicad.sicad_backend.dto.preferencia.PreferenciaResumenResponse;
 import com.sicad.sicad_backend.jwt.JwtService;
 import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
@@ -18,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -264,7 +269,61 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         return new GenericReponse<>(201, mensaje, registrados);
     }
 
+    public GenericReponse<DocentePreferenciaResponse> listarDocentesPreferencia(Integer idCargaElectiva) {
+        List<Docente> docentes = docenteRepo.findAllWithPreferenciasByCargaElectiva(idCargaElectiva);
 
+        if (docentes.isEmpty()) {
+            return new GenericReponse<>(200, "No se encontraron docentes", null);
+        }
+
+        List<DocentePreferenciaResponse> responseList = docentes.stream()
+                .map(docente -> modelMapper.map(docente, DocentePreferenciaResponse.class))
+                .toList();
+
+        return new GenericReponse<>(200, "Lista de docentes", responseList);
+    }
+    /*
+    public GenericReponse<DocentePreferenciaResponse> listarDocentesConPreferencias() {
+        List<Docente> docentes = docenteRepo.findAllWithDocentes();
+        if(docentes.isEmpty()) {
+            return new GenericReponse<>(200, "No se encontraron docentes", null);
+        }
+
+        List<DocentePreferenciaResponse> responseList = docentes.stream()
+                .map(docente -> modelMapper.map(docente, DocentePreferenciaResponse.class))
+                .toList();
+
+        return new GenericReponse<>(200, "Lista de docentes", responseList);
+    }
+
+     */
+    public GenericReponse<DocentePreferenciaResponse> listarDocentesConPreferencias(Integer idCargaElectiva) {
+        List<Docente> docentes = docenteRepo.findAllWithDocentes(); // trae docentes + preferencias
+
+        if(docentes.isEmpty()) {
+            return new GenericReponse<>(200, "No se encontraron docentes", null);
+        }
+
+        List<DocentePreferenciaResponse> responseList = docentes.stream()
+                .map(docente -> {
+                    // Mapear entidad Docente a DTO
+                    DocentePreferenciaResponse dto = modelMapper.map(docente, DocentePreferenciaResponse.class);
+
+                    // Filtrar preferencias por idCargaElectiva
+                    List<PreferenciaResumenResponse> preferenciasFiltradas = docente.getPreferencias().stream()
+                            .filter(pref -> pref.getCargaElectiva() != null &&
+                                    pref.getCargaElectiva().getIdCargaElectiva().equals(idCargaElectiva))
+                            .map(pref -> modelMapper.map(pref, PreferenciaResumenResponse.class))
+                            .toList();
+
+                    dto.setPreferencias(preferenciasFiltradas);
+
+                    return dto;
+                })
+                .toList();
+
+        return new GenericReponse<>(200, "Lista de docentes con preferencias", responseList);
+    }
 
 
     private DocenteDetalleResponse convertToResponseDTO(Docente obj) {
