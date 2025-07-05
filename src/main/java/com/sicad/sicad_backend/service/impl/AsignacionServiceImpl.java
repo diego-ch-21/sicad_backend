@@ -9,6 +9,7 @@ import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.*;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.IAsignacionService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -91,4 +92,20 @@ public class AsignacionServiceImpl
             return new GenericObjectResponse<>(400, "Conflicto de unicidad: ya existe una asignación para este docente y horario", null);
         }
     }
+
+    @Transactional
+    public GenericObjectResponse<String> eliminarAsignacionesPorCargaElectiva(Integer idCargaElectiva) {
+        CargaElectiva carga = cargaElectivaRepo.findById(idCargaElectiva).orElse(null);
+        if (carga == null) {
+            return new GenericObjectResponse<>(404, "Carga Electiva no encontrada", null);
+        }
+
+        int eliminados = asignacionRepo.deleteByCargaElectiva_IdCargaElectiva(idCargaElectiva);
+
+        String mensaje = "Se eliminaron " + eliminados + " asignación(es) para la carga electiva ID: " + idCargaElectiva;
+        return new GenericObjectResponse<>(200, mensaje, null);
+    }
+
+
+
 }

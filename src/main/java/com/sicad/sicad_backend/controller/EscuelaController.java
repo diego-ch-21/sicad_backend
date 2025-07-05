@@ -2,6 +2,8 @@ package com.sicad.sicad_backend.controller;
 
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.dto.curso.CursoCreateRequest;
+import com.sicad.sicad_backend.dto.curso.CursoDetalleResponse;
 import com.sicad.sicad_backend.dto.escuela.EscuelaCreateRequest;
 import com.sicad.sicad_backend.dto.escuela.EscuelaDetalleResponse;
 import com.sicad.sicad_backend.dto.escuela.EscuelaUpdateRequest;
@@ -49,6 +51,11 @@ public class EscuelaController {
     @PostMapping("/insertar")
     public ResponseEntity<GenericObjectResponse<EscuelaDetalleResponse>> registrar(@Valid @RequestBody EscuelaCreateRequest request) {
         GenericObjectResponse<EscuelaDetalleResponse> response = serviceImpl.registrarEscuela(request);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+    @PostMapping("/insertar-all")
+    public ResponseEntity<GenericReponse<EscuelaDetalleResponse>> saveAll(@Valid @RequestBody List<EscuelaCreateRequest> request) {
+        GenericReponse<EscuelaDetalleResponse> response = serviceImpl.registrarEscuelaMultiples(request);
         return ResponseEntity.status(response.status()).body(response);
     }
 

@@ -59,4 +59,10 @@ public class AsignacionController {
     private AsignacionDetalleResponse convertToDTO(Asignacion obj) {
         return modelMapper.map(obj, AsignacionDetalleResponse.class);
     }
+
+    @DeleteMapping("/eliminar/{idCargaElectiva}")
+    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idCargaElectiva") Integer id) {
+        GenericObjectResponse<String> response = asignacionServiceImpl.eliminarAsignacionesPorCargaElectiva(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
 }

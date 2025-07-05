@@ -1,6 +1,9 @@
 package com.sicad.sicad_backend.service.impl;
 
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
+import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.dto.curso.CursoCreateRequest;
+import com.sicad.sicad_backend.dto.curso.CursoDetalleResponse;
 import com.sicad.sicad_backend.dto.escuela.EscuelaCreateRequest;
 import com.sicad.sicad_backend.dto.escuela.EscuelaDetalleResponse;
 import com.sicad.sicad_backend.dto.escuela.EscuelaUpdateRequest;
@@ -15,6 +18,9 @@ import com.sicad.sicad_backend.utils.CodigoGeneratorUtil;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -56,6 +62,22 @@ public class EscuelaServiceImpl
 
         EscuelaDetalleResponse dto = modelMapper.map(escuela, EscuelaDetalleResponse.class);
         return new GenericObjectResponse<>(201, "Escuela registrada exitosamente", dto);
+    }
+    public GenericReponse<EscuelaDetalleResponse> registrarEscuelaMultiples(List<EscuelaCreateRequest> requests) {
+        List<EscuelaDetalleResponse> registrados = new ArrayList<>();
+        int errorCount = 0;
+
+        for (EscuelaCreateRequest request : requests) {
+            GenericObjectResponse<EscuelaDetalleResponse> response = registrarEscuela(request);
+            if (response.status() == 201 && response.data() != null) {
+                registrados.add(response.data());
+            } else {
+                errorCount++;
+            }
+        }
+
+        String mensaje = String.format("Cursos registrados: %d. Fallidos: %d.", registrados.size(), errorCount);
+        return new GenericReponse<>(201, mensaje,registrados);
     }
 
     public GenericObjectResponse<EscuelaDetalleResponse> actualizarEscuela(Integer idEscuela, EscuelaUpdateRequest request) {
