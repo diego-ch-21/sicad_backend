@@ -145,11 +145,13 @@ public class SolucionAsignacion {
             List<Integer> candidatos = new ArrayList<>();
 
             for (Docente docente : docentes) {
-                // Verificar si el docente no excede las 12 horas
+                // Verificar si el docente no excede sus horas máximas específicas
                 int horasActuales = getHorasTotalesDocente(docente.getIdDocente());
                 int horasCurso = getHorasCurso(curso.getIdCurso());
+                int horasMaximas = docente.getHorasMaxLectivas() != null ?
+                        docente.getHorasMaxLectivas() : 12;
 
-                if (horasActuales + horasCurso <= 12) {
+                if (horasActuales + horasCurso <= horasMaximas) {
                     candidatos.add(docente.getIdDocente());
                 }
             }
@@ -208,7 +210,16 @@ public class SolucionAsignacion {
                             .filter(idDocente -> {
                                 int horasActuales = getHorasTotalesDocente(idDocente);
                                 int horasCurso = getHorasCurso(idCurso);
-                                return horasActuales + horasCurso <= 12;
+
+                                // Obtener docente específico para sus horas máximas
+                                Docente docente = docentes.stream()
+                                        .filter(d -> d.getIdDocente().equals(idDocente))
+                                        .findFirst().orElse(null);
+
+                                int horasMaximas = (docente != null && docente.getHorasMaxLectivas() != null) ?
+                                        docente.getHorasMaxLectivas() : 12;
+
+                                return horasActuales + horasCurso <= horasMaximas;
                             })
                             .toList();
 

@@ -1,5 +1,4 @@
 package com.sicad.sicad_backend.algorithm.service;
-
 import com.sicad.sicad_backend.algorithm.genetic.GeneticAlgorithm;
 import com.sicad.sicad_backend.algorithm.model.SolucionAsignacion;
 import com.sicad.sicad_backend.algorithm.pso.PSOAlgorithm;
@@ -15,6 +14,7 @@ import java.util.stream.Collectors;
 /**
  * Servicio principal que orquesta la ejecución del algoritmo híbrido GA+PSO
  * para la asignación óptima de docentes a cursos
+ * ACTUALIZADO: Solo considera horasMaxLectivas como restricción dura
  */
 @Slf4j
 @Service
@@ -39,18 +39,19 @@ public class AlgoritmoAsignacionService {
 
     /**
      * Ejecuta el algoritmo híbrido completo para generar asignaciones óptimas
+     * ACTUALIZADO: Solo considera horasMaxLectivas, no dedicación
      */
     public List<Asignacion> ejecutarAlgoritmoHibrido(List<Docente> docentes, List<Curso> cursos,
                                                      CargaElectiva cargaElectiva,
                                                      Map<Integer, List<Disponibilidad>> disponibilidadPorDocente,
                                                      Map<Integer, List<Preferencia>> preferenciasPorDocente) {
 
-        log.info("=== INICIANDO ALGORITMO HÍBRIDO GA+PSO ===");
+        log.info("=== INICIANDO ALGORITMO HÍBRIDO GA+PSO (SIN RESTRICCIONES DE DEDICACIÓN) ===");
         log.info("Docentes: {}, Cursos: {}, Carga Electiva: {}",
                 docentes.size(), cursos.size(), cargaElectiva.getNombre());
 
         try {
-            // 1. Inicialización del validador de restricciones
+            // 1. Inicialización del validador de restricciones (actualizado)
             RestriccionValidator validator = new RestriccionValidator(
                     docentes, cursos, disponibilidadPorDocente, preferenciasPorDocente, cargaElectiva);
 
@@ -121,6 +122,7 @@ public class AlgoritmoAsignacionService {
 
     /**
      * Genera una población inicial diversa usando diferentes estrategias
+     * ACTUALIZADO: Solo considera horasMaxLectivas
      */
     private List<SolucionAsignacion> generarPoblacionInicial(List<Docente> docentes, List<Curso> cursos,
                                                              RestriccionValidator validator, int tamaño) {
@@ -312,6 +314,7 @@ public class AlgoritmoAsignacionService {
 
     /**
      * Métodos auxiliares de utilidad
+     * ACTUALIZADO: Solo considera horasMaxLectivas como restricción dura
      */
     private boolean tienePreferenciaPorCurso(Docente docente, Curso curso) {
         // Implementar lógica de verificación de preferencias
@@ -321,7 +324,7 @@ public class AlgoritmoAsignacionService {
 
     private boolean puedeAsignarCurso(SolucionAsignacion solucion, Docente docente, Curso curso) {
         // Verificar si el docente puede tomar el curso considerando:
-        // 1. Horas máximas no excedidas
+        // 1. Horas máximas no excedidas (ÚNICA RESTRICCIÓN DE HORAS)
         // 2. Disponibilidad horaria
         // 3. No conflictos de horario
 
@@ -330,6 +333,7 @@ public class AlgoritmoAsignacionService {
                 .mapToInt(CursoHorario::getDuracionHoras)
                 .sum();
 
+        // Usar horasMaxLectivas específicas del docente
         int horasMaximas = docente.getHorasMaxLectivas() != null ?
                 docente.getHorasMaxLectivas() : 12;
 
@@ -344,9 +348,10 @@ public class AlgoritmoAsignacionService {
 
     /**
      * Registra estadísticas finales de la ejecución
+     * ACTUALIZADO: Menciona solo restricción de horasMaxLectivas
      */
     private void logearEstadisticasFinales(SolucionAsignacion mejorSolucion, List<Docente> docentes, List<Curso> cursos) {
-        log.info("=== ESTADÍSTICAS FINALES ===");
+        log.info("=== ESTADÍSTICAS FINALES (SOLO RESTRICCIÓN: horasMaxLectivas) ===");
         log.info("Fitness final: {:.2f}", mejorSolucion.getFitness());
         log.info("Cursos asignados: {}/{}", mejorSolucion.getCursosAsignados(), cursos.size());
         log.info("Cursos sin asignar: {}", mejorSolucion.getCursosSinAsignar());
@@ -365,9 +370,11 @@ public class AlgoritmoAsignacionService {
                 Docente docente = docenteOpt.get();
                 int horas = mejorSolucion.getHorasTotalesDocente(idDocente);
                 int cursosAsignados = mejorSolucion.getCursosDeDocente(idDocente).size();
+                int horasMaximas = docente.getHorasMaxLectivas() != null ?
+                        docente.getHorasMaxLectivas() : 12;
 
-                log.info("Docente {}: {} horas, {} cursos",
-                        docente.getCodigo(), horas, cursosAsignados);
+                log.info("Docente {}: {} horas (máx: {}), {} cursos",
+                        docente.getCodigo(), horas, horasMaximas, cursosAsignados);
             }
         }
     }

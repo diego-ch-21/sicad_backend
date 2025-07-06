@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/asignacion")
@@ -99,6 +100,48 @@ public class AsignacionController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new GenericObjectResponse<>(500,
                             "Error interno del servidor en algoritmo híbrido: " + e.getMessage(), null));
+        }
+    }
+    // ENDPOINT PARA OBTENER ESTADÍSTICAS DETALLADAS DEL ALGORITMO
+    @GetMapping("/algoritmo/estadisticas/{idCargaElectiva}")
+    public ResponseEntity<GenericObjectResponse<Map<String, Object>>> obtenerEstadisticasAsignacion(
+            @PathVariable("idCargaElectiva") Integer idCargaElectiva) {
+
+        try {
+            System.out.println("Solicitud de estadísticas de asignación para carga electiva: " + idCargaElectiva);
+
+            // Llamar al service para obtener estadísticas completas
+            GenericObjectResponse<Map<String, Object>> response =
+                    asignacionServiceImpl.obtenerEstadisticasAsignacion(idCargaElectiva);
+
+            // System.out.println del resultado según el status
+            if (response.status() == 200) {
+                Map<String, Object> estadisticas = response.data();
+                if (estadisticas != null) {
+                    System.out.println("Estadísticas generadas exitosamente:");
+                    System.out.println("   • Total cursos: " + estadisticas.get("totalCursos"));
+                    System.out.println("   • Cursos asignados: " + estadisticas.get("cursosAsignados"));
+                    System.out.println("   • Docentes utilizados: " + estadisticas.get("docentesUtilizados"));
+                    System.out.println("   • Cobertura: " + String.format("%.1f", (Double) estadisticas.get("porcentajeCobertura")) + "%");
+                }
+            } else {
+                System.out.println("Error al generar estadísticas - Status: " + response.status() + " - " + response.message());
+            }
+
+            return ResponseEntity.status(response.status()).body(response);
+
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error de validación en estadísticas: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new GenericObjectResponse<>(400,
+                            "Error de validación: " + e.getMessage(), null));
+
+        } catch (Exception e) {
+            System.out.println("Error crítico al obtener estadísticas para carga electiva " + idCargaElectiva + ": " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new GenericObjectResponse<>(500,
+                            "Error interno del servidor al obtener estadísticas: " + e.getMessage(), null));
         }
     }
 }

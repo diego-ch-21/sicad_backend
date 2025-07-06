@@ -18,6 +18,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,6 +35,8 @@ public class AsignacionServiceImpl
     private final IPreferenciaRepo preferenciaRepo;
     private final IDisponibilidadRepo disponibilidadRepo;
     private final ModelMapper modelMapper;
+    // Nuevo servicio del algoritmo
+    private final AlgoritmoAsignacionService algoritmoService;
 
     @Override
     protected IGenericRepo<Asignacion, Integer> getRepo() {
@@ -112,10 +115,11 @@ public class AsignacionServiceImpl
         return new GenericObjectResponse<>(200, mensaje, null);
     }
     //------------------------------------------------------------------------------------------------------
-    // NUEVO MÉTODO PARA EL ALGORITMO GENÉTICO + PSO
+
     @Transactional
     public GenericObjectResponse<List<AsignacionDetalleResponse>> asignarConAlgoritmoGeneticoPSO(Integer idCargaElectiva) {
-        System.out.println("Iniciando asignación con algoritmo genético + PSO para carga electiva: " + idCargaElectiva);
+        System.out.println("=== Iniciando asignación con algoritmo genético + PSO para carga electiva: " + idCargaElectiva + " ===");
+
         try {
             // 1. Validaciones iniciales
             CargaElectiva cargaElectiva = cargaElectivaRepo.findById(idCargaElectiva).orElse(null);
@@ -134,37 +138,328 @@ public class AsignacionServiceImpl
             if (cursos.isEmpty()) {
                 return new GenericObjectResponse<>(400, "No hay cursos para el ciclo académico de esta carga electiva", null);
             }
-            System.out.println("Datos recolectados - Docentes: " + docentes.size() + ", Cursos: " + cursos.size());
 
-            // 3. Eliminar asignaciones anteriores para esta carga electiva
+            // 3. Preparar datos para el algoritmo
+            Map<Integer, List<Disponibilidad>> disponibilidadPorDocente = prepararDisponibilidad(docentes, idCargaElectiva);
+            Map<Integer, List<Preferencia>> preferenciasPorDocente = prepararPreferencias(docentes, idCargaElectiva);
+
+            System.out.println("=== Datos preparados - Docentes: " + docentes.size() + ", Cursos: " + cursos.size() + " ===");
+            logearLimitesDocentes(docentes);
+
+            // 4. Eliminar asignaciones anteriores para esta carga electiva
             asignacionRepo.deleteByCargaElectiva_IdCargaElectiva(idCargaElectiva);
             System.out.println("Asignaciones anteriores eliminadas");
 
-            // 4. Ejecutar algoritmo híbrido
-            List<Asignacion> asignacionesOptimas = ejecutarAlgoritmoHibrido(docentes, cursos, cargaElectiva);
+            // 5. Ejecutar algoritmo híbrido avanzado
+            List<Asignacion> asignacionesOptimas = algoritmoService.ejecutarAlgoritmoHibrido(
+                    docentes, cursos, cargaElectiva, disponibilidadPorDocente, preferenciasPorDocente);
 
-            // 5. Validar y guardar resultados
+            // 6. Validar y guardar resultados
             if (asignacionesOptimas.isEmpty()) {
-                return new GenericObjectResponse<>(400, "No se pudieron generar asignaciones válidas", null);
+                return new GenericObjectResponse<>(400, "No se pudieron generar asignaciones válidas con el algoritmo", null);
             }
 
-            // 6. Persistir las asignaciones
+            // 7. Persistir las asignaciones
             List<Asignacion> asignacionesGuardadas = asignacionRepo.saveAll(asignacionesOptimas);
             System.out.println("Asignaciones guardadas: " + asignacionesGuardadas.size());
 
-            // 7. Convertir a DTOs
+            // 8. Convertir a DTOs
             List<AsignacionDetalleResponse> response = asignacionesGuardadas.stream()
                     .map(asignacion -> modelMapper.map(asignacion, AsignacionDetalleResponse.class))
                     .collect(Collectors.toList());
 
-            // 8. Generar resumen de resultados
-            String resumen = generarResumenAsignaciones(asignacionesGuardadas, docentes, cursos);
+            // 9. Generar resumen de resultados
+            String resumen = generarResumenAlgoritmoAvanzado(asignacionesGuardadas, docentes, cursos);
 
             return new GenericObjectResponse<>(201, resumen, response);
 
         } catch (Exception e) {
-            System.out.println("Error en asignación con algoritmo: " + e.getMessage());
-            return new GenericObjectResponse<>(500, "Error interno: " + e.getMessage(), null);
+            System.out.println("Error en asignación con algoritmo híbrido: " + e.getMessage());
+            return new GenericObjectResponse<>(500, "Error interno en algoritmo híbrido: " + e.getMessage(), null);
+        }
+    }
+
+    /**
+     * Prepara el mapa de disponibilidad por docente
+     */
+    private Map<Integer, List<Disponibilidad>> prepararDisponibilidad(List<Docente> docentes, Integer idCargaElectiva) {
+        Map<Integer, List<Disponibilidad>> mapa = new HashMap<>();
+
+        for (Docente docente : docentes) {
+            List<Disponibilidad> disponibilidades = disponibilidadRepo.buscarPorDocenteYCargaElectiva(
+                    docente.getIdDocente(), idCargaElectiva);
+            mapa.put(docente.getIdDocente(), disponibilidades);
+        }
+
+        return mapa;
+    }
+
+    /**
+     * Prepara el mapa de preferencias por docente
+     */
+    private Map<Integer, List<Preferencia>> prepararPreferencias(List<Docente> docentes, Integer idCargaElectiva) {
+        Map<Integer, List<Preferencia>> mapa = new HashMap<>();
+
+        for (Docente docente : docentes) {
+            List<Preferencia> preferencias = preferenciaRepo.buscarPorDocenteYCargaElectiva(
+                    docente.getIdDocente(), idCargaElectiva);
+            mapa.put(docente.getIdDocente(), preferencias);
+        }
+
+        return mapa;
+    }
+
+    /**
+     * Loggea los límites de horas máximas por docente
+     */
+    private void logearLimitesDocentes(List<Docente> docentes) {
+        System.out.println("=== LÍMITES DE HORAS POR DOCENTE ===");
+        for (Docente docente : docentes) {
+            int horasMaximas = docente.getHorasMaxLectivas() != null ?
+                    docente.getHorasMaxLectivas() : 12;
+            System.out.println("Docente " + docente.getCodigo() + ": máximo " + horasMaximas + " horas");
+        }
+    }
+
+    /**
+     * Genera resumen detallado del algoritmo avanzado
+     * ACTUALIZADO: Solo menciona restricción de horasMaxLectivas
+     */
+    private String generarResumenAlgoritmoAvanzado(List<Asignacion> asignaciones, List<Docente> docentes, List<Curso> cursos) {
+        int cursosAsignados = asignaciones.size();
+        int cursosSinAsignar = cursos.size() - cursosAsignados;
+
+        // Calcular docentes utilizados
+        Set<Integer> docentesUtilizados = asignaciones.stream()
+                .map(a -> a.getDocente().getIdDocente())
+                .collect(Collectors.toSet());
+
+        // Calcular distribución de horas
+        Map<Integer, Integer> horasPorDocente = new HashMap<>();
+        for (Asignacion asignacion : asignaciones) {
+            Integer idDocente = asignacion.getDocente().getIdDocente();
+            int horas = asignacion.getCurso().getCursoHorario().stream()
+                    .mapToInt(CursoHorario::getDuracionHoras)
+                    .sum();
+            horasPorDocente.merge(idDocente, horas, Integer::sum);
+        }
+
+        // Calcular estadísticas de carga
+        OptionalDouble promedioHoras = horasPorDocente.values().stream()
+                .mapToInt(Integer::intValue)
+                .average();
+
+        int maxHoras = horasPorDocente.values().stream()
+                .mapToInt(Integer::intValue)
+                .max().orElse(0);
+
+        int minHoras = horasPorDocente.values().stream()
+                .mapToInt(Integer::intValue)
+                .min().orElse(0);
+
+        // Contar preferencias satisfechas
+        long preferenciasSatisfechas = asignaciones.stream()
+                .filter(this::verificarPreferenciaSatisfecha)
+                .count();
+
+        double porcentajePreferencias = asignaciones.isEmpty() ? 0.0 :
+                (double) preferenciasSatisfechas / asignaciones.size() * 100.0;
+
+        // Verificar docentes que exceden límites
+        long docentesExcedidos = horasPorDocente.entrySet().stream()
+                .filter(entry -> {
+                    Docente docente = docentes.stream()
+                            .filter(d -> d.getIdDocente().equals(entry.getKey()))
+                            .findFirst().orElse(null);
+                    if (docente != null) {
+                        int limite = docente.getHorasMaxLectivas() != null ?
+                                docente.getHorasMaxLectivas() : 12;
+                        return entry.getValue() > limite;
+                    }
+                    return false;
+                })
+                .count();
+
+        return String.format(
+                "🤖 ALGORITMO HÍBRIDO GA+PSO COMPLETADO 🤖\n" +
+                        "🔒 RESTRICCIÓN: Solo horasMaxLectivas por docente\n" +
+                        "📊 RESULTADOS:\n" +
+                        "  • Cursos asignados: %d/%d (%.1f%%)\n" +
+                        "  • Cursos sin asignar: %d\n" +
+                        "  • Docentes utilizados: %d/%d (%.1f%%)\n" +
+                        "  • Preferencias satisfechas: %.1f%%\n" +
+                        "📈 DISTRIBUCIÓN DE CARGA:\n" +
+                        "  • Promedio horas/docente: %.1f\n" +
+                        "  • Máximo horas: %d\n" +
+                        "  • Mínimo horas: %d\n" +
+                        "⚠️  • Docentes que exceden límite: %d\n" +
+                        "✅ Optimización completada respetando horasMaxLectivas individuales",
+                cursosAsignados, cursos.size(), (double) cursosAsignados / cursos.size() * 100.0,
+                cursosSinAsignar,
+                docentesUtilizados.size(), docentes.size(), (double) docentesUtilizados.size() / docentes.size() * 100.0,
+                porcentajePreferencias,
+                promedioHoras.orElse(0.0),
+                maxHoras,
+                minHoras,
+                docentesExcedidos
+        );
+    }
+
+    /**
+     * Verifica si una asignación satisface las preferencias del docente
+     */
+    private boolean verificarPreferenciaSatisfecha(Asignacion asignacion) {
+        List<Preferencia> preferencias = preferenciaRepo.buscarPorDocenteYCargaElectiva(
+                asignacion.getDocente().getIdDocente(),
+                asignacion.getCargaElectiva().getIdCargaElectiva());
+
+        return preferencias.stream()
+                .anyMatch(pref -> pref.getAsignatura().getIdAsignatura()
+                        .equals(asignacion.getCurso().getAsignatura().getIdAsignatura()));
+    }
+
+    /**
+     * Obtiene estadísticas detalladas de las asignaciones para una carga electiva
+     * ACTUALIZADO: Solo considera horasMaxLectivas
+     */
+    public GenericObjectResponse<Map<String, Object>> obtenerEstadisticasAsignacion(Integer idCargaElectiva) {
+        try {
+            // Validar carga electiva
+            CargaElectiva cargaElectiva = cargaElectivaRepo.findById(idCargaElectiva).orElse(null);
+            if (cargaElectiva == null) {
+                return new GenericObjectResponse<>(404, "Carga Electiva no encontrada", null);
+            }
+
+            // Obtener asignaciones actuales
+            List<Asignacion> asignaciones = asignacionRepo.findAll().stream()
+                    .filter(a -> a.getCargaElectiva().getIdCargaElectiva().equals(idCargaElectiva))
+                    .filter(Asignacion::getEnabled)
+                    .collect(Collectors.toList());
+
+            // Obtener datos de contexto
+            List<Docente> docentesDisponibles = obtenerDocentesDisponibles(idCargaElectiva);
+            List<Curso> cursosDelCiclo = obtenerCursosPorCiclo(cargaElectiva.getCicloAcademico().getIdCicloAcademico());
+
+            // Calcular estadísticas
+            Map<String, Object> estadisticas = new HashMap<>();
+
+            // Estadísticas básicas
+            estadisticas.put("totalCursos", cursosDelCiclo.size());
+            estadisticas.put("cursosAsignados", asignaciones.size());
+            estadisticas.put("cursosSinAsignar", cursosDelCiclo.size() - asignaciones.size());
+            estadisticas.put("porcentajeCobertura", cursosDelCiclo.isEmpty() ? 0.0 :
+                    (double) asignaciones.size() / cursosDelCiclo.size() * 100.0);
+
+            // Estadísticas de docentes
+            Set<Integer> docentesUtilizados = asignaciones.stream()
+                    .map(a -> a.getDocente().getIdDocente())
+                    .collect(Collectors.toSet());
+
+            estadisticas.put("totalDocentesDisponibles", docentesDisponibles.size());
+            estadisticas.put("docentesUtilizados", docentesUtilizados.size());
+            estadisticas.put("docentesSinAsignar", docentesDisponibles.size() - docentesUtilizados.size());
+
+            // Distribución de carga por docente
+            Map<String, Integer> cargaPorDocente = new HashMap<>();
+            Map<Integer, Integer> horasPorDocente = new HashMap<>();
+            Map<String, String> limitesDocente = new HashMap<>();
+
+            for (Asignacion asignacion : asignaciones) {
+                String codigoDocente = asignacion.getDocente().getCodigo();
+                Integer idDocente = asignacion.getDocente().getIdDocente();
+
+                int horas = asignacion.getCurso().getCursoHorario().stream()
+                        .mapToInt(CursoHorario::getDuracionHoras)
+                        .sum();
+
+                cargaPorDocente.merge(codigoDocente, horas, Integer::sum);
+                horasPorDocente.merge(idDocente, horas, Integer::sum);
+
+                // Agregar límite del docente
+                int limite = asignacion.getDocente().getHorasMaxLectivas() != null ?
+                        asignacion.getDocente().getHorasMaxLectivas() : 12;
+                limitesDocente.put(codigoDocente, horas + "/" + limite + " horas");
+            }
+
+            estadisticas.put("distribucionCarga", cargaPorDocente);
+            estadisticas.put("limitesDocentes", limitesDocente);
+
+            // Estadísticas de horas
+            if (!horasPorDocente.isEmpty()) {
+                OptionalDouble promedioHoras = horasPorDocente.values().stream()
+                        .mapToInt(Integer::intValue)
+                        .average();
+
+                int maxHoras = horasPorDocente.values().stream()
+                        .mapToInt(Integer::intValue)
+                        .max().orElse(0);
+
+                int minHoras = horasPorDocente.values().stream()
+                        .mapToInt(Integer::intValue)
+                        .min().orElse(0);
+
+                estadisticas.put("promedioHorasPorDocente", promedioHoras.orElse(0.0));
+                estadisticas.put("maximoHoras", maxHoras);
+                estadisticas.put("minimoHoras", minHoras);
+            }
+
+            // Análisis de violaciones de límites
+            List<String> docentesExcedidos = new ArrayList<>();
+            for (Map.Entry<Integer, Integer> entry : horasPorDocente.entrySet()) {
+                Docente docente = docentesDisponibles.stream()
+                        .filter(d -> d.getIdDocente().equals(entry.getKey()))
+                        .findFirst().orElse(null);
+
+                if (docente != null) {
+                    int limite = docente.getHorasMaxLectivas() != null ?
+                            docente.getHorasMaxLectivas() : 12;
+                    if (entry.getValue() > limite) {
+                        docentesExcedidos.add(String.format("%s: %d/%d horas",
+                                docente.getCodigo(), entry.getValue(), limite));
+                    }
+                }
+            }
+            estadisticas.put("docentesQueExcedenLimite", docentesExcedidos);
+
+            // Análisis de preferencias
+            long preferenciasSatisfechas = asignaciones.stream()
+                    .filter(this::verificarPreferenciaSatisfecha)
+                    .count();
+
+            double porcentajePreferencias = asignaciones.isEmpty() ? 0.0 :
+                    (double) preferenciasSatisfechas / asignaciones.size() * 100.0;
+
+            estadisticas.put("preferenciasSatisfechas", preferenciasSatisfechas);
+            estadisticas.put("porcentajePreferencias", porcentajePreferencias);
+
+            // Análisis por categoría de docente
+            Map<String, Long> asignacionesPorCategoria = asignaciones.stream()
+                    .collect(Collectors.groupingBy(
+                            a -> a.getDocente().getCategoria().getNombre(),
+                            Collectors.counting()));
+
+            estadisticas.put("asignacionesPorCategoria", asignacionesPorCategoria);
+
+            // Cursos más difíciles de asignar (sin asignación)
+            List<String> cursosSinAsignar = cursosDelCiclo.stream()
+                    .filter(curso -> asignaciones.stream()
+                            .noneMatch(a -> a.getCurso().getIdCurso().equals(curso.getIdCurso())))
+                    .map(curso -> curso.getCodigo() + " - " + curso.getAsignatura().getNombre())
+                    .collect(Collectors.toList());
+
+            estadisticas.put("cursosSinAsignarDetalle", cursosSinAsignar);
+
+            // Metadata
+            estadisticas.put("cargaElectiva", cargaElectiva.getNombre());
+            estadisticas.put("fechaAnalisis", LocalDate.now().toString());
+            estadisticas.put("totalAsignaciones", asignaciones.size());
+            estadisticas.put("restriccionAplicada", "Solo horasMaxLectivas por docente");
+
+            return new GenericObjectResponse<>(200, "Estadísticas generadas correctamente", estadisticas);
+
+        } catch (Exception e) {
+            System.out.println("Error al generar estadísticas para carga electiva " + idCargaElectiva + ": " + e.getMessage());
+            return new GenericObjectResponse<>(500, "Error al generar estadísticas: " + e.getMessage(), null);
         }
     }
 
@@ -185,18 +480,42 @@ public class AsignacionServiceImpl
     }
 
     private List<Asignacion> ejecutarAlgoritmoHibrido(List<Docente> docentes, List<Curso> cursos, CargaElectiva cargaElectiva) {
-        // TODO: Por ahora implementamos una versión simplificada
-        // En los siguientes pasos implementaremos el algoritmo genético y PSO completo
+        // Usar el nuevo servicio de algoritmo híbrido avanzado
+        try {
+            // Preparar datos para el algoritmo
+            Map<Integer, List<Disponibilidad>> disponibilidadPorDocente = prepararDisponibilidad(docentes, cargaElectiva.getIdCargaElectiva());
+            Map<Integer, List<Preferencia>> preferenciasPorDocente = prepararPreferencias(docentes, cargaElectiva.getIdCargaElectiva());
 
-        System.out.println("Ejecutando algoritmo híbrido simplificado...");
+            // Ejecutar algoritmo híbrido avanzado
+            return algoritmoService.ejecutarAlgoritmoHibrido(
+                    docentes, cursos, cargaElectiva, disponibilidadPorDocente, preferenciasPorDocente);
+
+        } catch (Exception e) {
+            System.out.println("Error en algoritmo híbrido avanzado, usando algoritmo simplificado: " + e.getMessage());
+
+            // Fallback: algoritmo simplificado si falla el avanzado
+            return ejecutarAlgoritmoSimplificado(docentes, cursos, cargaElectiva);
+        }
+    }
+
+    /**
+     * Algoritmo simplificado como fallback
+     * ACTUALIZADO: Solo considera horasMaxLectivas
+     */
+    private List<Asignacion> ejecutarAlgoritmoSimplificado(List<Docente> docentes, List<Curso> cursos, CargaElectiva cargaElectiva) {
+        System.out.println("=== Ejecutando algoritmo simplificado como fallback ===");
 
         List<Asignacion> asignaciones = new ArrayList<>();
+        Map<Integer, Integer> asignacionesTemporales = new HashMap<>();
 
-        // Versión básica: asignación por disponibilidad y preferencias
+        // Versión básica: asignación por disponibilidad y límites de horas
         for (Curso curso : cursos) {
-            Docente docenteAsignado = encontrarMejorDocenteParaCurso(curso, docentes, cargaElectiva);
+            Docente docenteAsignado = encontrarMejorDocenteParaCursoSimplificado(
+                    curso, docentes, cargaElectiva, asignacionesTemporales);
 
             if (docenteAsignado != null) {
+                asignacionesTemporales.put(curso.getIdCurso(), docenteAsignado.getIdDocente());
+
                 Asignacion asignacion = new Asignacion();
                 asignacion.setDocente(docenteAsignado);
                 asignacion.setCurso(curso);
@@ -213,7 +532,9 @@ public class AsignacionServiceImpl
         return asignaciones;
     }
 
-    private Docente encontrarMejorDocenteParaCurso(Curso curso, List<Docente> docentes, CargaElectiva cargaElectiva) {
+    private Docente encontrarMejorDocenteParaCursoSimplificado(Curso curso, List<Docente> docentes,
+                                                               CargaElectiva cargaElectiva,
+                                                               Map<Integer, Integer> asignacionesTemporales) {
         // Buscar docentes con preferencia por la asignatura del curso
         List<Preferencia> preferencias = preferenciaRepo.findByCargaElectiva_IdCargaElectiva(cargaElectiva.getIdCargaElectiva());
 
@@ -225,9 +546,10 @@ public class AsignacionServiceImpl
                 .collect(Collectors.toList());
 
         if (!docentesConPreferencia.isEmpty()) {
-            // Verificar disponibilidad horaria
+            // Verificar disponibilidad horaria y límites de horas
             for (Docente docente : docentesConPreferencia) {
-                if (verificarDisponibilidadHoraria(docente, curso, cargaElectiva)) {
+                if (verificarDisponibilidadHoraria(docente, curso, cargaElectiva) &&
+                        puedeTomarCurso(docente, curso, asignacionesTemporales)) {
                     return docente;
                 }
             }
@@ -235,7 +557,8 @@ public class AsignacionServiceImpl
 
         // Si no hay preferencias, buscar cualquier docente disponible
         for (Docente docente : docentes) {
-            if (verificarDisponibilidadHoraria(docente, curso, cargaElectiva)) {
+            if (verificarDisponibilidadHoraria(docente, curso, cargaElectiva) &&
+                    puedeTomarCurso(docente, curso, asignacionesTemporales)) {
                 return docente;
             }
         }
@@ -264,6 +587,37 @@ public class AsignacionServiceImpl
         return true;
     }
 
+    private boolean puedeTomarCurso(Docente docente, Curso curso, Map<Integer, Integer> asignacionesTemporales) {
+        // Calcular horas actuales del docente en asignaciones temporales
+        int horasActuales = 0;
+        for (Map.Entry<Integer, Integer> entry : asignacionesTemporales.entrySet()) {
+            if (entry.getValue().equals(docente.getIdDocente())) {
+                // Buscar el curso y sumar sus horas
+                Curso cursoAsignado = obtenerCursosPorCiclo(curso.getCicloAcademico().getIdCicloAcademico())
+                        .stream()
+                        .filter(c -> c.getIdCurso().equals(entry.getKey()))
+                        .findFirst().orElse(null);
+
+                if (cursoAsignado != null) {
+                    horasActuales += cursoAsignado.getCursoHorario().stream()
+                            .mapToInt(CursoHorario::getDuracionHoras)
+                            .sum();
+                }
+            }
+        }
+
+        // Sumar horas del curso que se quiere asignar
+        int horasCurso = curso.getCursoHorario().stream()
+                .mapToInt(CursoHorario::getDuracionHoras)
+                .sum();
+
+        // Verificar límite específico del docente (ÚNICA RESTRICCIÓN DE HORAS)
+        int horasMaximas = docente.getHorasMaxLectivas() != null ?
+                docente.getHorasMaxLectivas() : 12;
+
+        return horasActuales + horasCurso <= horasMaximas;
+    }
+
     private String generarResumenAsignaciones(List<Asignacion> asignaciones, List<Docente> docentes, List<Curso> cursos) {
         int cursosAsignados = asignaciones.size();
         int cursosSinAsignar = cursos.size() - cursosAsignados;
@@ -273,11 +627,8 @@ public class AsignacionServiceImpl
                 .count();
 
         return String.format(
-                "Algoritmo completado exitosamente. Cursos asignados: %d/%d. Docentes utilizados: %d/%d. Cursos sin asignar: %d",
+                "Algoritmo completado exitosamente. Cursos asignados: %d/%d. Docentes utilizados: %d/%d. Cursos sin asignar: %d. Restricción aplicada: Solo límite de horasMaxLectivas por docente.",
                 cursosAsignados, cursos.size(), docentesUtilizados, docentes.size(), cursosSinAsignar
         );
     }
-
-
-
 }

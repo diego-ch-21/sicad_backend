@@ -1,5 +1,4 @@
 package com.sicad.sicad_backend.algorithm.validator;
-
 import com.sicad.sicad_backend.algorithm.model.SolucionAsignacion;
 import com.sicad.sicad_backend.model.*;
 import lombok.extern.slf4j.Slf4j;
@@ -68,7 +67,7 @@ public class RestriccionValidator {
     private double evaluarRestriccionesDuras(SolucionAsignacion solucion) {
         double penalizaciones = 0.0;
 
-        // 1. Verificar límites de horas lectivas por docente
+        // 1. Verificar límites de horas lectivas por docente (ÚNICA RESTRICCIÓN DE HORAS)
         penalizaciones += verificarLimitesHorasLectivas(solucion);
 
         // 2. Verificar disponibilidad horaria
@@ -77,8 +76,7 @@ public class RestriccionValidator {
         // 3. Verificar conflictos de horarios (un docente no puede estar en dos lugares)
         penalizaciones += verificarConflictosHorarios(solucion);
 
-        // 4. Verificar horas mínimas para docentes TC/DE
-        penalizaciones += verificarHorasMinimas(solucion);
+        // ELIMINADO: verificarHorasMinimas() - Ya no se usa dedicación
 
         return penalizaciones * PESO_RESTRICCIONES_DURAS;
     }
@@ -88,7 +86,10 @@ public class RestriccionValidator {
 
         for (Docente docente : docentes) {
             int horasAsignadas = solucion.getHorasTotalesDocente(docente.getIdDocente());
-            int horasMaximas = docente.getHorasMaxLectivas() != null ? docente.getHorasMaxLectivas() : 12;
+
+            // Usar horasMaxLectivas del docente (si es null, usar 12 como valor por defecto)
+            int horasMaximas = docente.getHorasMaxLectivas() != null ?
+                    docente.getHorasMaxLectivas() : 12;
 
             if (horasAsignadas > horasMaximas) {
                 penalizacion += (horasAsignadas - horasMaximas) * 10; // Penalización por cada hora excedida
@@ -179,24 +180,6 @@ public class RestriccionValidator {
         Time fin2 = horario2.getHoraFin();
 
         return !(fin1.before(inicio2) || fin2.before(inicio1));
-    }
-
-    private double verificarHorasMinimas(SolucionAsignacion solucion) {
-        double penalizacion = 0.0;
-
-        for (Docente docente : docentes) {
-            // Solo para docentes TC (Tiempo Completo) y DE (Dedicación Exclusiva)
-            String dedicacion = docente.getDedicacion().getNombre().toUpperCase();
-            if (dedicacion.contains("COMPLETO") || dedicacion.contains("EXCLUSIVA")) {
-                int horasAsignadas = solucion.getHorasTotalesDocente(docente.getIdDocente());
-                if (horasAsignadas > 0 && horasAsignadas < 10) {
-                    penalizacion += (10 - horasAsignadas) * 5; // Penalización por no cumplir mínimo
-                    log.debug("Docente {} no cumple mínimo: {}/10", docente.getCodigo(), horasAsignadas);
-                }
-            }
-        }
-
-        return penalizacion;
     }
 
     /**
@@ -346,7 +329,10 @@ public class RestriccionValidator {
     private void redistribuirCargaExcesiva(SolucionAsignacion solucion) {
         for (Docente docente : docentes) {
             int horasActuales = solucion.getHorasTotalesDocente(docente.getIdDocente());
-            int horasMaximas = docente.getHorasMaxLectivas() != null ? docente.getHorasMaxLectivas() : 12;
+
+            // Usar horasMaxLectivas del docente específico
+            int horasMaximas = docente.getHorasMaxLectivas() != null ?
+                    docente.getHorasMaxLectivas() : 12;
 
             if (horasActuales > horasMaximas) {
                 List<Integer> cursosDocente = new ArrayList<>(solucion.getCursosDeDocente(docente.getIdDocente()));
@@ -413,6 +399,9 @@ public class RestriccionValidator {
         return false;
     }
 
+    /**
+     * Métodos auxiliares de utilidad
+     */
     private int obtenerHorasCurso(Integer idCurso) {
         Curso curso = obtenerCursoPorId(idCurso);
         return curso != null ? curso.getCursoHorario().stream()
