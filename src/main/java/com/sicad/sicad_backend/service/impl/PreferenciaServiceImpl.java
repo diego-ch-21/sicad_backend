@@ -44,14 +44,17 @@ public class PreferenciaServiceImpl
         //validar docente
         Docente docente = docenteRepo.findById(request.getIdDocente()).orElse(null);
         if(docente == null){
+            System.out.println("Docente no encontrado");
             return new GenericObjectResponse<>(404, "Docente no encontrado", null);
         }
         Asignatura asignatura = asignaturaRepo.findById(request.getIdAsignatura()).orElse(null);
         if(asignatura == null){
+            System.out.println("Asignatura no encontrada");
             return new GenericObjectResponse<>(404, "Asignatura no encontrada", null);
         }
         CargaElectiva cargaElectiva = cargaElectivaRepo.findById(request.getIdCargaElectiva()).orElse(null);
         if(cargaElectiva == null){
+            System.out.println("Carga Electiva no encontrada");
             return new GenericObjectResponse<>(404, "Carga Electiva no encontrada", null);
         }
 

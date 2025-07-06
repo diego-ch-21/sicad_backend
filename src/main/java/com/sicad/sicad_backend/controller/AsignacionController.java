@@ -65,4 +65,40 @@ public class AsignacionController {
         GenericObjectResponse<String> response = asignacionServiceImpl.eliminarAsignacionesPorCargaElectiva(id);
         return ResponseEntity.status(response.status()).body(response);
     }
+    // NUEVO ENDPOINT PARA EL ALGORITMO HÍBRIDO GA + PSO
+    @PostMapping("/algoritmo/{idCargaElectiva}")
+    public ResponseEntity<GenericObjectResponse<List<AsignacionDetalleResponse>>> asignarConAlgoritmoHibrido(
+            @PathVariable("idCargaElectiva") Integer idCargaElectiva) {
+
+        try {
+            System.out.println("Solicitud de asignación con algoritmo híbrido para carga electiva: " + idCargaElectiva);
+
+            // Llamar al método del service que ejecuta el algoritmo híbrido GA+PSO
+            GenericObjectResponse<List<AsignacionDetalleResponse>> response =
+                    asignacionServiceImpl.asignarConAlgoritmoGeneticoPSO(idCargaElectiva);
+
+            // Log del resultado
+            if (response.status() == 201) {
+                System.out.println("Algoritmo híbrido completado exitosamente. Asignaciones generadas: " +
+                        (response.data() != null ? response.data().size() : 0));
+            } else {
+                System.out.println("Algoritmo híbrido falló con status: " + response.status() +
+                        " - Mensaje: " + response.message());
+            }
+
+            return ResponseEntity.status(response.status()).body(response);
+
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error de validación en algoritmo híbrido: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new GenericObjectResponse<>(400,
+                            "Error de validación: " + e.getMessage(), null));
+
+        } catch (Exception e) {
+            System.out.println("Error crítico en algoritmo híbrido para carga electiva " + idCargaElectiva + ": " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new GenericObjectResponse<>(500,
+                            "Error interno del servidor en algoritmo híbrido: " + e.getMessage(), null));
+        }
+    }
 }
