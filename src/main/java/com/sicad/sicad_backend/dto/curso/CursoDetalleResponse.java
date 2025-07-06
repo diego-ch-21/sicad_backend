@@ -16,6 +16,8 @@ import java.util.List;
 @NoArgsConstructor
 public class CursoDetalleResponse {
     private Integer idCurso;
+    private String codigo;
+    private String grupo;
     private AsignaturaResumenResponse asignatura;
     private PlanDeEstudioResumenResponse planDeEstudio;
     private EscuelaResumenResponse escuela;
