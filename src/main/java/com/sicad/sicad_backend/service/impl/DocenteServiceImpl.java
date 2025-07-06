@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -380,6 +381,30 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
 
         return new GenericReponse<>(200, "Lista de docentes con asignaciones", responseList);
     }
+    public GenericObjectResponse<DocenteAsignacionResponse> obtenerDocenteConAsignaciones(Integer idDocente, Integer idCargaElectiva) {
+        Optional<Docente> optionalDocente = docenteRepo.findDocenteWithAsignacionesById(idDocente);
+
+        if (optionalDocente.isEmpty()) {
+            return new GenericObjectResponse<>(404, "Docente no encontrado", null);
+        }
+
+        Docente docente = optionalDocente.get();
+
+        // Mapear entidad Docente a DTO
+        DocenteAsignacionResponse dto = modelMapper.map(docente, DocenteAsignacionResponse.class);
+
+        // Filtrar asignaciones por idCargaElectiva
+        List<AsignacionResumenResponse> asignacionesFiltradas = docente.getAsignaciones().stream()
+                .filter(asic -> asic.getCargaElectiva() != null &&
+                        asic.getCargaElectiva().getIdCargaElectiva().equals(idCargaElectiva))
+                .map(asic -> modelMapper.map(asic, AsignacionResumenResponse.class))
+                .toList();
+
+        dto.setAsignaciones(asignacionesFiltradas);
+
+        return new GenericObjectResponse<>(200, "Docente con asignaciones", dto);
+    }
+
 
 
     private DocenteDetalleResponse convertToResponseDTO(Docente obj) {

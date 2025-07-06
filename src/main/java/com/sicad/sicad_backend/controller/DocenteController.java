@@ -88,6 +88,14 @@ public class DocenteController {
         return ResponseEntity.status(response.status()).body(response);
     }
 
+    @GetMapping("/asignaciones/{idCargaElectiva}/{idDocente}")
+    public ResponseEntity<GenericObjectResponse<DocenteAsignacionResponse>>  docentesAsignacion(
+            @PathVariable("idCargaElectiva") Integer idCargaElectiva,
+            @PathVariable("idDocente") Integer idDocente) throws Exception {
+        GenericObjectResponse<DocenteAsignacionResponse> response = serviceImpl.obtenerDocenteConAsignaciones(idCargaElectiva,idDocente);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
     private DocenteDetalleResponse convertToResponseDTO(Docente obj) {
         return modelMapper.map(obj, DocenteDetalleResponse.class);
     }
