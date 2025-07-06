@@ -22,7 +22,7 @@ public class DisponibilidadCreateRequest {
     private Integer idCargaElectiva;
 
     @NotBlank(message = "El día de la semana es obligatorio")
-    @Pattern(regexp = "^(lunes|martes|miercoles|jueves|viernes|sabado|domingo)$", message = "Día de la semana inválido")
+    @Pattern(regexp = "^(LUNES|MARTES|MIERCOLES|JUEVES|VIERNES|SABADO|DOMINGO)$", message = "Día de la semana inválido")
     private String diaSemana;
 
     @NotBlank(message = "La hora de inicio es obligatoria")
