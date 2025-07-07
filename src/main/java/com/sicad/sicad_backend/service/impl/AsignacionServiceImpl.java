@@ -122,9 +122,10 @@ public class AsignacionServiceImpl
     @Transactional
     public GenericObjectResponse<List<AsignacionDetalleResponse>> asignarConAlgoritmoGeneticoPSO(Integer idCargaElectiva) {
         System.out.println("=== Iniciando asignación con algoritmo híbrido actualizado para carga electiva: " + idCargaElectiva + " ===");
-        System.out.println("MODELO ACTUALIZADO - RESTRICCIONES DURAS: Disponibilidad + horasMaxLectivas");
-        System.out.println("MODELO ACTUALIZADO - RESTRICCIONES BLANDAS: Solo preferencias (opcionales)");
-        System.out.println("ELIMINADO: Consideración de dedicación y categoría");
+        System.out.println("MODELO ACTUALIZADO - RESTRICCIONES DURAS: Disponibilidad + horasMaxLectivas + preferencias");
+        //System.out.println("MODELO ACTUALIZADO - RESTRICCIONES DURAS: Disponibilidad + horasMaxLectivas");
+        //System.out.println("MODELO ACTUALIZADO - RESTRICCIONES BLANDAS: Solo preferencias (opcionales)");
+        //System.out.println("ELIMINADO: Consideración de dedicación y categoría");
 
 
         try {
@@ -290,21 +291,22 @@ public class AsignacionServiceImpl
                 .count();
 
         return String.format(
-                "🤖 ALGORITMO HÍBRIDO GA+PSO COMPLETADO (MODELO ACTUALIZADO) 🤖\n" +
-                        "🔒 RESTRICCIONES DURAS: Disponibilidad + horasMaxLectivas\n" +
-                        "🔓 RESTRICCIONES BLANDAS: Solo preferencias (opcionales)\n" +
-                        "❌ ELIMINADO: Consideración de dedicación y categoría\n" +
-                        "📊 RESULTADOS:\n" +
+                " ALGORITMO HÍBRIDO GA+PSO COMPLETADO (MODELO ACTUALIZADO) \n" +
+                        "RESTRICCIONES DURAS: Disponibilidad + horasMaxLectivas + preferencias\n" +
+                        //"RESTRICCIONES DURAS: Disponibilidad + horasMaxLectivas\n" +
+                        //"RESTRICCIONES BLANDAS: Solo preferencias (opcionales)\n" +
+                        "ELIMINADO: Consideración de dedicación y categoría\n" +
+                        "RESULTADOS:\n" +
                         "  • Cursos asignados: %d/%d (%.1f%%)\n" +
                         "  • Cursos sin asignar: %d\n" +
                         "  • Docentes utilizados: %d/%d (%.1f%%)\n" +
                         "  • Preferencias satisfechas: %.1f%% (opcional)\n" +
-                        "📈 DISTRIBUCIÓN DE CARGA:\n" +
+                        "DISTRIBUCIÓN DE CARGA:\n" +
                         "  • Promedio horas/docente: %.1f\n" +
                         "  • Máximo horas: %d\n" +
                         "  • Mínimo horas: %d\n" +
-                        "⚠️  • Docentes que exceden horasMaxLectivas: %d\n" +
-                        "✅ Optimización completada con nuevo modelo de restricciones",
+                        "    • Docentes que exceden horasMaxLectivas: %d\n" +
+                        "  Optimización completada con nuevo modelo de restricciones",
                 cursosAsignados, cursos.size(), (double) cursosAsignados / cursos.size() * 100.0,
                 cursosSinAsignar,
                 docentesUtilizados.size(), docentes.size(), (double) docentesUtilizados.size() / docentes.size() * 100.0,
@@ -456,7 +458,7 @@ public class AsignacionServiceImpl
             estadisticas.put("cargaElectiva", cargaElectiva.getNombre());
             estadisticas.put("fechaAnalisis", LocalDate.now().toString());
             estadisticas.put("totalAsignaciones", asignaciones.size());
-            estadisticas.put("modeloRestriccion", "ACTUALIZADO: Duras = Disponibilidad + horasMaxLectivas | Blandas = Solo preferencias");
+            //estadisticas.put("modeloRestriccion", "ACTUALIZADO: Duras = Disponibilidad + horasMaxLectivas | Blandas = Solo preferencias");
             estadisticas.put("restriccionesDuras", "Disponibilidad horaria + horasMaxLectivas");
             estadisticas.put("restriccionesBlandas", "Solo preferencias de docentes (opcionales)");
             estadisticas.put("eliminado", "Consideración de dedicación y categoría");
