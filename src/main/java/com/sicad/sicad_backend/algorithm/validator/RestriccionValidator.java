@@ -1,4 +1,6 @@
 package com.sicad.sicad_backend.algorithm.validator;
+
+
 import com.sicad.sicad_backend.algorithm.model.SolucionAsignacion;
 import com.sicad.sicad_backend.model.*;
 import lombok.extern.slf4j.Slf4j;
@@ -8,7 +10,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Validador de restricciones duras y blandas para las asignaciones
+ * Validador de restricciones actualizado:
+ * - RESTRICCIONES DURAS: Disponibilidad horaria + horasMaxLectivas
+ * - RESTRICCIONES BLANDAS: Solo preferencias del docente
+ * - ELIMINADO: Consideración de dedicación y categoría
  */
 @Slf4j
 public class RestriccionValidator {
@@ -19,12 +24,12 @@ public class RestriccionValidator {
     private final Map<Integer, List<Preferencia>> preferenciasPorDocente;
     private final CargaElectiva cargaElectiva;
 
-    // Pesos para la función de fitness
+    // Pesos actualizados para la función de fitness
     private static final double PESO_RESTRICCIONES_DURAS = 1000.0;
-    private static final double PESO_PREFERENCIAS = 100.0;
+    private static final double PESO_PREFERENCIAS = 100.0;        // Solo restricción blanda
     private static final double PESO_EQUILIBRIO_CARGA = 50.0;
     private static final double PESO_COBERTURA = 200.0;
-    private static final double PESO_ESPECIALIZACION = 75.0;
+    // ELIMINADO: PESO_ESPECIALIZACION (categoría)
 
     public RestriccionValidator(List<Docente> docentes, List<Curso> cursos,
                                 Map<Integer, List<Disponibilidad>> disponibilidadPorDocente,
@@ -39,21 +44,21 @@ public class RestriccionValidator {
 
     /**
      * Calcula el fitness total de una solución
+     * ACTUALIZADO: Solo considera horasMaxLectivas como restricción dura
      */
     public double calcularFitness(SolucionAsignacion solucion) {
         double fitness = 0.0;
 
-        // 1. Evaluar restricciones duras (penalizaciones negativas)
+        // 1. Evaluar SOLO restricciones duras (penalizaciones negativas)
         double penalizacionesDuras = evaluarRestriccionesDuras(solucion);
 
-        // 2. Evaluar restricciones blandas (bonificaciones positivas)
+        // 2. Evaluar SOLO restricciones blandas (bonificaciones positivas)
         double bonificacionPreferencias = evaluarPreferencias(solucion);
         double bonificacionEquilibrio = evaluarEquilibrioCarga(solucion);
         double bonificacionCobertura = evaluarCoberturaCursos(solucion);
-        double bonificacionEspecializacion = evaluarEspecializacion(solucion);
 
-        fitness = -penalizacionesDuras + bonificacionPreferencias + bonificacionEquilibrio +
-                bonificacionCobertura + bonificacionEspecializacion;
+        fitness = -penalizacionesDuras + bonificacionPreferencias +
+                bonificacionEquilibrio + bonificacionCobertura;
 
         solucion.setFitness(fitness);
         solucion.setEsValida(penalizacionesDuras == 0);
@@ -62,44 +67,55 @@ public class RestriccionValidator {
     }
 
     /**
-     * Evalúa restricciones duras y retorna penalizaciones
+     * Evalúa SOLO las restricciones duras: disponibilidad + horasMaxLectivas
+     * ACTUALIZADO: Eliminada verificación de dedicación y límites por categoría
      */
     private double evaluarRestriccionesDuras(SolucionAsignacion solucion) {
         double penalizaciones = 0.0;
 
-        // 1. Verificar límites de horas lectivas por docente (ÚNICA RESTRICCIÓN DE HORAS)
-        penalizaciones += verificarLimitesHorasLectivas(solucion);
+        // 1. Verificar SOLO límites de horasMaxLectivas por docente
+        penalizaciones += verificarLimitesHorasMaxLectivas(solucion);
 
-        // 2. Verificar disponibilidad horaria
+        // 2. Verificar disponibilidad horaria (OBLIGATORIA)
         penalizaciones += verificarDisponibilidadHoraria(solucion);
 
         // 3. Verificar conflictos de horarios (un docente no puede estar en dos lugares)
         penalizaciones += verificarConflictosHorarios(solucion);
 
-        // ELIMINADO: verificarHorasMinimas() - Ya no se usa dedicación
+        // ELIMINADO: verificarLimitesPorDedicacion()
+        // ELIMINADO: verificarCategoriaDocente()
 
         return penalizaciones * PESO_RESTRICCIONES_DURAS;
     }
 
-    private double verificarLimitesHorasLectivas(SolucionAsignacion solucion) {
+    /**
+     * Verifica SOLO el límite de horasMaxLectivas del docente
+     * ACTUALIZADO: Ya no considera dedicación ni categoría
+     */
+    private double verificarLimitesHorasMaxLectivas(SolucionAsignacion solucion) {
         double penalizacion = 0.0;
 
         for (Docente docente : docentes) {
             int horasAsignadas = solucion.getHorasTotalesDocente(docente.getIdDocente());
 
-            // Usar horasMaxLectivas del docente (si es null, usar 12 como valor por defecto)
+            // Usar SOLO horasMaxLectivas del docente (valor específico por docente)
             int horasMaximas = docente.getHorasMaxLectivas() != null ?
-                    docente.getHorasMaxLectivas() : 12;
+                    docente.getHorasMaxLectivas() : 12; // 12 como valor por defecto
 
             if (horasAsignadas > horasMaximas) {
                 penalizacion += (horasAsignadas - horasMaximas) * 10; // Penalización por cada hora excedida
-                log.debug("Docente {} excede límite: {}/{}", docente.getCodigo(), horasAsignadas, horasMaximas);
+                log.debug("Docente {} excede límite horasMaxLectivas: {}/{}",
+                        docente.getCodigo(), horasAsignadas, horasMaximas);
             }
         }
 
         return penalizacion;
     }
 
+    /**
+     * Verifica disponibilidad horaria (RESTRICCIÓN DURA - OBLIGATORIA)
+     * Sin cambios - sigue siendo obligatoria
+     */
     private double verificarDisponibilidadHoraria(SolucionAsignacion solucion) {
         double penalizacion = 0.0;
 
@@ -118,7 +134,7 @@ public class RestriccionValidator {
                 continue;
             }
 
-            // Verificar cada horario del curso
+            // Verificar cada horario del curso contra disponibilidad
             for (CursoHorario horario : curso.getCursoHorario()) {
                 boolean tieneDisponibilidad = disponibilidades.stream()
                         .anyMatch(disp -> verificarSolapamientoHorario(disp, horario));
@@ -140,6 +156,9 @@ public class RestriccionValidator {
                 !disponibilidad.getHoraFin().before(horario.getHoraFin());
     }
 
+    /**
+     * Verifica conflictos de horarios - sin cambios
+     */
     private double verificarConflictosHorarios(SolucionAsignacion solucion) {
         double penalizacion = 0.0;
 
@@ -183,12 +202,13 @@ public class RestriccionValidator {
     }
 
     /**
-     * Evalúa qué tan bien se satisfacen las preferencias
+     * Evalúa preferencias como RESTRICCIÓN BLANDA (opcional)
+     * ACTUALIZADO: Solo bonifica, no penaliza si no se cumple
      */
     private double evaluarPreferencias(SolucionAsignacion solucion) {
         double bonificacion = 0.0;
         int preferenciasSatisfechas = 0;
-        int totalPreferencias = 0;
+        int totalAsignaciones = 0;
 
         for (Map.Entry<Integer, Integer> asignacion : solucion.getAsignaciones().entrySet()) {
             Integer idCurso = asignacion.getKey();
@@ -196,34 +216,40 @@ public class RestriccionValidator {
 
             if (idDocente == -1) continue;
 
+            totalAsignaciones++;
             Curso curso = obtenerCursoPorId(idCurso);
             if (curso == null) continue;
 
             List<Preferencia> preferenciasDocente = preferenciasPorDocente.get(idDocente);
             if (preferenciasDocente != null) {
-                totalPreferencias++;
-
                 boolean tienePreferencia = preferenciasDocente.stream()
                         .anyMatch(pref -> pref.getAsignatura().getIdAsignatura()
                                 .equals(curso.getAsignatura().getIdAsignatura()));
 
                 if (tienePreferencia) {
                     preferenciasSatisfechas++;
-                    bonificacion += 20; // Bonificación por preferencia satisfecha
+                    bonificacion += 20; // BONIFICACIÓN por preferencia satisfecha
+                    log.debug("Preferencia satisfecha: Docente {} asignado a asignatura preferida {}",
+                            idDocente, curso.getAsignatura().getNombre());
                 }
+                // NO hay penalización si no tiene preferencia
             }
         }
 
         // Calcular porcentaje de preferencias satisfechas
-        double porcentaje = totalPreferencias > 0 ?
-                (double) preferenciasSatisfechas / totalPreferencias : 0.0;
+        double porcentaje = totalAsignaciones > 0 ?
+                (double) preferenciasSatisfechas / totalAsignaciones : 0.0;
         solucion.setPorcentajePreferencias(porcentaje * 100);
+
+        log.debug("Preferencias evaluadas: {}/{} satisfechas ({}%)",
+                preferenciasSatisfechas, totalAsignaciones,
+                String.format("%.1f", porcentaje * 100));
 
         return bonificacion * PESO_PREFERENCIAS / 100.0;
     }
 
     /**
-     * Evalúa el equilibrio en la distribución de carga
+     * Evalúa el equilibrio en la distribución de carga - sin cambios
      */
     private double evaluarEquilibrioCarga(SolucionAsignacion solucion) {
         Set<Integer> docentesUtilizados = solucion.getDocentesUtilizados();
@@ -247,7 +273,7 @@ public class RestriccionValidator {
     }
 
     /**
-     * Evalúa la cobertura de cursos
+     * Evalúa la cobertura de cursos - sin cambios
      */
     private double evaluarCoberturaCursos(SolucionAsignacion solucion) {
         int cursosAsignados = solucion.getCursosAsignados();
@@ -257,32 +283,8 @@ public class RestriccionValidator {
     }
 
     /**
-     * Evalúa la especialización (categoría del docente)
+     * ELIMINADO: evaluarEspecializacion() - Ya no considera categoría del docente
      */
-    private double evaluarEspecializacion(SolucionAsignacion solucion) {
-        double bonificacion = 0.0;
-
-        for (Map.Entry<Integer, Integer> asignacion : solucion.getAsignaciones().entrySet()) {
-            Integer idDocente = asignacion.getValue();
-            if (idDocente == -1) continue;
-
-            Docente docente = obtenerDocentePorId(idDocente);
-            if (docente != null) {
-                String categoria = docente.getCategoria().getNombre().toUpperCase();
-
-                // Bonificación según categoría
-                if (categoria.contains("PRINCIPAL")) {
-                    bonificacion += 3;
-                } else if (categoria.contains("ASOCIADO")) {
-                    bonificacion += 2;
-                } else if (categoria.contains("AUXILIAR")) {
-                    bonificacion += 1;
-                }
-            }
-        }
-
-        return bonificacion * PESO_ESPECIALIZACION / 10.0;
-    }
 
     /**
      * Verifica si una solución cumple todas las restricciones duras
@@ -293,12 +295,13 @@ public class RestriccionValidator {
 
     /**
      * Repara una solución violando restricciones duras
+     * ACTUALIZADO: Solo repara horasMaxLectivas y disponibilidad
      */
     public void repararSolucion(SolucionAsignacion solucion) {
         // 1. Eliminar asignaciones que violan disponibilidad
         eliminarAsignacionesInvalidas(solucion);
 
-        // 2. Redistribuir carga excesiva
+        // 2. Redistribuir carga excesiva (solo horasMaxLectivas)
         redistribuirCargaExcesiva(solucion);
 
         // 3. Resolver conflictos de horarios
@@ -318,6 +321,7 @@ public class RestriccionValidator {
 
             if (!verificarDisponibilidadParaAsignacion(idCurso, idDocente)) {
                 cursosAEliminar.add(idCurso);
+                log.debug("Eliminando asignación inválida: Curso {} - Docente {}", idCurso, idDocente);
             }
         }
 
@@ -326,11 +330,14 @@ public class RestriccionValidator {
         }
     }
 
+    /**
+     * ACTUALIZADO: Solo considera horasMaxLectivas, no dedicación
+     */
     private void redistribuirCargaExcesiva(SolucionAsignacion solucion) {
         for (Docente docente : docentes) {
             int horasActuales = solucion.getHorasTotalesDocente(docente.getIdDocente());
 
-            // Usar horasMaxLectivas del docente específico
+            // Usar SOLO horasMaxLectivas del docente específico
             int horasMaximas = docente.getHorasMaxLectivas() != null ?
                     docente.getHorasMaxLectivas() : 12;
 
@@ -341,11 +348,15 @@ public class RestriccionValidator {
                 cursosDocente.sort((c1, c2) -> Integer.compare(
                         obtenerHorasCurso(c2), obtenerHorasCurso(c1)));
 
+                log.debug("Redistribuyendo carga excesiva para docente {}: {}/{} horas",
+                        docente.getCodigo(), horasActuales, horasMaximas);
+
                 for (Integer idCurso : cursosDocente) {
                     if (solucion.getHorasTotalesDocente(docente.getIdDocente()) <= horasMaximas) {
                         break;
                     }
                     solucion.asignarDocente(idCurso, -1);
+                    log.debug("Curso {} removido del docente {}", idCurso, docente.getCodigo());
                 }
             }
         }
@@ -365,12 +376,15 @@ public class RestriccionValidator {
                         solucion.asignarDocente(cursoAEliminar, -1);
                         cursosDocente.remove(cursoAEliminar);
                         j--; // Ajustar índice
+                        log.debug("Conflicto horario resuelto: Curso {} removido del docente {}",
+                                cursoAEliminar, idDocente);
                     }
                 }
             }
         }
     }
 
+    // Métodos auxiliares sin cambios
     private boolean verificarDisponibilidadParaAsignacion(Integer idCurso, Integer idDocente) {
         Curso curso = obtenerCursoPorId(idCurso);
         List<Disponibilidad> disponibilidades = disponibilidadPorDocente.get(idDocente);
@@ -399,9 +413,6 @@ public class RestriccionValidator {
         return false;
     }
 
-    /**
-     * Métodos auxiliares de utilidad
-     */
     private int obtenerHorasCurso(Integer idCurso) {
         Curso curso = obtenerCursoPorId(idCurso);
         return curso != null ? curso.getCursoHorario().stream()

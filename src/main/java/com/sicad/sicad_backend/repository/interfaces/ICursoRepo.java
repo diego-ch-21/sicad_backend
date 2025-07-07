@@ -3,6 +3,8 @@ package com.sicad.sicad_backend.repository.interfaces;
 import com.sicad.sicad_backend.model.Asignatura;
 import com.sicad.sicad_backend.model.Curso;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
+import jakarta.transaction.Transactional;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -22,5 +24,11 @@ public interface ICursoRepo extends IGenericRepo<Curso, Integer> {
 
     @Query("SELECT DISTINCT c FROM Curso c LEFT JOIN FETCH c.cursoHorario")
     List<Curso> findAllWithHorarios();
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Curso c WHERE c.cicloAcademico.idCicloAcademico = :idCicloAcademico")
+    int eliminarPorCicloAcademico(@Param("idCicloAcademico") Integer idCicloAcademico);
+
 
 }

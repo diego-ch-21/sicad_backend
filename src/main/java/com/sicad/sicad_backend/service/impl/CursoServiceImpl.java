@@ -13,6 +13,7 @@ import com.sicad.sicad_backend.repository.interfaces.*;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.ICursoService;
 import com.sicad.sicad_backend.utils.CodigoGeneratorUtil;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -235,6 +236,36 @@ public class CursoServiceImpl
         String mensaje = String.format("Horarios para idCurso=(%d) registrados: %d, fallidos: %d", idCurso, horariosRegistrados.size(), fallidos);
         return new GenericReponse<>(201, mensaje, horariosRegistrados);
     }
+
+    @Transactional
+    public GenericObjectResponse<String> eliminarCursosPorCicloAcademico(Integer idCicloAcademico) {
+        // Validación de parámetro
+        if (idCicloAcademico == null) {
+            return new GenericObjectResponse<>(400, "ID de ciclo académico no proporcionado", null);
+        }
+
+        // Validar existencia del ciclo académico
+        CicloAcademico ciclo = cicloAcademicoRepo.findById(idCicloAcademico).orElse(null);
+        if (ciclo == null) {
+            return new GenericObjectResponse<>(404, "Ciclo académico no encontrado", null);
+        }
+
+        // Eliminar cursos asociados
+        int eliminados;
+        try {
+            eliminados = cursoRepo.eliminarPorCicloAcademico(idCicloAcademico);
+        } catch (Exception e) {
+            return new GenericObjectResponse<>(500, "Error al eliminar cursos: " + e.getMessage(), null);
+        }
+
+        // Generar respuesta
+        String mensaje = eliminados > 0
+                ? "Se eliminaron " + eliminados + " curso(s) del ciclo académico ID: " + idCicloAcademico
+                : "No se encontraron cursos asociados al ciclo académico ID: " + idCicloAcademico;
+
+        return new GenericObjectResponse<>(200, mensaje, null);
+    }
+
 
 
 }

@@ -71,6 +71,11 @@ public class CursoController {
         GenericReponse<HorarioDetalleResponse>   response = cursoServiceImpl.registrarVariosCursoHorario(id,request);
         return ResponseEntity.status(response.status()).body(response);
     }
+    @DeleteMapping("/eliminar/{idCicloAcademico}")
+    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idCicloAcademico") Integer id) {
+        GenericObjectResponse<String> response = cursoServiceImpl.eliminarCursosPorCicloAcademico(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
 
 
     private CursoDetalleResponse convertToDetalle(Curso curso) {
