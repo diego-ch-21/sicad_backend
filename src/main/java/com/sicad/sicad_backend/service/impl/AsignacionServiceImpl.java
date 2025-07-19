@@ -123,9 +123,7 @@ public class AsignacionServiceImpl
     public GenericObjectResponse<List<AsignacionDetalleResponse>> asignarConAlgoritmoGeneticoPSO(Integer idCargaElectiva) {
         System.out.println("=== Iniciando asignación con algoritmo híbrido actualizado para carga electiva: " + idCargaElectiva + " ===");
         System.out.println("MODELO ACTUALIZADO - RESTRICCIONES DURAS: Disponibilidad + horasMaxLectivas + preferencias");
-        //System.out.println("MODELO ACTUALIZADO - RESTRICCIONES DURAS: Disponibilidad + horasMaxLectivas");
-        //System.out.println("MODELO ACTUALIZADO - RESTRICCIONES BLANDAS: Solo preferencias (opcionales)");
-        //System.out.println("ELIMINADO: Consideración de dedicación y categoría");
+
 
 
         try {

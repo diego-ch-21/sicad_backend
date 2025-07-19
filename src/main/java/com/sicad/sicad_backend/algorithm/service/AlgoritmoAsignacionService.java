@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 /**
  * Servicio principal que orquesta la ejecución del algoritmo híbrido GA+PSO
  * ACTUALIZADO para nuevo modelo de restricciones:
- * - RESTRICCIONES DURAS: Disponibilidad + horasMaxLectivas
- * - RESTRICCIONES BLANDAS: Solo preferencias
+ * - RESTRICCIONES DURAS: Disponibilidad + horasMaxLectivas +Solo preferencias
+ * - RESTRICCIONES BLANDAS: no se exceda un máximo de 5 horas pedagógicas consecutivas en un día.
  * - ELIMINADO: Consideración de dedicación y categoría
  */
 @Slf4j
@@ -50,9 +50,7 @@ public class AlgoritmoAsignacionService {
                                                      Map<Integer, List<Preferencia>> preferenciasPorDocente) {
 
         log.info("=== INICIANDO ALGORITMO HÍBRIDO GA+PSO (MODELO ACTUALIZADO) ===");
-        log.info("RESTRICCIONES DURAS: Disponibilidad + horasMaxLectivas");
-        log.info("RESTRICCIONES BLANDAS: Solo preferencias de docentes");
-        log.info("ELIMINADO: Consideración de dedicación y categoría");
+        log.info("RESTRICCIONES DURAS: Disponibilidad + horasMaxLectivas + preferencias");
         log.info("Docentes: {}, Cursos: {}, Carga Electiva: {}",
                 docentes.size(), cursos.size(), cargaElectiva.getNombre());
 
