@@ -7,7 +7,6 @@ import com.sicad.sicad_backend.dto.director.DirectorUpdateRequest;
 import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.IDirectorRepo;
-import com.sicad.sicad_backend.repository.interfaces.IFacultadRepo;
 import com.sicad.sicad_backend.repository.interfaces.IRolRepo;
 import com.sicad.sicad_backend.repository.interfaces.IUsuarioRepo;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
@@ -19,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -74,9 +74,6 @@ public class DirectorServiceImpl extends CRUDImpl<Director, Integer> implements 
                 .build();
         usuarioRepo.save(usuario);
 
-        Facultad facultad = facultadRepo.findById(request.getIdFacultad()).orElse(null);
-        if (facultad == null)
-            return new GenericObjectResponse<>(404, "facultad no encontrada", null);
 
         String codigoDirector;
         do {
@@ -87,7 +84,6 @@ public class DirectorServiceImpl extends CRUDImpl<Director, Integer> implements 
                 .usuario(usuario)
                 .cargo(request.getCargo())
                 .enabled(true)
-                .facultad(facultad)
                 .codigo(codigoDirector)
                 .build();
         directorRepo.save(director);
@@ -129,15 +125,6 @@ public class DirectorServiceImpl extends CRUDImpl<Director, Integer> implements 
 
         usuarioRepo.save(usuario);
 
-        // 4. Actualizar Facultad solo si se envió ID
-        if (request.getIdFacultad() != null) {
-            Facultad facultad = facultadRepo.findById(request.getIdFacultad()).orElse(null);
-            if (facultad == null) {
-                return new GenericObjectResponse<>(404, "Facultad no encontrada", null);
-            }
-            director.setFacultad(facultad);
-        }
-
         // 5. Actualizar cargo si fue enviado
         if (request.getCargo() != null) {
             director.setCargo(request.getCargo());
@@ -149,4 +136,8 @@ public class DirectorServiceImpl extends CRUDImpl<Director, Integer> implements 
         return new GenericObjectResponse<>(200, "Director actualizado exitosamente", dto);
     }
 
+    @Override
+    public List<Director> findByEnabledTrue() {
+        return directorRepo.findByEnabledTrue();
+    }
 }

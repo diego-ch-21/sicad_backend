@@ -46,9 +46,6 @@ public class Curso {
     @Column(nullable = false, name = "grupo")
     private String grupo;
 
-    @Column(name = "carga")
-    private Integer Carga;
-
     @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CursoHorario> cursoHorario = new ArrayList<>();
 

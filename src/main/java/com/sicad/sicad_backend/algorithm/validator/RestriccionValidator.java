@@ -22,7 +22,7 @@ public class RestriccionValidator {
     private final List<Curso> cursos;
     private final Map<Integer, List<Disponibilidad>> disponibilidadPorDocente;
     private final Map<Integer, List<Preferencia>> preferenciasPorDocente;
-    private final CargaElectiva cargaElectiva;
+    private final CicloAcademico cicloAcademico;
 
     // Pesos actualizados para la función de fitness
     private static final double PESO_RESTRICCIONES_DURAS = 1000.0;
@@ -34,12 +34,12 @@ public class RestriccionValidator {
     public RestriccionValidator(List<Docente> docentes, List<Curso> cursos,
                                 Map<Integer, List<Disponibilidad>> disponibilidadPorDocente,
                                 Map<Integer, List<Preferencia>> preferenciasPorDocente,
-                                CargaElectiva cargaElectiva) {
+                                CicloAcademico cicloAcademico) {
         this.docentes = docentes;
         this.cursos = cursos;
         this.disponibilidadPorDocente = disponibilidadPorDocente;
         this.preferenciasPorDocente = preferenciasPorDocente;
-        this.cargaElectiva = cargaElectiva;
+        this.cicloAcademico = cicloAcademico;
     }
 
     /**
@@ -99,8 +99,8 @@ public class RestriccionValidator {
             int horasAsignadas = solucion.getHorasTotalesDocente(docente.getIdDocente());
 
             // Usar SOLO horasMaxLectivas del docente (valor específico por docente)
-            int horasMaximas = docente.getHorasMaxLectivas() != null ?
-                    docente.getHorasMaxLectivas() : 12; // 12 como valor por defecto
+            int horasMaximas = docente.getDedicacion().getHorasMaxLectivas() != null ?
+                    docente.getDedicacion().getHorasMaxLectivas() : 12; // 12 como valor por defecto
 
             if (horasAsignadas > horasMaximas) {
                 penalizacion += (horasAsignadas - horasMaximas) * 10; // Penalización por cada hora excedida
@@ -338,8 +338,8 @@ public class RestriccionValidator {
             int horasActuales = solucion.getHorasTotalesDocente(docente.getIdDocente());
 
             // Usar SOLO horasMaxLectivas del docente específico
-            int horasMaximas = docente.getHorasMaxLectivas() != null ?
-                    docente.getHorasMaxLectivas() : 12;
+            int horasMaximas = docente.getDedicacion().getHorasMaxLectivas() != null ?
+                    docente.getDedicacion().getHorasMaxLectivas() : 12;
 
             if (horasActuales > horasMaximas) {
                 List<Integer> cursosDocente = new ArrayList<>(solucion.getCursosDeDocente(docente.getIdDocente()));

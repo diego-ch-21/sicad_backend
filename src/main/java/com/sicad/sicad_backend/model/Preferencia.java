@@ -30,9 +30,9 @@ public class Preferencia {
     private Asignatura asignatura;
 
     @ManyToOne
-    @JoinColumn(name = "id_carga_electiva", nullable = false,
-            foreignKey = @ForeignKey(name = "FK_PREFERENCIA_CARGA_ELECTIVA"))
-    private CargaElectiva cargaElectiva;
+    @JoinColumn(name = "id_ciclo_academico", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_PREFERENCIA_CICLO_ACADEMICO"))
+    private CicloAcademico cicloAcademico;
 
     @Column(nullable = false, name = "enabled")
     private boolean enabled;

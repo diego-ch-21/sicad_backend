@@ -4,10 +4,8 @@ import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoCreateRequest;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoDetalleResponse;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoUpdateRequest;
-import com.sicad.sicad_backend.model.CargaElectiva;
 import com.sicad.sicad_backend.model.CicloAcademico;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
-import com.sicad.sicad_backend.repository.interfaces.ICargaElectivaRepo;
 import com.sicad.sicad_backend.repository.interfaces.ICicloAcademicoRepo;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.ICicloAcademicoService;
@@ -18,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Optional;
 
 import static com.sicad.sicad_backend.utils.NumbersUtils.convertirARomano;
@@ -30,7 +29,6 @@ public class CicloAcademicoServiceImpl
         implements ICicloAcademicoService {
 
     private final ICicloAcademicoRepo cicloAcademicoRepo;
-    private final ICargaElectivaRepo cargaElectivaRepo;
     private final ModelMapper modelMapper;
 
     @Override
@@ -76,14 +74,8 @@ public class CicloAcademicoServiceImpl
                 .enabled(true)
                 .build();
 
-        CargaElectiva cargaElectiva = CargaElectiva.builder()
-                .cicloAcademico(ciclo)
-                .nombre("Carga Electiva " + nombre)
-                .enabled(true)
-                .build();
 
         cicloAcademicoRepo.save(ciclo);
-        cargaElectivaRepo.save(cargaElectiva);
 
         CicloAcademicoDetalleResponse dto = modelMapper.map(ciclo, CicloAcademicoDetalleResponse.class);
         return new GenericObjectResponse<>(201, "Ciclo académico registrado exitosamente", dto);
@@ -132,13 +124,6 @@ public class CicloAcademicoServiceImpl
             String nuevoNombre = ciclo.getAnio() + "-" + periodoRomano;
             ciclo.setNombre(nuevoNombre);
 
-            // Actualizar también la carga electiva relacionada
-            Optional<CargaElectiva> cargaOpt = cargaElectivaRepo.findByCicloAcademico_IdCicloAcademico(ciclo.getIdCicloAcademico());
-            if (cargaOpt.isPresent()) {
-                CargaElectiva carga = cargaOpt.get();
-                carga.setNombre("Carga Electiva " + nuevoNombre);
-                cargaElectivaRepo.save(carga);
-            }
         }
 
         cicloAcademicoRepo.save(ciclo);
@@ -147,4 +132,8 @@ public class CicloAcademicoServiceImpl
         return new GenericObjectResponse<>(200, "Ciclo académico actualizado exitosamente", dto);
     }
 
+    @Override
+    public List<CicloAcademico> findByEnabledTrue() {
+        return cicloAcademicoRepo.findByEnabledTrue();
+    }
 }

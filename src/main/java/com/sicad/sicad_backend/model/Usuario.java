@@ -52,11 +52,7 @@ public class Usuario implements UserDetails {
 
     @Column(nullable = false, name = "enabled")
     private Boolean enabled;
-    /*
-    @OneToOne(mappedBy = "usuario")
-    private Docente docente;
 
-     */
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

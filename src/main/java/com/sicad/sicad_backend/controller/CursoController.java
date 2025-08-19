@@ -1,12 +1,11 @@
 package com.sicad.sicad_backend.controller;
 
 
+import com.sicad.sicad_backend.dto.asignatura.AsignaturaDetalleResponse;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.dto.cargaElectiva.CargaElectivaDetalleResponse;
 import com.sicad.sicad_backend.dto.curso.CursoCreateRequest;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.dto.curso.CursoDetalleResponse;
-import com.sicad.sicad_backend.dto.cursoHorario.CursoHorarioDetalleResponse;
 import com.sicad.sicad_backend.dto.cursoHorario.HorarioCreateRequest;
 import com.sicad.sicad_backend.dto.cursoHorario.HorarioDetalleResponse;
 import com.sicad.sicad_backend.model.Curso;
@@ -29,15 +28,27 @@ public class CursoController {
     private final CursoServiceImpl cursoServiceImpl;
     private final ModelMapper modelMapper;
 
-    @GetMapping("/listar")
-    public ResponseEntity<GenericReponse<CursoDetalleResponse>> findAll() throws Exception {
+    @GetMapping("/horarios/listar")
+    public ResponseEntity<GenericReponse<CursoDetalleResponse>> findAllCursoHorarios() throws Exception {
         GenericReponse<CursoDetalleResponse> response = cursoServiceImpl.listarCursosConHorarios();
         return ResponseEntity.status(response.status()).body(response);
     }
-    @GetMapping("/listar/{idPeriodoAcademico}")
+
+    @GetMapping("/listar")
+    public ResponseEntity<GenericReponse<CursoDetalleResponse>> findAll() throws Exception {
+        List<CursoDetalleResponse> lista = service.findByEnabledTrue()
+                .stream()
+                .map(this::convertToDetalle)
+                .toList();
+        return ResponseEntity.ok(
+                new GenericReponse<>(200, "Lista de asignaturas", lista)
+        );
+    }
+
+    @GetMapping("/listar/{idCicloAcademico}")
     public ResponseEntity<GenericReponse<CursoDetalleResponse>> findByDocenteAndCargaElectiva(
-            @PathVariable("idPeriodoAcademico") Integer idPeriodoAcademico) {
-        GenericReponse<CursoDetalleResponse> response = cursoServiceImpl.listarCursosPorCicloAcademico(idPeriodoAcademico);
+            @PathVariable("idCicloAcademico") Integer idCicloAcademico) throws Exception {
+        GenericReponse<CursoDetalleResponse> response = cursoServiceImpl.listarCursosPorCicloAcademico(idCicloAcademico);
         return ResponseEntity.status(response.status()).body(response);
     }
 
@@ -71,9 +82,9 @@ public class CursoController {
         GenericReponse<HorarioDetalleResponse>   response = cursoServiceImpl.registrarVariosCursoHorario(id,request);
         return ResponseEntity.status(response.status()).body(response);
     }
-    @DeleteMapping("/eliminar/{idCicloAcademico}")
-    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idCicloAcademico") Integer id) {
-        GenericObjectResponse<String> response = cursoServiceImpl.eliminarCursosPorCicloAcademico(id);
+    @DeleteMapping("/eliminar/{idCurso}")
+    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idCurso") Integer id) {
+        GenericObjectResponse<String> response = cursoServiceImpl.eliminarCursoPorCicloAcademico(id);
         return ResponseEntity.status(response.status()).body(response);
     }
 

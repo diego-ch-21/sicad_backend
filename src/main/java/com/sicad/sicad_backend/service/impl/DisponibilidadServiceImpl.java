@@ -6,13 +6,11 @@ import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadCreateRequest;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadDetalleResponse;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadResumenResponse;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadUpdateRequest;
-import com.sicad.sicad_backend.dto.preferencia.PreferenciaCreateRequest;
-import com.sicad.sicad_backend.dto.preferencia.PreferenciaDetalleResponse;
-import com.sicad.sicad_backend.model.CargaElectiva;
+import com.sicad.sicad_backend.model.CicloAcademico;
 import com.sicad.sicad_backend.model.Disponibilidad;
 import com.sicad.sicad_backend.model.Docente;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
-import com.sicad.sicad_backend.repository.interfaces.ICargaElectivaRepo;
+import com.sicad.sicad_backend.repository.interfaces.ICicloAcademicoRepo;
 import com.sicad.sicad_backend.repository.interfaces.IDisponibilidadRepo;
 import com.sicad.sicad_backend.repository.interfaces.IDocenteRepo;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
@@ -31,8 +29,8 @@ import java.util.stream.Collectors;
 public class DisponibilidadServiceImpl extends CRUDImpl<Disponibilidad, Integer> implements IDisponibilidadService {
 
     private final IDisponibilidadRepo disponibilidadRepo;
+    private final ICicloAcademicoRepo cicloAcademicoRepo;
     private final IDocenteRepo docenteRepo;
-    private final ICargaElectivaRepo cargaElectivaRepo;
     private final ModelMapper modelMapper;
 
     @Override
@@ -46,9 +44,9 @@ public class DisponibilidadServiceImpl extends CRUDImpl<Disponibilidad, Integer>
             return new GenericObjectResponse<>(404, "Docente no encontrado", null);
         }
 
-        CargaElectiva carga = cargaElectivaRepo.findById(request.getIdCargaElectiva()).orElse(null);
-        if (carga == null) {
-            return new GenericObjectResponse<>(404, "Carga electiva no encontrada", null);
+        CicloAcademico cicloAcademico = cicloAcademicoRepo.findById(request.getIdCicloAcademico()).orElse(null);
+        if (cicloAcademico == null) {
+            return new GenericObjectResponse<>(404, "Ciclo academico no encontrada", null);
         }
 
         try {
@@ -61,7 +59,7 @@ public class DisponibilidadServiceImpl extends CRUDImpl<Disponibilidad, Integer>
 
             Disponibilidad disponibilidad = Disponibilidad.builder()
                     .docente(docente)
-                    .cargaElectiva(carga)
+                    .cicloAcademico(cicloAcademico)
                     .diaSemana(request.getDiaSemana())
                     .horaInicio(horaInicio)
                     .horaFin(horaFin)
@@ -103,8 +101,8 @@ public class DisponibilidadServiceImpl extends CRUDImpl<Disponibilidad, Integer>
             docenteRepo.findById(request.getIdDocente()).ifPresent(disponibilidad::setDocente);
         }
 
-        if (request.getIdCargaElectiva() != null) {
-            cargaElectivaRepo.findById(request.getIdCargaElectiva()).ifPresent(disponibilidad::setCargaElectiva);
+        if (request.getIdCicloAcademico() != null) {
+            cicloAcademicoRepo.findById(request.getIdCicloAcademico()).ifPresent(disponibilidad::setCicloAcademico);
         }
 
         if (request.getDiaSemana() != null) {
@@ -137,16 +135,16 @@ public class DisponibilidadServiceImpl extends CRUDImpl<Disponibilidad, Integer>
         DisponibilidadDetalleResponse response = modelMapper.map(disponibilidad, DisponibilidadDetalleResponse.class);
         return new GenericObjectResponse<>(200, "Disponibilidad actualizada exitosamente", response);
     }
-    public GenericObjectResponse<List<DisponibilidadResumenResponse>> listarDisponibilidadDocente(Integer idDocente, Integer idCargaElectiva) {
+    public GenericObjectResponse<List<DisponibilidadResumenResponse>> listarDisponibilidadDocente(Integer idDocente, Integer idCicloAcademico) {
 
         if (!docenteRepo.existsByIdDocente(idDocente)) {
             return new GenericObjectResponse<>(400, "Docente no encontrado", null);
         }
-        if (!cargaElectivaRepo.existsByIdCargaElectiva(idCargaElectiva)) {
-            return new GenericObjectResponse<>(400, "Carga electiva no encontrada", null);
+        if (!cicloAcademicoRepo.existsByIdCicloAcademico(idCicloAcademico)) {
+            return new GenericObjectResponse<>(400, "ciclo academico no encontrada", null);
         }
 
-        List<Disponibilidad> disponibilidades = disponibilidadRepo.buscarPorDocenteYCargaElectiva(idDocente, idCargaElectiva);
+        List<Disponibilidad> disponibilidades = disponibilidadRepo.buscarPorDocenteYCicloAcademico(idDocente, idCicloAcademico);
 
         List<DisponibilidadResumenResponse> listaDTO = disponibilidades.stream()
                 .map(disponibilidad -> modelMapper.map(disponibilidad, DisponibilidadResumenResponse.class))
@@ -156,4 +154,8 @@ public class DisponibilidadServiceImpl extends CRUDImpl<Disponibilidad, Integer>
     }
 
 
+    @Override
+    public List<Disponibilidad> findByEnabledTrue() {
+        return disponibilidadRepo.findByEnabledTrue();
+    }
 }

@@ -28,7 +28,7 @@ public class CategoriaController {
 
     @GetMapping("/listar")
     public ResponseEntity<GenericReponse<CategoriaDetalleResponse>> findAll() throws Exception {
-        List<CategoriaDetalleResponse> lista = service.findAll()
+        List<CategoriaDetalleResponse> lista = service.findByEnabledTrue()
                 .stream()
                 .map(this::convertToDetalle)
                 .toList();

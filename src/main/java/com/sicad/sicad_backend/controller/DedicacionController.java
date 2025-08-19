@@ -29,7 +29,7 @@ public class DedicacionController {
 
     @GetMapping("/listar")
     public ResponseEntity<GenericReponse<DedicacionDetalleResponse>> findAll() throws Exception {
-        List<DedicacionDetalleResponse> lista = service.findAll()
+        List<DedicacionDetalleResponse> lista = service.findByEnabledTrue()
                 .stream()
                 .map(this::convertToDetalle)
                 .toList();

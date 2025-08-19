@@ -29,4 +29,7 @@ public interface IDocenteRepo extends IGenericRepo<Docente, Integer> {
 
     @Query("SELECT d FROM Docente d WHERE d.enabled = true")
     List<Docente> findAllEnabledDocentes();
+
+    List<Docente> findByEnabledTrue();
+
 }

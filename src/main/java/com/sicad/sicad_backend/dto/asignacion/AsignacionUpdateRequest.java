@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class AsignacionUpdateRequest {
     private Integer idDocente;
     private Integer idCurso;
-    private Integer idCargaElectiva;
+    private Integer idCicloAcademico;
     private String tipoAsignacion;
 }

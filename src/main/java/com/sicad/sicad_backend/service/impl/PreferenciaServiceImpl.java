@@ -9,11 +9,10 @@ import com.sicad.sicad_backend.dto.preferencia.PreferenciaUpdateRequest;
 import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.IAsignaturaRepo;
-import com.sicad.sicad_backend.repository.interfaces.ICargaElectivaRepo;
+import com.sicad.sicad_backend.repository.interfaces.ICicloAcademicoRepo;
 import com.sicad.sicad_backend.repository.interfaces.IDocenteRepo;
 import com.sicad.sicad_backend.repository.interfaces.IPreferenciaRepo;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
-import com.sicad.sicad_backend.service.interfaces.ICursoService;
 import com.sicad.sicad_backend.service.interfaces.IPreferenciaService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -32,7 +31,7 @@ public class PreferenciaServiceImpl
     private final IPreferenciaRepo preferenciaRepo;
     private final IDocenteRepo docenteRepo;
     private final IAsignaturaRepo asignaturaRepo;
-    private final ICargaElectivaRepo cargaElectivaRepo;
+    private final ICicloAcademicoRepo cicloAcademicoRepo;
     private final ModelMapper modelMapper;
 
     @Override
@@ -52,16 +51,16 @@ public class PreferenciaServiceImpl
             System.out.println("Asignatura no encontrada");
             return new GenericObjectResponse<>(404, "Asignatura no encontrada", null);
         }
-        CargaElectiva cargaElectiva = cargaElectivaRepo.findById(request.getIdCargaElectiva()).orElse(null);
-        if(cargaElectiva == null){
-            System.out.println("Carga Electiva no encontrada");
-            return new GenericObjectResponse<>(404, "Carga Electiva no encontrada", null);
+        CicloAcademico cicloAcademico = cicloAcademicoRepo.findById(request.getIdCicloAcademico()).orElse(null);
+        if (cicloAcademico == null) {
+            return new GenericObjectResponse<>(404, "Ciclo academico no encontrada", null);
         }
+
 
         Preferencia preferencia = new Preferencia().builder()
                 .docente(docente)
                 .asignatura(asignatura)
-                .cargaElectiva(cargaElectiva)
+                .cicloAcademico(cicloAcademico)
                 .enabled(true)
                 .build();
         preferenciaRepo.save(preferencia);
@@ -114,12 +113,12 @@ public class PreferenciaServiceImpl
         }
 
         // Validar y actualizar carga electiva si viene en el request
-        if (request.getIdCargaElectiva() != null) {
-            CargaElectiva cargaElectiva = cargaElectivaRepo.findById(request.getIdCargaElectiva()).orElse(null);
-            if (cargaElectiva == null) {
-                return new GenericObjectResponse<>(404, "Carga Electiva no encontrada", null);
+        if (request.getIdCicloAcademico() != null) {
+            CicloAcademico cicloAcademico = cicloAcademicoRepo.findById(request.getIdCicloAcademico()).orElse(null);
+            if (cicloAcademico == null) {
+                return new GenericObjectResponse<>(404, "Ciclo academico no encontrada", null);
             }
-            preferencia.setCargaElectiva(cargaElectiva);
+            preferencia.setCicloAcademico(cicloAcademico);
         }
 
         preferenciaRepo.save(preferencia);
@@ -127,20 +126,20 @@ public class PreferenciaServiceImpl
         PreferenciaDetalleResponse dto = modelMapper.map(preferencia, PreferenciaDetalleResponse.class);
         return new GenericObjectResponse<>(200, "Preferencia actualizada exitosamente", dto);
     }
-    public GenericObjectResponse<List<PreferenciaResumenResponse>> listarPreferenciaDocente(Integer idDocente, Integer idCargaElectiva) {
-        System.out.println("idDocente: " + idDocente + " y id carga electiva: " + idCargaElectiva);
+    public GenericObjectResponse<List<PreferenciaResumenResponse>> listarPreferenciaDocente(Integer idDocente, Integer idCicloAcademico) {
+        System.out.println("idDocente: " + idDocente + " y id ciclo academico: " + idCicloAcademico);
         // Validar existencia de docente
         if (!docenteRepo.existsByIdDocente(idDocente)) {
             return new GenericObjectResponse<>(400, "Docente no encontrado", null);
         }
 
         // Validar existencia de carga electiva
-        if (!cargaElectivaRepo.existsByIdCargaElectiva(idCargaElectiva)) {
+        if (!cicloAcademicoRepo.existsByIdCicloAcademico(idCicloAcademico)) {
             return new GenericObjectResponse<>(400, "Carga electiva no encontrada", null);
         }
 
         // Obtener preferencias filtradas
-        List<Preferencia> preferencias = preferenciaRepo.buscarPorDocenteYCargaElectiva(idDocente, idCargaElectiva);
+        List<Preferencia> preferencias = preferenciaRepo.buscarPorDocenteYCicloAcademico(idDocente, idCicloAcademico);
 
         // Convertir a DTOs
         List<PreferenciaResumenResponse> listaDTO = preferencias.stream()
@@ -148,13 +147,15 @@ public class PreferenciaServiceImpl
                 .collect(Collectors.toList());
 
         String mensaje = listaDTO.isEmpty()
-                ? "No hay preferencias registradas para este docente en esta carga electiva"
+                ? "No hay preferencias registradas para este docente en este ciclo academico"
                 : "Lista obtenida correctamente";
 
         return new GenericObjectResponse<>(200, mensaje, listaDTO);
     }
 
 
-
-
+    @Override
+    public List<Preferencia> findByEnabledTrue() {
+        return preferenciaRepo.findByEnabledTrue();
+    }
 }

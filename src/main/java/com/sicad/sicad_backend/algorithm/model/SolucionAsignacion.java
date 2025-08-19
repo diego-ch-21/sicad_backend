@@ -148,8 +148,8 @@ public class SolucionAsignacion {
                 // Verificar si el docente no excede sus horas máximas específicas
                 int horasActuales = getHorasTotalesDocente(docente.getIdDocente());
                 int horasCurso = getHorasCurso(curso.getIdCurso());
-                int horasMaximas = docente.getHorasMaxLectivas() != null ?
-                        docente.getHorasMaxLectivas() : 12;
+                int horasMaximas = docente.getDedicacion().getHorasMaxLectivas() != null ?
+                        docente.getDedicacion().getHorasMaxLectivas() : 12;
 
                 if (horasActuales + horasCurso <= horasMaximas) {
                     candidatos.add(docente.getIdDocente());
@@ -216,8 +216,8 @@ public class SolucionAsignacion {
                                         .filter(d -> d.getIdDocente().equals(idDocente))
                                         .findFirst().orElse(null);
 
-                                int horasMaximas = (docente != null && docente.getHorasMaxLectivas() != null) ?
-                                        docente.getHorasMaxLectivas() : 12;
+                                int horasMaximas = (docente != null && docente.getDedicacion().getHorasMaxLectivas() != null) ?
+                                        docente.getDedicacion().getHorasMaxLectivas() : 12;
 
                                 return horasActuales + horasCurso <= horasMaximas;
                             })

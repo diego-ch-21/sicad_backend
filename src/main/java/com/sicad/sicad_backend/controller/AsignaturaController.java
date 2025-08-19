@@ -27,7 +27,7 @@ public class AsignaturaController {
 
     @GetMapping("/listar")
     public ResponseEntity<GenericReponse<AsignaturaDetalleResponse>> findAll() throws Exception {
-        List<AsignaturaDetalleResponse> lista = service.findAll()
+        List<AsignaturaDetalleResponse> lista = service.findByEnabledTrue()
                 .stream()
                 .map(this::convertToDetalle)
                 .toList();

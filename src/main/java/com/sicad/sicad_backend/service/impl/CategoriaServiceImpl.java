@@ -40,4 +40,9 @@ public class CategoriaServiceImpl
                 .toList();
         return new GenericReponse<>(201, "Categorías creadas", response);
     }
+
+    @Override
+    public List<Categoria> findByEnabledTrue() {
+        return categoriaRepo.findByEnabledTrue();
+    }
 }

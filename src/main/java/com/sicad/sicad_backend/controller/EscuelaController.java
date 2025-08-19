@@ -30,7 +30,7 @@ public class EscuelaController {
 
     @GetMapping("/listar")
     public ResponseEntity<GenericReponse<EscuelaDetalleResponse>> findAll() throws Exception {
-        List<EscuelaDetalleResponse> lista = service.findAll()
+        List<EscuelaDetalleResponse> lista = service.findByEnabledTrue()
                 .stream()
                 .map(this::convertToResponseDTO)
                 .toList();

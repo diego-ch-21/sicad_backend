@@ -27,17 +27,17 @@ public class PreferenciaController {
     private final ModelMapper modelMapper;
     private final PreferenciaServiceImpl preferenciaServiceImpl;
 
-    @GetMapping("/listar/{idDocente}/{idCargaElectiva}")
+    @GetMapping("/listar/{idDocente}/{idCicloAcademico}")
     public ResponseEntity<GenericObjectResponse<List<PreferenciaResumenResponse>>> findByDocenteAndCargaElectiva(
             @PathVariable("idDocente") Integer idDocente,
-            @PathVariable("idCargaElectiva") Integer idCargaElectiva) throws Exception {
-        GenericObjectResponse<List<PreferenciaResumenResponse>>  response = preferenciaServiceImpl.listarPreferenciaDocente(idDocente, idCargaElectiva);
+            @PathVariable("idCicloAcademico") Integer idCicloAcademico) throws Exception {
+        GenericObjectResponse<List<PreferenciaResumenResponse>>  response = preferenciaServiceImpl.listarPreferenciaDocente(idDocente, idCicloAcademico);
         return ResponseEntity.status(response.status()).body(response);
     }
 
     @GetMapping("/listar")
     public ResponseEntity<GenericReponse<PreferenciaDetalleResponse>> findAll() throws Exception {
-        List<PreferenciaDetalleResponse> lista = service.findAll()
+        List<PreferenciaDetalleResponse> lista = service.findByEnabledTrue()
                 .stream()
                 .map(this::convertToDTO)
                 .toList();

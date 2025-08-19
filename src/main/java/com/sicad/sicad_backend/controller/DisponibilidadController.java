@@ -29,17 +29,17 @@ public class DisponibilidadController {
     private final DisponibilidadServiceImpl disponibilidadServiceImpl;
     private final ModelMapper modelMapper;
 
-    @GetMapping("/listar/{idDocente}/{idCargaElectiva}")
+    @GetMapping("/listar/{idDocente}/{idCicloAcademico}")
     public ResponseEntity<GenericObjectResponse<List<DisponibilidadResumenResponse>>> findByDocenteAndCargaElectiva(
             @PathVariable("idDocente") Integer idDocente,
-            @PathVariable("idCargaElectiva") Integer idCargaElectiva) throws Exception {
-        GenericObjectResponse<List<DisponibilidadResumenResponse>>  response = disponibilidadServiceImpl.listarDisponibilidadDocente(idDocente, idCargaElectiva);
+            @PathVariable("idCicloAcademico") Integer idCicloAcademico) throws Exception {
+        GenericObjectResponse<List<DisponibilidadResumenResponse>>  response = disponibilidadServiceImpl.listarDisponibilidadDocente(idDocente, idCicloAcademico);
         return ResponseEntity.status(response.status()).body(response);
     }
 
     @GetMapping("/listar")
     public ResponseEntity<GenericReponse<DisponibilidadDetalleResponse>> findAll() throws Exception {
-        List<DisponibilidadDetalleResponse> lista = service.findAll()
+        List<DisponibilidadDetalleResponse> lista = service.findByEnabledTrue()
                 .stream()
                 .map(this::convertToDetalleDTO)
                 .toList();

@@ -25,7 +25,7 @@ public class UsuarioController {
 
     @GetMapping("/listar")
     public ResponseEntity<GenericReponse<UsuarioDTO>> findAll() throws Exception {
-        List<UsuarioDTO> lista = service.findAll()
+        List<UsuarioDTO> lista = service.findByEnabledTrue()
                 .stream()
                 .map(this::convertToDTO)
                 .toList();

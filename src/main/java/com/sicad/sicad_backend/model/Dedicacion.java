@@ -26,7 +26,10 @@ public class Dedicacion {
     private Integer horasTotales;
 
     @Column(nullable = false, name = "horas_lectivas_minima")
-    private Integer horasLectivasMinima;
+    private Integer horasMinLectivas;
+
+    @Column(name = "hora_max_lectivas")
+    private Integer horasMaxLectivas;
 
     @Column(nullable = false, name = "enabled")
     private Boolean enabled;

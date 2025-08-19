@@ -82,4 +82,8 @@ public class AsignaturaServiceImpl
         return new GenericReponse<>(201, mensaje, registrados.isEmpty() ? null : registrados);
     }
 
+    @Override
+    public List<Asignatura> findByEnabledTrue() {
+        return asignaturaRepo.findByEnabledTrue();
+    }
 }

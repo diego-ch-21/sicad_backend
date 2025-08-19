@@ -25,9 +25,9 @@ public class Disponibilidad {
     private Docente docente;
 
     @ManyToOne
-    @JoinColumn(name = "id_carga_electiva", nullable = false,
-            foreignKey = @ForeignKey(name = "FK_DISPONIBILIDAD_CARGA_ELECTIVA"))
-    private CargaElectiva cargaElectiva;
+    @JoinColumn(name = "id_ciclo_academico", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_DISPONIBILIDAD_CICLO_ACADEMICO"))
+    private CicloAcademico cicloAcademico;
 
     @Column(nullable = false, name = "dia_semana")
     private String diaSemana;

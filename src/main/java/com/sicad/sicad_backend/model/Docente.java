@@ -40,12 +40,6 @@ public class Docente {
             foreignKey = @ForeignKey(name = "FK_DOCENTE_CATEGORIA"))
     private Categoria categoria;
 
-    @Column(name = "hora_max_lectivas")
-    private Integer horasMaxLectivas;
-
-    @Column(name = "tiene_permiso_exceso")
-    private Boolean tienePermisoExceso;
-
     @OneToMany(mappedBy = "docente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Preferencia> preferencias = new ArrayList<>();
 
@@ -54,7 +48,6 @@ public class Docente {
 
     @OneToMany(mappedBy = "docente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Asignacion> asignaciones = new ArrayList<>();
-
 
     @Column(nullable = false, name = "enabled")
     private boolean enabled;

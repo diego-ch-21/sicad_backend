@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface ICursoService extends ICRUD<Curso, Integer> {
-
+    List<Curso> findByEnabledTrue();
 }

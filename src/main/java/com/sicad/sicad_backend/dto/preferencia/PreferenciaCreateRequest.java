@@ -15,6 +15,6 @@ public class PreferenciaCreateRequest {
     private Integer idDocente;
     @NotNull(message = "El idAsignatura es un campo obligatorio")
     private Integer idAsignatura;
-    @NotNull(message = "El idCargaElectiva es un campo obligatorio")
-    private Integer idCargaElectiva;
+    @NotNull(message = "El idCicloAcademico es un campo obligatorio")
+    private Integer idCicloAcademico;
 }

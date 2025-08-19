@@ -45,7 +45,7 @@ public class AlgoritmoAsignacionService {
      * ACTUALIZADO: Nuevo modelo de restricciones
      */
     public List<Asignacion> ejecutarAlgoritmoHibrido(List<Docente> docentes, List<Curso> cursos,
-                                                     CargaElectiva cargaElectiva,
+                                                     CicloAcademico cicloAcademico,
                                                      Map<Integer, List<Disponibilidad>> disponibilidadPorDocente,
                                                      Map<Integer, List<Preferencia>> preferenciasPorDocente) {
 
@@ -54,12 +54,12 @@ public class AlgoritmoAsignacionService {
         log.info("RESTRICCIONES BLANDAS: Solo preferencias de docentes");
         log.info("ELIMINADO: Consideración de dedicación y categoría");
         log.info("Docentes: {}, Cursos: {}, Carga Electiva: {}",
-                docentes.size(), cursos.size(), cargaElectiva.getNombre());
+                docentes.size(), cursos.size(), cicloAcademico.getNombre());
 
         try {
             // 1. Inicialización del validador de restricciones (actualizado)
             RestriccionValidator validator = new RestriccionValidator(
-                    docentes, cursos, disponibilidadPorDocente, preferenciasPorDocente, cargaElectiva);
+                    docentes, cursos, disponibilidadPorDocente, preferenciasPorDocente, cicloAcademico);
 
             // 2. Generar población inicial diversa
             List<SolucionAsignacion> poblacionInicial = generarPoblacionInicial(
@@ -114,7 +114,7 @@ public class AlgoritmoAsignacionService {
                 logearEstadisticasFinales(mejorSolucion, docentes, cursos);
 
                 // 5. Convertir a entidades de asignación
-                return convertirAAsignaciones(mejorSolucion, docentes, cursos, cargaElectiva);
+                return convertirAAsignaciones(mejorSolucion, docentes, cursos, cicloAcademico);
             } else {
                 log.error("No se pudo generar ninguna solución válida");
                 return new ArrayList<>();
@@ -306,7 +306,7 @@ public class AlgoritmoAsignacionService {
      * Convierte la mejor solución a entidades de Asignacion
      */
     private List<Asignacion> convertirAAsignaciones(SolucionAsignacion solucion, List<Docente> docentes,
-                                                    List<Curso> cursos, CargaElectiva cargaElectiva) {
+                                                    List<Curso> cursos, CicloAcademico cicloAcademico) {
         List<Asignacion> asignaciones = new ArrayList<>();
 
         for (Map.Entry<Integer, Integer> entry : solucion.getAsignaciones().entrySet()) {
@@ -327,7 +327,7 @@ public class AlgoritmoAsignacionService {
                 Asignacion asignacion = new Asignacion();
                 asignacion.setDocente(docente);
                 asignacion.setCurso(curso);
-                asignacion.setCargaElectiva(cargaElectiva);
+                asignacion.setCicloAcademico(cicloAcademico);
                 asignacion.setTipoAsignacion("LECTIVO");
                 asignacion.setEnabled(true);
                 asignacion.setCreatedAt(LocalDate.now());
@@ -359,8 +359,8 @@ public class AlgoritmoAsignacionService {
                 .sum();
 
         // Usar horasMaxLectivas específicas del docente
-        int horasMaximas = docente.getHorasMaxLectivas() != null ?
-                docente.getHorasMaxLectivas() : 12;
+        int horasMaximas = docente.getDedicacion().getHorasMaxLectivas() != null ?
+                docente.getDedicacion().getHorasMaxLectivas() : 12;
 
         if (horasActuales + horasCurso > horasMaximas) {
             return false;
@@ -406,8 +406,8 @@ public class AlgoritmoAsignacionService {
                 Docente docente = docenteOpt.get();
                 int horas = mejorSolucion.getHorasTotalesDocente(idDocente);
                 int cursosAsignados = mejorSolucion.getCursosDeDocente(idDocente).size();
-                int horasMaximas = docente.getHorasMaxLectivas() != null ?
-                        docente.getHorasMaxLectivas() : 12;
+                int horasMaximas = docente.getDedicacion().getHorasMaxLectivas() != null ?
+                        docente.getDedicacion().getHorasMaxLectivas() : 12;
 
                 // ELIMINADO: Información de dedicación y categoría
                 log.info("Docente {}: {} horas (máx: {}), {} cursos",

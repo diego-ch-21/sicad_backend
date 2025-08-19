@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DisponibilidadUpdateRequest {
     private Integer idDocente;
-    private Integer idCargaElectiva;
+    private Integer idCicloAcademico;
     private String diaSemana;
     private String horaInicio;
     private String horaFin;

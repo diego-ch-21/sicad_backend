@@ -237,8 +237,8 @@ public class CursoServiceImpl
         return new GenericReponse<>(201, mensaje, horariosRegistrados);
     }
 
-    @Transactional
-    public GenericObjectResponse<String> eliminarCursosPorCicloAcademico(Integer idCicloAcademico) {
+    //@Transactional
+    public GenericObjectResponse<String> eliminarCursoPorCicloAcademico(Integer idCicloAcademico) {
         // Validación de parámetro
         if (idCicloAcademico == null) {
             return new GenericObjectResponse<>(400, "ID de ciclo académico no proporcionado", null);
@@ -250,22 +250,16 @@ public class CursoServiceImpl
             return new GenericObjectResponse<>(404, "Ciclo académico no encontrado", null);
         }
 
-        // Eliminar cursos asociados
-        int eliminados;
-        try {
-            eliminados = cursoRepo.eliminarPorCicloAcademico(idCicloAcademico);
-        } catch (Exception e) {
-            return new GenericObjectResponse<>(500, "Error al eliminar cursos: " + e.getMessage(), null);
-        }
-
-        // Generar respuesta
-        String mensaje = eliminados > 0
-                ? "Se eliminaron " + eliminados + " curso(s) del ciclo académico ID: " + idCicloAcademico
-                : "No se encontraron cursos asociados al ciclo académico ID: " + idCicloAcademico;
+        // desabilitar
+        ciclo.setEnabled(false);
+        String mensaje ="se elimino el curso exitosamente";
 
         return new GenericObjectResponse<>(200, mensaje, null);
     }
 
 
-
+    @Override
+    public List<Curso> findByEnabledTrue() {
+        return cursoRepo.findByEnabledTrue();
+    }
 }

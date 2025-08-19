@@ -8,6 +8,8 @@ import com.sicad.sicad_backend.service.interfaces.IUsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class UsuarioServiceImpl
@@ -22,4 +24,8 @@ public class UsuarioServiceImpl
     }
 
 
+    @Override
+    public List<Usuario> findByEnabledTrue() {
+        return repo.findByEnabledTrue();
+    }
 }

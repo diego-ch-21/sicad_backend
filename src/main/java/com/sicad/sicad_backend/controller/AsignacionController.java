@@ -61,22 +61,22 @@ public class AsignacionController {
         return modelMapper.map(obj, AsignacionDetalleResponse.class);
     }
 
-    @DeleteMapping("/eliminar/{idCargaElectiva}")
-    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idCargaElectiva") Integer id) {
-        GenericObjectResponse<String> response = asignacionServiceImpl.eliminarAsignacionesPorCargaElectiva(id);
+    @DeleteMapping("/eliminar/{idCicloAcademico}")
+    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idCicloAcademico") Integer id) {
+        GenericObjectResponse<String> response = asignacionServiceImpl.eliminarAsignacionCicloAcademico(id);
         return ResponseEntity.status(response.status()).body(response);
     }
     // NUEVO ENDPOINT PARA EL ALGORITMO HÍBRIDO GA + PSO
-    @PostMapping("/algoritmo/{idCargaElectiva}")
+    @PostMapping("/algoritmo/{idCicloAcademico}")
     public ResponseEntity<GenericObjectResponse<List<AsignacionDetalleResponse>>> asignarConAlgoritmoHibrido(
-            @PathVariable("idCargaElectiva") Integer idCargaElectiva) {
+            @PathVariable("idCicloAcademico") Integer idCicloAcademico) {
 
         try {
-            System.out.println("Solicitud de asignación con algoritmo híbrido para carga electiva: " + idCargaElectiva);
+            System.out.println("Solicitud de asignación con algoritmo híbrido para ciclo academico: " + idCicloAcademico);
 
             // Llamar al método del service que ejecuta el algoritmo híbrido GA+PSO
             GenericObjectResponse<List<AsignacionDetalleResponse>> response =
-                    asignacionServiceImpl.asignarConAlgoritmoGeneticoPSO(idCargaElectiva);
+                    asignacionServiceImpl.asignarConAlgoritmoGeneticoPSO(idCicloAcademico);
 
             // Log del resultado
             if (response.status() == 201) {
@@ -96,7 +96,7 @@ public class AsignacionController {
                             "Error de validación: " + e.getMessage(), null));
 
         } catch (Exception e) {
-            System.out.println("Error crítico en algoritmo híbrido para carga electiva " + idCargaElectiva + ": " + e.getMessage());
+            System.out.println("Error crítico en algoritmo híbrido para carga electiva " + idCicloAcademico + ": " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new GenericObjectResponse<>(500,
                             "Error interno del servidor en algoritmo híbrido: " + e.getMessage(), null));

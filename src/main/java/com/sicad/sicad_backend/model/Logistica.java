@@ -7,19 +7,17 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "facultad")
-public class Facultad {
-
+@Table(name="logistica")
+public class Logistica {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
-    @Column(name = "id_facultad")
-    private Integer idFacultad;
+    private Integer idLogistica;
+    @OneToOne
+    @JoinColumn(name = "id_usuario", nullable = false, unique = true)
+    private Usuario usuario;
 
-    @Column(nullable = false, name = "nombre")
-    private String nombre;
-
-    @Column(nullable = false, name = "enabled")
-    private boolean enabled;
+    private String carga;
 }

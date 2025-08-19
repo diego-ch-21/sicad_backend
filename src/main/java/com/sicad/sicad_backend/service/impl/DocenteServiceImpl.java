@@ -105,8 +105,6 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
                 .usuario(usuario)
                 .dedicacion(dedicacion)
                 .categoria(categoria)
-                .horasMaxLectivas(request.getHorasMaxLectivas())
-                .tienePermisoExceso(tienePermisoExceso)
                 .codigo(codigoDocente)
                 .enabled(true)
                 .build();
@@ -161,8 +159,6 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         // 5. Actualizar datos del Docente
         docente.setDedicacion(dedicacion);
         docente.setCategoria(categoria);
-        docente.setHorasMaxLectivas(request.getHorasMaxLectivas());
-        docente.setTienePermisoExceso(tienePermisoExceso);
         docenteRepo.save(docente);
 
         // 6. Mapear y retornar
@@ -235,8 +231,6 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
                 .usuario(usuario)
                 .dedicacion(dedicacion)
                 .categoria(categoria)
-                .horasMaxLectivas(horasMaxLectivas)
-                .tienePermisoExceso(tienePermisoExceso)
                 .codigo(codigoDocente)
                 .enabled(true)
                 .build();
@@ -313,8 +307,8 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
 
                     // Filtrar preferencias por idCargaElectiva
                     List<PreferenciaResumenResponse> preferenciasFiltradas = docente.getPreferencias().stream()
-                            .filter(pref -> pref.getCargaElectiva() != null &&
-                                    pref.getCargaElectiva().getIdCargaElectiva().equals(idCargaElectiva))
+                            .filter(pref -> pref.getCicloAcademico() != null &&
+                                    pref.getCicloAcademico().getIdCicloAcademico().equals(idCargaElectiva))
                             .map(pref -> modelMapper.map(pref, PreferenciaResumenResponse.class))
                             .toList();
 
@@ -340,8 +334,8 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
 
                     // Filtrar preferencias por idCargaElectiva
                     List<DisponibilidadResumenResponse> disponibilidadFiltradas = docente.getDisponibilidad().stream()
-                            .filter(dis -> dis.getCargaElectiva() != null &&
-                                    dis.getCargaElectiva().getIdCargaElectiva().equals(idCargaElectiva))
+                            .filter(dis -> dis.getCicloAcademico() != null &&
+                                    dis.getCicloAcademico().getIdCicloAcademico().equals(idCargaElectiva))
                             .map(dis -> modelMapper.map(dis, DisponibilidadResumenResponse.class))
                             .toList();
 
@@ -368,8 +362,8 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
 
                     // Filtrar preferencias por idCargaElectiva
                     List<AsignacionResumenResponse> asignacionFiltradas = docente.getAsignaciones().stream()
-                            .filter(asic -> asic.getCargaElectiva() != null &&
-                                    asic.getCargaElectiva().getIdCargaElectiva().equals(idCargaElectiva))
+                            .filter(asic -> asic.getCicloAcademico() != null &&
+                                    asic.getCicloAcademico().getIdCicloAcademico().equals(idCargaElectiva))
                             .map(asic -> modelMapper.map(asic, AsignacionResumenResponse.class))
                             .toList();
 
@@ -395,8 +389,8 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
 
         // Filtrar asignaciones por idCargaElectiva
         List<AsignacionResumenResponse> asignacionesFiltradas = docente.getAsignaciones().stream()
-                .filter(asic -> asic.getCargaElectiva() != null &&
-                        asic.getCargaElectiva().getIdCargaElectiva().equals(idCargaElectiva))
+                .filter(asic -> asic.getCicloAcademico() != null &&
+                        asic.getCicloAcademico().getIdCicloAcademico().equals(idCargaElectiva))
                 .map(asic -> modelMapper.map(asic, AsignacionResumenResponse.class))
                 .toList();
 
@@ -416,5 +410,11 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
 
     private Docente convertToEntity(DocenteCreateRequest dto) {
         return modelMapper.map(dto, Docente.class);
+    }
+
+    @Override
+    public List<Docente> findByEnabledTrue() {
+        return docenteRepo.findByEnabledTrue();
+
     }
 }

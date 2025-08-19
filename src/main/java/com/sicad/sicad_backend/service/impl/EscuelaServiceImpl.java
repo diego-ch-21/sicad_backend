@@ -2,16 +2,12 @@ package com.sicad.sicad_backend.service.impl;
 
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
-import com.sicad.sicad_backend.dto.curso.CursoCreateRequest;
-import com.sicad.sicad_backend.dto.curso.CursoDetalleResponse;
 import com.sicad.sicad_backend.dto.escuela.EscuelaCreateRequest;
 import com.sicad.sicad_backend.dto.escuela.EscuelaDetalleResponse;
 import com.sicad.sicad_backend.dto.escuela.EscuelaUpdateRequest;
 import com.sicad.sicad_backend.model.Escuela;
-import com.sicad.sicad_backend.model.Facultad;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.IEscuelaRepo;
-import com.sicad.sicad_backend.repository.interfaces.IFacultadRepo;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.IEscuelaService;
 import com.sicad.sicad_backend.utils.CodigoGeneratorUtil;
@@ -38,11 +34,6 @@ public class EscuelaServiceImpl
     }
 
     public GenericObjectResponse<EscuelaDetalleResponse> registrarEscuela(EscuelaCreateRequest request) {
-        // 1. Verificar existencia de la facultad
-        Facultad facultad = facultadRepo.findById(request.getIdFacultad()).orElse(null);
-        if (facultad == null) {
-            return new GenericObjectResponse<>(404, "Facultad no encontrada", null);
-        }
 
         // 2. Generar código único
         String codigo;
@@ -53,7 +44,6 @@ public class EscuelaServiceImpl
         // 3. Crear y guardar Escuela
         Escuela escuela = Escuela.builder()
                 .nombre(request.getNombre())
-                .facultad(facultad)
                 .codigo(codigo)
                 .enabled(true)
                 .build();
@@ -92,14 +82,6 @@ public class EscuelaServiceImpl
             escuela.setNombre(request.getNombre());
         }
 
-        // 3. Actualizar facultad si viene
-        if (request.getIdFacultad() != null) {
-            Facultad facultad = facultadRepo.findById(request.getIdFacultad()).orElse(null);
-            if (facultad == null) {
-                return new GenericObjectResponse<>(404, "Facultad no encontrada", null);
-            }
-            escuela.setFacultad(facultad);
-        }
 
         // 5. Guardar y retornar
         escuelaRepo.save(escuela);
@@ -108,4 +90,8 @@ public class EscuelaServiceImpl
     }
 
 
+    @Override
+    public List<Escuela> findByEnabledTrue() {
+        return escuelaRepo.findByEnabledTrue();
+    }
 }

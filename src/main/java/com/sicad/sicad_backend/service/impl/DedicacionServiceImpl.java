@@ -38,4 +38,9 @@ public class DedicacionServiceImpl
                 .toList();
         return new GenericReponse<>(201, "Dedicaciones creadas", response);
     }
+
+    @Override
+    public List<Dedicacion> findByEnabledTrue() {
+        return dedicacionRepo.findByEnabledTrue();
+    }
 }

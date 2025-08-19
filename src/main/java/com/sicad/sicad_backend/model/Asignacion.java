@@ -30,9 +30,9 @@ public class Asignacion {
     private Curso curso;
 
     @ManyToOne
-    @JoinColumn(name = "id_carga_electiva", nullable = false,
-            foreignKey = @ForeignKey(name = "FK_ASIGNACION_CARGA_ELECTIVA"))
-    private CargaElectiva cargaElectiva;
+    @JoinColumn(name = "id_ciclo_academico", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_ASIGNACION_CICLO_ACADEMICO"))
+    private CicloAcademico cicloAcademico;
 
     @Column(nullable = false, name = "tipo_asignacion")
     private String tipoAsignacion;

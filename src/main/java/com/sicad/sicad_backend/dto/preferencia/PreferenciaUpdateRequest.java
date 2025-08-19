@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 public class PreferenciaUpdateRequest {
     private Integer idDocente;
     private Integer idAsignatura;
-    private Integer idCargaElectiva;
+    private Integer idCicloAcademico;
 }

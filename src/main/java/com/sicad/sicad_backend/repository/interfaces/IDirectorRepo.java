@@ -4,9 +4,11 @@ import com.sicad.sicad_backend.model.Director;
 import com.sicad.sicad_backend.model.Usuario;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface IDirectorRepo extends IGenericRepo<Director, Integer> {
     Optional<Director> findByUsuario(Usuario usuario);
     boolean existsByCodigo(String codigo);
+    List<Director> findByEnabledTrue();
 }

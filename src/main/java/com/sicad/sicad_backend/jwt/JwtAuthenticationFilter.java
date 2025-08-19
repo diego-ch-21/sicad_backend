@@ -1,7 +1,7 @@
 package com.sicad.sicad_backend.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sicad.sicad_backend.dto.base.GenericMessageResponse;
+import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
@@ -94,7 +94,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.setStatus(status);
         response.setContentType("application/json");
         ObjectMapper mapper = new ObjectMapper();
-        GenericMessageResponse error = new GenericMessageResponse(status, message);
+        GenericObjectResponse error = new GenericObjectResponse(status, message,null);
         response.getWriter().write(mapper.writeValueAsString(error));
     }
 }

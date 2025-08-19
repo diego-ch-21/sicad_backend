@@ -8,6 +8,8 @@ import com.sicad.sicad_backend.service.interfaces.IRolService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class RolServiceImpl
@@ -19,5 +21,10 @@ public class RolServiceImpl
     @Override
     protected IGenericRepo<Rol, Integer> getRepo() {
         return repo;
+    }
+
+    @Override
+    public List<Rol> findByEnabledTrue() {
+        return repo.findByEnabledTrue();
     }
 }

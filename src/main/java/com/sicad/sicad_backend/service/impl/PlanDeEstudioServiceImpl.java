@@ -5,10 +5,8 @@ import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioCreateRequest;
 import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioDetalleResponse;
 import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioUpdateRequest;
-import com.sicad.sicad_backend.model.Facultad;
 import com.sicad.sicad_backend.model.PlanDeEstudio;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
-import com.sicad.sicad_backend.repository.interfaces.IFacultadRepo;
 import com.sicad.sicad_backend.repository.interfaces.IPlanDeEstudioRepo;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.IPlanDeEstudioService;
@@ -25,7 +23,6 @@ import java.util.List;
 public class PlanDeEstudioServiceImpl extends CRUDImpl<PlanDeEstudio, Integer> implements IPlanDeEstudioService {
 
     private final IPlanDeEstudioRepo planRepo;
-    private final IFacultadRepo facultadRepo;
     private final ModelMapper modelMapper;
 
     @Override
@@ -34,11 +31,6 @@ public class PlanDeEstudioServiceImpl extends CRUDImpl<PlanDeEstudio, Integer> i
     }
 
     public GenericObjectResponse<PlanDeEstudioDetalleResponse> registrarPlan(PlanDeEstudioCreateRequest request) {
-        // 1. Verificar facultad
-        Facultad facultad = facultadRepo.findById(request.getIdFacultad()).orElse(null);
-        if (facultad == null) {
-            return new GenericObjectResponse<>(404, "Facultad no encontrada", null);
-        }
 
         // 2. Generar código único (suponiendo código numérico de 6 dígitos)
         Integer codigo;
@@ -48,7 +40,6 @@ public class PlanDeEstudioServiceImpl extends CRUDImpl<PlanDeEstudio, Integer> i
 
         // 3. Crear PlanDeEstudio
         PlanDeEstudio plan = PlanDeEstudio.builder()
-                .facultad(facultad)
                 .codigo(codigo)
                 .nombre(request.getNombre())
                 .enabled(true)
@@ -64,15 +55,6 @@ public class PlanDeEstudioServiceImpl extends CRUDImpl<PlanDeEstudio, Integer> i
         PlanDeEstudio plan = planRepo.findById(idPlan).orElse(null);
         if (plan == null) {
             return new GenericObjectResponse<>(404, "Plan de Estudio no encontrado", null);
-        }
-
-        // Actualizar facultad si viene
-        if (request.getIdFacultad() != null) {
-            Facultad facultad = facultadRepo.findById(request.getIdFacultad()).orElse(null);
-            if (facultad == null) {
-                return new GenericObjectResponse<>(404, "Facultad no encontrada", null);
-            }
-            plan.setFacultad(facultad);
         }
 
         // Actualizar nombre si viene
@@ -100,5 +82,10 @@ public class PlanDeEstudioServiceImpl extends CRUDImpl<PlanDeEstudio, Integer> i
 
         String mensaje = String.format("Planes registrados: %d. Fallidos: %d.", registrados.size(), errorCount);
         return new GenericReponse<>(201, mensaje, registrados.isEmpty() ? null : registrados);
+    }
+
+    @Override
+    public List<PlanDeEstudio> findByEnabledTrue() {
+        return planRepo.findByEnabledTrue();
     }
 }

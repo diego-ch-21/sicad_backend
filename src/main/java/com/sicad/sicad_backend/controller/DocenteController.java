@@ -26,7 +26,7 @@ public class DocenteController {
 
     @GetMapping("/listar")
     public ResponseEntity<GenericReponse<DocenteDetalleResponse>> findAll() throws Exception {
-        List<DocenteDetalleResponse> lista = service.findAll()
+        List<DocenteDetalleResponse> lista = service.findByEnabledTrue()
                 .stream()
                 .map(this::convertToResponseDTO)
                 .toList();

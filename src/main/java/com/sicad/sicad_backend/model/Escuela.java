@@ -24,11 +24,6 @@ public class Escuela {
     @Column(nullable = false, name = "nombre")
     private String nombre;
 
-    @ManyToOne
-    @JoinColumn(name = "id_facultad", nullable = false,
-            foreignKey = @ForeignKey(name = "FK_ESCUELA_FACULTAD"))
-    private Facultad facultad;
-
     @Column(nullable = false,name="enabled")
     private boolean enabled;
 }

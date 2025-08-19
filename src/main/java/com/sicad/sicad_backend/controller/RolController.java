@@ -25,7 +25,7 @@ public class RolController {
 
     @GetMapping("/listar")
     public ResponseEntity<GenericReponse<RolDTO>> findAll() throws Exception {
-        List<RolDTO> lista = service.findAll()
+        List<RolDTO> lista = service.findByEnabledTrue()
                 .stream()
                 .map(this::convertToDTO)
                 .toList();

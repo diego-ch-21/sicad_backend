@@ -28,7 +28,7 @@ public class CicloAcademicoController {
 
     @GetMapping("/listar")
     public ResponseEntity<GenericReponse<CicloAcademicoDetalleResponse>> findAll() throws Exception {
-        List<CicloAcademicoDetalleResponse> lista = service.findAll()
+        List<CicloAcademicoDetalleResponse> lista = service.findByEnabledTrue()
                 .stream()
                 .map(this::convertToResponseDTO)
                 .toList();

@@ -27,7 +27,7 @@ public class DirectorController {
 
     @GetMapping("/listar")
     public ResponseEntity<GenericReponse<DirectorDetalleResponse>> findAll() throws Exception {
-        List<DirectorDetalleResponse> lista = service.findAll()
+        List<DirectorDetalleResponse> lista = service.findByEnabledTrue()
                 .stream()
                 .map(this::convertToResponseDTO)
                 .toList();
