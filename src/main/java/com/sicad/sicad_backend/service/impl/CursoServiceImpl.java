@@ -34,6 +34,7 @@ public class CursoServiceImpl
     private final IPlanDeEstudioRepo planDeEstudioRepo;
     private final IEscuelaRepo escuelaRepo;
     private final ICicloAcademicoRepo cicloAcademicoRepo;
+    private final ICargaRepo cargaRepo;
     private final ModelMapper modelMapper;
 
     @Override
@@ -58,8 +59,15 @@ public class CursoServiceImpl
         if (cicloAcademico == null) {
             return new GenericReponse<>(404, "Ciclo académico no encontrado", null);
         }
+        /*
+        Carga carga = cargaRepo.findById(idCarga).orElse(null);
+        if(carga == null) {
+            return new GenericReponse<>(404, "Carga no encontrada", null);
+        }
 
-        List<Curso> cursos = cursoRepo.buscarPorPeriodoAcademico(idCicloAcademico);
+         */
+
+        List<Curso> cursos = cursoRepo.buscarPorCicloAcademico(idCicloAcademico);
 
         List<CursoDetalleResponse> responseList = cursos.stream()
                 .map(curso -> modelMapper.map(curso, CursoDetalleResponse.class))

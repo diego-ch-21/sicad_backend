@@ -1,6 +1,7 @@
 package com.sicad.sicad_backend.service.impl;
 
 import com.sicad.sicad_backend.algorithm.service.AlgoritmoAsignacionService;
+import com.sicad.sicad_backend.dto.algoritmo.AlgoritmoDetalleResponse;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionCreateRequest;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionDetalleResponse;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionUpdateRequest;
@@ -34,6 +35,7 @@ public class AsignacionServiceImpl
     private final ICicloAcademicoRepo cicloAcademicoRepo;
     private final IPreferenciaRepo preferenciaRepo;
     private final IDisponibilidadRepo disponibilidadRepo;
+    private final IAlgoritmoRepo algoritmoRepo;
     private final ModelMapper modelMapper;
     // Nuevo servicio del algoritmo
     private final AlgoritmoAsignacionService algoritmoService;
@@ -42,7 +44,7 @@ public class AsignacionServiceImpl
     protected IGenericRepo<Asignacion, Integer> getRepo() {
         return asignacionRepo;
     }
-
+    /*
     public GenericObjectResponse<AsignacionDetalleResponse> registrarAsignacion(AsignacionCreateRequest request) {
         Docente docente = docenteRepo.findById(request.getIdDocente()).orElse(null);
         if (docente == null) {
@@ -70,6 +72,8 @@ public class AsignacionServiceImpl
         AsignacionDetalleResponse dto = modelMapper.map(asignacion, AsignacionDetalleResponse.class);
         return new GenericObjectResponse<>(201, "Asignación registrada exitosamente", dto);
     }
+
+     */
 
     public GenericObjectResponse<AsignacionDetalleResponse> actualizarAsignacion(Integer id, AsignacionUpdateRequest request) {
         Asignacion asignacion = asignacionRepo.findById(id).orElse(null);
@@ -101,7 +105,7 @@ public class AsignacionServiceImpl
             return new GenericObjectResponse<>(400, "Conflicto de unicidad: ya existe una asignación para este docente y horario", null);
         }
     }
-
+    /*
     public GenericObjectResponse<String> eliminarAsignacionCicloAcademico(Integer idCicloAcademico) {
         // Validación de parámetro
         if (idCicloAcademico == null) {
@@ -119,6 +123,8 @@ public class AsignacionServiceImpl
         return new GenericObjectResponse<>(200, mensaje, null);
     }
 
+     */
+
 
     //------------------------------------------------------------------------------------------------------
 
@@ -134,12 +140,18 @@ public class AsignacionServiceImpl
         //System.out.println("ELIMINADO: Consideración de dedicación y categoría");
 
 
+
         try {
             // 1. Validaciones iniciales
             CicloAcademico cicloAcademico = cicloAcademicoRepo.findById(idCicloAcademico).orElse(null);
             if (cicloAcademico == null) {
                 return new GenericObjectResponse<>(404, "Ciclo académico no encontrado", null);
             }
+            Optional<Algoritmo> principalActualOpt = algoritmoRepo.findByPrincipalTrue();
+            if (!principalActualOpt.isPresent()) {
+                return new GenericObjectResponse<>(400, "no exite un algoritmo principal seleccionado", null);
+            }
+            Algoritmo algoritmoPrincipal = principalActualOpt.get();
 
             // 2. Recolección de datos necesarios
             // Obtener docentes que tienen disponibilidad para este cicloa cademico
@@ -163,15 +175,18 @@ public class AsignacionServiceImpl
             System.out.println("=== Datos preparados - Disponibilidad y preferencias por docente ===");
             logearLimitesDocentesActualizado(docentes);
 
+            /*
             // 4. Eliminar asignaciones anteriores para esta carga electiva
             asignacionRepo.deshabilitarPorCicloAcademico(idCicloAcademico);
+
+             */
 
 
             System.out.println("=== Asignaciones anteriores eliminadas ===");
 
             // 5. Ejecutar algoritmo híbrido actualizado
             List<Asignacion> asignacionesOptimas = algoritmoService.ejecutarAlgoritmoHibrido(
-                    docentes, cursos, cargaElectiva, disponibilidadPorDocente, preferenciasPorDocente);
+                    docentes, cursos, cicloAcademico, disponibilidadPorDocente, preferenciasPorDocente,algoritmoPrincipal);
 
             // 6. Validar y guardar resultados
             if (asignacionesOptimas.isEmpty()) {
@@ -334,9 +349,9 @@ public class AsignacionServiceImpl
      * Verifica si una asignación satisface las preferencias del docente (RESTRICCIÓN BLANDA)
      */
     private boolean verificarPreferenciaSatisfecha(Asignacion asignacion) {
-        List<Preferencia> preferencias = preferenciaRepo.buscarPorDocenteYCargaElectiva(
+        List<Preferencia> preferencias = preferenciaRepo.buscarPorDocenteYCicloAcademico(
                 asignacion.getDocente().getIdDocente(),
-                asignacion.getCargaElectiva().getIdCargaElectiva());
+                asignacion.getCicloAcademico().getIdCicloAcademico());
 
         return preferencias.stream()
                 .anyMatch(pref -> pref.getAsignatura().getIdAsignatura()
@@ -346,23 +361,23 @@ public class AsignacionServiceImpl
     /**
      * ACTUALIZADO: Obtiene estadísticas detalladas con nuevo modelo de restricciones
      */
-    public GenericObjectResponse<Map<String, Object>> obtenerEstadisticasAsignacion(Integer idCargaElectiva) {
+    public GenericObjectResponse<Map<String, Object>> obtenerEstadisticasAsignacion(Integer idCicloAcademico) {
         try {
-            // Validar carga electiva
-            CargaElectiva cargaElectiva = cargaElectivaRepo.findById(idCargaElectiva).orElse(null);
-            if (cargaElectiva == null) {
-                return new GenericObjectResponse<>(404, "Carga Electiva no encontrada", null);
+            // Validar ciclo academico
+            CicloAcademico cicloAcademico = cicloAcademicoRepo.findById(idCicloAcademico).orElse(null);
+            if(cicloAcademico == null) {
+                return new GenericObjectResponse<>(404, "Ciclo Academico no encontrada", null);
             }
 
             // Obtener asignaciones actuales
             List<Asignacion> asignaciones = asignacionRepo.findAll().stream()
-                    .filter(a -> a.getCargaElectiva().getIdCargaElectiva().equals(idCargaElectiva))
+                    .filter(a -> a.getCicloAcademico().getIdCicloAcademico().equals(idCicloAcademico))
                     .filter(Asignacion::getEnabled)
                     .collect(Collectors.toList());
 
             // Obtener datos de contexto
-            List<Docente> docentesDisponibles = obtenerDocentesDisponibles(idCargaElectiva);
-            List<Curso> cursosDelCiclo = obtenerCursosPorCiclo(cargaElectiva.getCicloAcademico().getIdCicloAcademico());
+            List<Docente> docentesDisponibles = obtenerDocentesDisponibles(idCicloAcademico);
+            List<Curso> cursosDelCiclo = obtenerCursosPorCiclo(cicloAcademico.getIdCicloAcademico());
 
             // Calcular estadísticas
             Map<String, Object> estadisticas = new HashMap<>();
@@ -467,7 +482,7 @@ public class AsignacionServiceImpl
             estadisticas.put("cursosSinAsignarDetalle", cursosSinAsignar);
 
             // ACTUALIZADO: Metadata con nuevo modelo
-            estadisticas.put("cargaElectiva", cargaElectiva.getNombre());
+            estadisticas.put("cargaElectiva", cicloAcademico.getNombre());
             estadisticas.put("fechaAnalisis", LocalDate.now().toString());
             estadisticas.put("totalAsignaciones", asignaciones.size());
             //estadisticas.put("modeloRestriccion", "ACTUALIZADO: Duras = Disponibilidad + horasMaxLectivas | Blandas = Solo preferencias");
@@ -478,7 +493,7 @@ public class AsignacionServiceImpl
             return new GenericObjectResponse<>(200, "Estadísticas generadas con modelo actualizado de restricciones", estadisticas);
 
         } catch (Exception e) {
-            System.out.println("=== Error al generar estadísticas para carga electiva " + idCargaElectiva + " ===");
+            System.out.println("=== Error al generar estadísticas para carga electiva " + idCicloAcademico + " ===");
             return new GenericObjectResponse<>(500, "Error al generar estadísticas: " + e.getMessage(), null);
         }
     }
@@ -498,30 +513,32 @@ public class AsignacionServiceImpl
     private List<Curso> obtenerCursosPorCiclo(Integer idCicloAcademico) {
         return cursoRepo.buscarPorPeriodoAcademico(idCicloAcademico);
     }
-
-    private List<Asignacion> ejecutarAlgoritmoHibrido(List<Docente> docentes, List<Curso> cursos, CargaElectiva cargaElectiva) {
+    /*
+    private List<Asignacion> ejecutarAlgoritmoHibrido(List<Docente> docentes, List<Curso> cursos, CicloAcademico cicloAcademico) {
         // Usar el nuevo servicio de algoritmo híbrido actualizado
         try {
             // Preparar datos para el algoritmo
-            Map<Integer, List<Disponibilidad>> disponibilidadPorDocente = prepararDisponibilidad(docentes, cargaElectiva.getIdCargaElectiva());
-            Map<Integer, List<Preferencia>> preferenciasPorDocente = prepararPreferencias(docentes, cargaElectiva.getIdCargaElectiva());
+            Map<Integer, List<Disponibilidad>> disponibilidadPorDocente = prepararDisponibilidad(docentes, cicloAcademico.getIdCicloAcademico());
+            Map<Integer, List<Preferencia>> preferenciasPorDocente = prepararPreferencias(docentes, cicloAcademico.getIdCicloAcademico());
 
             // Ejecutar algoritmo híbrido actualizado
             return algoritmoService.ejecutarAlgoritmoHibrido(
-                    docentes, cursos, cargaElectiva, disponibilidadPorDocente, preferenciasPorDocente);
+                    docentes, cursos, cicloAcademico, disponibilidadPorDocente, preferenciasPorDocente);
 
         } catch (Exception e) {
             System.out.println("=== Error en algoritmo híbrido actualizado, usando algoritmo simplificado ===");
 
             // Fallback: algoritmo simplificado si falla el actualizado
-            return ejecutarAlgoritmoSimplificado(docentes, cursos, cargaElectiva);
+            return ejecutarAlgoritmoSimplificado(docentes, cursos, cicloAcademico);
         }
     }
+
+     */
 
     /**
      * ACTUALIZADO: Algoritmo simplificado como fallback con nuevo modelo
      */
-    private List<Asignacion> ejecutarAlgoritmoSimplificado(List<Docente> docentes, List<Curso> cursos, CargaElectiva cargaElectiva) {
+    private List<Asignacion> ejecutarAlgoritmoSimplificado(List<Docente> docentes, List<Curso> cursos, CicloAcademico cicloAcademico) {
         System.out.println("=== Ejecutando algoritmo simplificado actualizado como fallback ===");
         System.out.println("RESTRICCIONES: Solo disponibilidad + horasMaxLectivas");
 
@@ -531,7 +548,7 @@ public class AsignacionServiceImpl
         // Versión básica: asignación por disponibilidad y límites de horasMaxLectivas
         for (Curso curso : cursos) {
             Docente docenteAsignado = encontrarMejorDocenteParaCursoActualizado(
-                    curso, docentes, cargaElectiva, asignacionesTemporales);
+                    curso, docentes, cicloAcademico, asignacionesTemporales);
 
             if (docenteAsignado != null) {
                 asignacionesTemporales.put(curso.getIdCurso(), docenteAsignado.getIdDocente());
@@ -539,7 +556,7 @@ public class AsignacionServiceImpl
                 Asignacion asignacion = new Asignacion();
                 asignacion.setDocente(docenteAsignado);
                 asignacion.setCurso(curso);
-                asignacion.setCargaElectiva(cargaElectiva);
+                asignacion.setCicloAcademico(cicloAcademico);
                 asignacion.setTipoAsignacion("LECTIVO");
                 asignacion.setEnabled(true);
                 asignacion.setCreatedAt(LocalDate.now());
@@ -557,10 +574,10 @@ public class AsignacionServiceImpl
      * ACTUALIZADO: Busca el mejor docente para un curso con nuevo modelo de restricciones
      */
     private Docente encontrarMejorDocenteParaCursoActualizado(Curso curso, List<Docente> docentes,
-                                                              CargaElectiva cargaElectiva,
+                                                              CicloAcademico cicloAcademico,
                                                               Map<Integer, Integer> asignacionesTemporales) {
         // 1. Buscar docentes con preferencia por la asignatura del curso (RESTRICCIÓN BLANDA)
-        List<Preferencia> preferencias = preferenciaRepo.findByCicloAcademico_IdCicloAcademico(cargaElectiva.getIdCargaElectiva());
+        List<Preferencia> preferencias = preferenciaRepo.findByCicloAcademico_IdCicloAcademico(cicloAcademico.getIdCicloAcademico());
 
         List<Docente> docentesConPreferencia = preferencias.stream()
                 .filter(pref -> pref.getAsignatura().getIdAsignatura().equals(curso.getAsignatura().getIdAsignatura()))
@@ -571,7 +588,7 @@ public class AsignacionServiceImpl
         // 2. Priorizar docentes con preferencia, pero no es obligatorio
         if (!docentesConPreferencia.isEmpty()) {
             for (Docente docente : docentesConPreferencia) {
-                if (verificarDisponibilidadHoraria(docente, curso, cargaElectiva) &&
+                if (verificarDisponibilidadHoraria(docente, curso, cicloAcademico) &&
                         puedeTomarCursoActualizado(docente, curso, asignacionesTemporales)) {
                     System.out.println("Docente " + docente.getCodigo() +
                             " asignado por preferencia a curso " + curso.getCodigo());
@@ -582,7 +599,7 @@ public class AsignacionServiceImpl
 
         // 3. Si no hay preferencias válidas, buscar cualquier docente disponible
         for (Docente docente : docentes) {
-            if (verificarDisponibilidadHoraria(docente, curso, cargaElectiva) &&
+            if (verificarDisponibilidadHoraria(docente, curso, cicloAcademico) &&
                     puedeTomarCursoActualizado(docente, curso, asignacionesTemporales)) {
                 System.out.println("Docente " + docente.getCodigo() +
                         " asignado sin preferencia a curso " + curso.getCodigo());
@@ -596,9 +613,9 @@ public class AsignacionServiceImpl
     /**
      * Verifica disponibilidad horaria (RESTRICCIÓN DURA - OBLIGATORIA)
      */
-    private boolean verificarDisponibilidadHoraria(Docente docente, Curso curso, CargaElectiva cargaElectiva) {
-        List<Disponibilidad> disponibilidades = disponibilidadRepo.buscarPorDocenteYCargaElectiva(
-                docente.getIdDocente(), cargaElectiva.getIdCargaElectiva());
+    private boolean verificarDisponibilidadHoraria(Docente docente, Curso curso, CicloAcademico cicloAcademico) {
+        List<Disponibilidad> disponibilidades = disponibilidadRepo.buscarPorDocenteYCicloAcademico(
+                docente.getIdDocente(), cicloAcademico.getIdCicloAcademico());
 
         if (disponibilidades.isEmpty()) {
             System.out.println("=== Docente " + docente.getCodigo() + " no tiene disponibilidad registrada ===");

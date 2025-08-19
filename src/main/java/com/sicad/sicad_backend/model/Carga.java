@@ -24,16 +24,10 @@ public class Carga {
             foreignKey = @ForeignKey(name = "FK_CARGA_CICLO_ACADEMICO"))
     private CicloAcademico cicloAcademico;
 
-    @Column(name = "codigo", nullable = false)
-    private String cadigo;
-
     @ManyToOne
     @JoinColumn(name = "id_algoritmo", nullable = false,
             foreignKey = @ForeignKey(name = "FK_CARGA_ALGORITMO"))
     private Algoritmo algoritmo;
-
-    @Column(name= "principal")
-    private boolean principal;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

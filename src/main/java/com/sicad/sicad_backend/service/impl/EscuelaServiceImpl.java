@@ -25,7 +25,6 @@ public class EscuelaServiceImpl
         implements IEscuelaService {
 
     private final IEscuelaRepo escuelaRepo;
-    private final IFacultadRepo facultadRepo;
     private final ModelMapper modelMapper;
 
     @Override

@@ -17,6 +17,7 @@ import com.sicad.sicad_backend.service.interfaces.IDocenteService;
 import com.sicad.sicad_backend.utils.CodigoGeneratorUtil;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -375,6 +376,26 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
 
         return new GenericReponse<>(200, "Lista de docentes con asignaciones", responseList);
     }
+
+    public GenericReponse<DocenteAsignacionResponse> listarDocentesCargaConAsignaciones(
+            Integer idCicloAcademico,
+            Integer idCarga) {
+
+        // Trae todos los docentes con sus asignaciones filtradas
+        List<Docente> docentes = docenteRepo.findAllWithAsignacionesByCargaYCiclo(idCarga, idCicloAcademico);
+
+        if (docentes.isEmpty()) {
+            return new GenericReponse<>(200, "No se encontraron docentes", null);
+        }
+
+        // Mapear entidades a DTOs usando modelMapper
+        List<DocenteAsignacionResponse> lista = docentes.stream()
+                .map(this::convertToAsignacionResponseDTO)
+                .toList();
+
+        return new GenericReponse<>(200, "Lista de docentes con asignaciones", lista);
+    }
+
     public GenericObjectResponse<DocenteAsignacionResponse> obtenerDocenteConAsignaciones(Integer idDocente, Integer idCargaElectiva) {
         Optional<Docente> optionalDocente = docenteRepo.findDocenteWithAsignacionesById(idDocente);
 
@@ -403,6 +424,9 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
 
     private DocenteDetalleResponse convertToResponseDTO(Docente obj) {
         return modelMapper.map(obj, DocenteDetalleResponse.class);
+    }
+    private DocenteAsignacionResponse convertToAsignacionResponseDTO(Docente obj) {
+        return modelMapper.map(obj, DocenteAsignacionResponse.class);
     }
     private DocenteCreateRequest convertToDTO(Docente obj) {
         return modelMapper.map(obj, DocenteCreateRequest.class);

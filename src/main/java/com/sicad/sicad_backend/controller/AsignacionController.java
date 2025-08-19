@@ -46,12 +46,15 @@ public class AsignacionController {
                 new GenericObjectResponse<>(200, "Asignacion encontrada", convertToDTO(obj))
         );
     }
+    /*
     @PostMapping("/insertar")
     public ResponseEntity<GenericObjectResponse<AsignacionDetalleResponse>> save(@Valid @RequestBody AsignacionCreateRequest request){
         GenericObjectResponse<AsignacionDetalleResponse> response = asignacionServiceImpl.registrarAsignacion(request);
         return ResponseEntity.status(response.status()).body(response);
 
     }
+
+     */
     @PutMapping("/actualizar/{id}")
     public ResponseEntity<GenericObjectResponse<AsignacionDetalleResponse>> update(@Valid @PathVariable("id") Integer id, @RequestBody AsignacionUpdateRequest request){
         GenericObjectResponse<AsignacionDetalleResponse> response = asignacionServiceImpl.actualizarAsignacion(id, request);
@@ -60,12 +63,14 @@ public class AsignacionController {
     private AsignacionDetalleResponse convertToDTO(Asignacion obj) {
         return modelMapper.map(obj, AsignacionDetalleResponse.class);
     }
-
+    /*
     @DeleteMapping("/eliminar/{idCicloAcademico}")
     public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idCicloAcademico") Integer id) {
         GenericObjectResponse<String> response = asignacionServiceImpl.eliminarAsignacionCicloAcademico(id);
         return ResponseEntity.status(response.status()).body(response);
     }
+
+     */
     // NUEVO ENDPOINT PARA EL ALGORITMO HÍBRIDO GA + PSO
     @PostMapping("/algoritmo/{idCicloAcademico}")
     public ResponseEntity<GenericObjectResponse<List<AsignacionDetalleResponse>>> asignarConAlgoritmoHibrido(

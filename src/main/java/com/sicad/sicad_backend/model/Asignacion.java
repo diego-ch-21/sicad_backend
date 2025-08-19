@@ -34,6 +34,11 @@ public class Asignacion {
             foreignKey = @ForeignKey(name = "FK_ASIGNACION_CICLO_ACADEMICO"))
     private CicloAcademico cicloAcademico;
 
+    @ManyToOne
+    @JoinColumn(name = "id_carga", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_ASIGNACION_CARGA"))
+    private Carga carga;
+
     @Column(nullable = false, name = "tipo_asignacion")
     private String tipoAsignacion;
 

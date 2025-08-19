@@ -16,18 +16,34 @@ public interface ICursoRepo extends IGenericRepo<Curso, Integer> {
     boolean existsByCodigo(String codigo);
 
     /**
-     * Busca cursos de un ciclo académico específico que estén habilitados (enabled = true).
-     * Además, usa LEFT JOIN FETCH para traer también la relación cursoHorario en una sola consulta
-     * y evitar el problema de LazyInitializationException.
+     * Busca cursos habilitados de un ciclo académico específico (enabled = true).
+     * Usa LEFT JOIN FETCH para traer también la relación cursoHorario en una sola consulta,
+     * evitando LazyInitializationException.
      */
     @Query("""
-    SELECT DISTINCT c 
-    FROM Curso c 
-    LEFT JOIN FETCH c.cursoHorario 
-    WHERE c.cicloAcademico.idCicloAcademico = :idCicloAcademico 
+       SELECT DISTINCT c
+       FROM Curso c
+       LEFT JOIN FETCH c.cursoHorario
+       WHERE c.cicloAcademico.idCicloAcademico = :idCicloAcademico
+         AND c.enabled = true
+       """)
+    List<Curso> buscarPorPeriodoAcademico(@Param("idCicloAcademico") Integer idCicloAcademico);
+
+
+    /**
+     * Busca cursos habilitados de un ciclo académico específico y de una carga específica.
+     * Además, usa LEFT JOIN FETCH para traer la relación cursoHorario y evitar LazyInitializationException.
+     */
+    @Query("""
+    SELECT DISTINCT c
+    FROM Curso c
+    LEFT JOIN FETCH c.cursoHorario
+    WHERE c.cicloAcademico.idCicloAcademico = :idCicloAcademico
       AND c.enabled = true
     """)
-    List<Curso> buscarPorPeriodoAcademico(@Param("idCicloAcademico") Integer idCicloAcademico);
+    List<Curso> buscarPorCicloAcademico(
+            @Param("idCicloAcademico") Integer idCicloAcademico);
+
 
     /**
      * Recupera todos los cursos junto con su relación cursoHorario usando LEFT JOIN FETCH.

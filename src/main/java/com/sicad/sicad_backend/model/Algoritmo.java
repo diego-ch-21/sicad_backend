@@ -3,6 +3,8 @@ package com.sicad.sicad_backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -59,6 +61,9 @@ public class Algoritmo {
 
     @Column(name = "ciclo_hibridos", nullable = true)
     private Integer cicloHibridos;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     @Column(name = "enabled", nullable = false)
     private boolean enabled;

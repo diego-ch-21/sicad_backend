@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,21 +25,21 @@ import java.util.stream.Collectors;
 public class AlgoritmoAsignacionService {
 
     // Parámetros configurables del algoritmo
-    private static final int POBLACION_GA = 50;
-    private static final int GENERACIONES_GA = 100;
-    private static final double PROB_CRUZAMIENTO = 0.8;
-    private static final double PROB_MUTACION = 0.15;
-    private static final double ELITISMO = 0.1;
+    private int POBLACION_GA = 50;
+    private int GENERACIONES_GA = 100;
+    private double PROB_CRUZAMIENTO = 0.8;
+    private double PROB_MUTACION = 0.15;
+    private double ELITISMO = 0.1;
 
-    private static final int ENJAMBRE_PSO = 30;
-    private static final int ITERACIONES_PSO = 80;
-    private static final double INERCIA_INICIAL = 0.9;
-    private static final double INERCIA_FINAL = 0.4;
-    private static final double C1 = 2.0; // Componente cognitivo
-    private static final double C2 = 2.0; // Componente social
-    private static final double VELOCIDAD_MAXIMA = 1.0;
+    private int ENJAMBRE_PSO = 30;
+    private int ITERACIONES_PSO = 80;
+    private double INERCIA_INICIAL = 0.9;
+    private double INERCIA_FINAL = 0.4;
+    private double C1 = 2.0; // Componente cognitivo
+    private double C2 = 2.0; // Componente social
+    private double VELOCIDAD_MAXIMA = 1.0;
 
-    private static final int CICLOS_HIBRIDOS = 3;
+    private int CICLOS_HIBRIDOS = 3;
 
     /**
      * Ejecuta el algoritmo híbrido completo para generar asignaciones óptimas
@@ -47,7 +48,8 @@ public class AlgoritmoAsignacionService {
     public List<Asignacion> ejecutarAlgoritmoHibrido(List<Docente> docentes, List<Curso> cursos,
                                                      CicloAcademico cicloAcademico,
                                                      Map<Integer, List<Disponibilidad>> disponibilidadPorDocente,
-                                                     Map<Integer, List<Preferencia>> preferenciasPorDocente) {
+                                                     Map<Integer, List<Preferencia>> preferenciasPorDocente,
+                                                     Algoritmo algoritmo) {
 
         log.info("=== INICIANDO ALGORITMO HÍBRIDO GA+PSO (MODELO ACTUALIZADO) ===");
         log.info("RESTRICCIONES DURAS: Disponibilidad + horasMaxLectivas");
@@ -57,6 +59,19 @@ public class AlgoritmoAsignacionService {
                 docentes.size(), cursos.size(), cicloAcademico.getNombre());
 
         try {
+            POBLACION_GA =algoritmo.getPoblacion();
+            GENERACIONES_GA = algoritmo.getGeneracionGa();
+            PROB_CRUZAMIENTO =algoritmo.getProbCruzamientos();
+            PROB_MUTACION = algoritmo.getProbMutacion();
+            ELITISMO = algoritmo.getElitismo();
+            ENJAMBRE_PSO =algoritmo.getEnjambrePso();
+            ITERACIONES_PSO= algoritmo.getIteracionesPso();
+            INERCIA_INICIAL = algoritmo.getInerciaInicial();
+            C1 =algoritmo.getCUno();
+            C2 =algoritmo.getCDos();
+            VELOCIDAD_MAXIMA = algoritmo.getVelocidadMaxima();
+            CICLOS_HIBRIDOS =algoritmo.getCicloHibridos();
+
             // 1. Inicialización del validador de restricciones (actualizado)
             RestriccionValidator validator = new RestriccionValidator(
                     docentes, cursos, disponibilidadPorDocente, preferenciasPorDocente, cicloAcademico);
@@ -113,8 +128,17 @@ public class AlgoritmoAsignacionService {
                 log.info("=== ALGORITMO HÍBRIDO COMPLETADO ===");
                 logearEstadisticasFinales(mejorSolucion, docentes, cursos);
 
+                //crear carga
+                Carga carga = Carga.builder()
+                        .algoritmo(algoritmo)
+                        .cicloAcademico(cicloAcademico)
+                        .createdAt(LocalDateTime.now())
+                        .enabled(true)
+                        .build();
+
+
                 // 5. Convertir a entidades de asignación
-                return convertirAAsignaciones(mejorSolucion, docentes, cursos, cicloAcademico);
+                return convertirAAsignaciones(mejorSolucion, docentes, cursos, cicloAcademico,carga);
             } else {
                 log.error("No se pudo generar ninguna solución válida");
                 return new ArrayList<>();
@@ -306,7 +330,8 @@ public class AlgoritmoAsignacionService {
      * Convierte la mejor solución a entidades de Asignacion
      */
     private List<Asignacion> convertirAAsignaciones(SolucionAsignacion solucion, List<Docente> docentes,
-                                                    List<Curso> cursos, CicloAcademico cicloAcademico) {
+                                                    List<Curso> cursos, CicloAcademico cicloAcademico,Carga carga) {
+        //Crear carga para el historial
         List<Asignacion> asignaciones = new ArrayList<>();
 
         for (Map.Entry<Integer, Integer> entry : solucion.getAsignaciones().entrySet()) {
@@ -327,6 +352,7 @@ public class AlgoritmoAsignacionService {
                 Asignacion asignacion = new Asignacion();
                 asignacion.setDocente(docente);
                 asignacion.setCurso(curso);
+                asignacion.setCarga(carga);
                 asignacion.setCicloAcademico(cicloAcademico);
                 asignacion.setTipoAsignacion("LECTIVO");
                 asignacion.setEnabled(true);

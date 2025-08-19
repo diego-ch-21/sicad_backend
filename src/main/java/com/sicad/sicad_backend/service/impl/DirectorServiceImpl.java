@@ -29,7 +29,6 @@ public class DirectorServiceImpl extends CRUDImpl<Director, Integer> implements 
     private final IDirectorRepo directorRepo;
     private final IUsuarioRepo usuarioRepo;
     private final IRolRepo rolRepository;
-    private final IFacultadRepo facultadRepo;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
 
