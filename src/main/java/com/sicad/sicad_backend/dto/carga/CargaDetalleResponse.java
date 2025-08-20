@@ -20,7 +20,6 @@ public class CargaDetalleResponse{
     private CicloAcademicoResumenResponse cicloAcademico;
     private AlgoritmoResumenResponse algoritmo;
     private ResultadoDetalleResponse resultado;
-    private boolean principal;
     private LocalDateTime createdAt;
     private boolean enabled;
 }
