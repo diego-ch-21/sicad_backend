@@ -31,7 +31,7 @@ public class AlgoritmoServiceImpl
 
     @Override
     protected IGenericRepo<Algoritmo, Integer> getRepo() {
-        return null;
+        return algoritmoRepo;
     }
 
     @Override

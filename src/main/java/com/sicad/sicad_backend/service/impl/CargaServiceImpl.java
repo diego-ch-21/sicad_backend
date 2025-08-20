@@ -22,7 +22,7 @@ public class CargaServiceImpl
 
     @Override
     protected IGenericRepo<Carga, Integer> getRepo() {
-        return null;
+        return cargaRepo;
     }
 
     @Override

@@ -18,13 +18,15 @@ public class Aula {
     private Integer idAula;
     @Column(name = "tipo", nullable = false)
     private String tipo;
-    @Column(name = "codigo", nullable = true)
+    @Column(name = "codigo", nullable = false)
     private String codigo;
-    @Column(name = "piso", nullable = true)
+    @Column(name = "piso", nullable = false)
     private Integer piso;
-    @Column(name = "capacidad", nullable = true)
+    @Column(name = "capacidad", nullable = false)
     private Integer capacidad;
-    @Column(name = "estado", nullable = true)
+    @Column(name = "numeroEquipos",nullable = true)
+    private Integer numeroEquipos;
+    @Column(name = "estado", nullable = false)
     private String estado;
     @Column(name = "enabled", nullable = false)
     private boolean enabled;

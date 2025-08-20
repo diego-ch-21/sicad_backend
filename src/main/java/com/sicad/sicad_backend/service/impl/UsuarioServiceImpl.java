@@ -16,16 +16,16 @@ public class UsuarioServiceImpl
         extends CRUDImpl<Usuario, Integer>
         implements IUsuarioService {
 
-    private final IUsuarioRepo repo;
+    private final IUsuarioRepo usuarioRepo;
 
     @Override
     protected IGenericRepo<Usuario, Integer> getRepo() {
-        return repo;
+        return usuarioRepo;
     }
 
 
     @Override
     public List<Usuario> findByEnabledTrue() {
-        return repo.findByEnabledTrue();
+        return usuarioRepo.findByEnabledTrue();
     }
 }

@@ -4,6 +4,9 @@ import com.sicad.sicad_backend.auth.dto.AuthResponse;
 import com.sicad.sicad_backend.auth.dto.LoginRequest;
 import com.sicad.sicad_backend.auth.dto.RegisterRequest;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +20,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthController {
     private final AuthService authService;
-
+    @Operation(
+            summary = "login",
+            description = "Valida las credenciales de un usuario y devuelve un token JWT junto con la información básica."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Usuario registrado exitosamente"),
+            @ApiResponse(responseCode = "401", description = "Credenciales incorrectas")
+    })
     @PostMapping("login")
     public ResponseEntity<GenericObjectResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
         GenericObjectResponse<AuthResponse> response = authService.login(request);

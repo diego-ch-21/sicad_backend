@@ -16,15 +16,15 @@ public class RolServiceImpl
         extends CRUDImpl<Rol, Integer>
         implements IRolService {
 
-    private final IRolRepo repo;
+    private final IRolRepo rolRepo;
 
     @Override
     protected IGenericRepo<Rol, Integer> getRepo() {
-        return repo;
+        return rolRepo;
     }
 
     @Override
     public List<Rol> findByEnabledTrue() {
-        return repo.findByEnabledTrue();
+        return rolRepo.findByEnabledTrue();
     }
 }
