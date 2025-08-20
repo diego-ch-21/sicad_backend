@@ -29,6 +29,10 @@ public class Carga {
             foreignKey = @ForeignKey(name = "FK_CARGA_ALGORITMO"))
     private Algoritmo algoritmo;
 
+    @OneToOne
+    @JoinColumn(name = "id_resultado", referencedColumnName = "id_resultado")
+    private Resultado resultado;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 

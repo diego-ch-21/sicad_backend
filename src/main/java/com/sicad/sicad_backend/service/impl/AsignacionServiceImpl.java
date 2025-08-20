@@ -38,6 +38,7 @@ public class AsignacionServiceImpl
     private final IPreferenciaRepo preferenciaRepo;
     private final IDisponibilidadRepo disponibilidadRepo;
     private final IAlgoritmoRepo algoritmoRepo;
+    private final IResultadoRepo resultadoRepo;
     private final ModelMapper modelMapper;
     // Nuevo servicio del algoritmo
     private final AlgoritmoAsignacionService algoritmoService;
@@ -213,7 +214,7 @@ public class AsignacionServiceImpl
                     .collect(Collectors.toList());
 
             // 9. Generar resumen de resultados actualizado
-            String resumen = generarResumenAlgoritmoActualizado(asignacionesGuardadas, docentes, cursos);
+            String resumen = generarResumenAlgoritmoActualizado(asignacionesGuardadas, docentes, cursos,carga);
 
             return new GenericObjectResponse<>(201, resumen, response);
 
@@ -272,7 +273,7 @@ public class AsignacionServiceImpl
     /**
      * ACTUALIZADO: Genera resumen detallado del algoritmo con nuevo modelo
      */
-    private String generarResumenAlgoritmoActualizado(List<Asignacion> asignaciones, List<Docente> docentes, List<Curso> cursos) {
+    private String generarResumenAlgoritmoActualizado(List<Asignacion> asignaciones, List<Docente> docentes, List<Curso> cursos,Carga carga) {
         int cursosAsignados = asignaciones.size();
         int cursosSinAsignar = cursos.size() - cursosAsignados;
 
@@ -326,6 +327,25 @@ public class AsignacionServiceImpl
                     return false;
                 })
                 .count();
+        Resultado resultado = Resultado.builder()
+                .cursosAsignados(cursosAsignados)
+                .totalCursos(cursos.size())
+                .porcentajeCursosAsignados((double) cursosAsignados / cursos.size() * 100.0)
+                .cursosSinAsignar(cursosSinAsignar)
+                .docentesUtilizados(docentesUtilizados.size())
+                .totalDocentes(docentes.size())
+                .porcentajeDocentesUtilizados((double) docentesUtilizados.size() / docentes.size() * 100.0)
+                .porcentajePreferenciasSatisfechas(porcentajePreferencias)
+                .promedioHoras(promedioHoras.orElse(0.0))
+                .maxHoras(maxHoras)
+                .minHoras(minHoras)
+                .docentesExcedidos((int) docentesExcedidos)
+                .enabled(true)
+                .build();
+        resultadoRepo.save(resultado);
+        carga.setResultado(resultado);
+        cargaRepo.save(carga);
+
 
         return String.format(
                 " ALGORITMO HÍBRIDO GA+PSO COMPLETADO (MODELO ACTUALIZADO) \n" +
