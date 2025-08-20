@@ -20,6 +20,4 @@ public class DirectorCreateRequest {
     private String apellido;
     @NotNull(message = "El cargo es un campo obligatorio")
     private String cargo;
-    @NotNull(message = "El idFacultad es un campo obligatorio")
-    private Integer idFacultad;
 }

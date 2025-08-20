@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 @Service
@@ -31,6 +32,7 @@ public class AsignacionServiceImpl
 
     private final IAsignacionRepo asignacionRepo;
     private final IDocenteRepo docenteRepo;
+    private final ICargaRepo cargaRepo;
     private final ICursoRepo cursoRepo;
     private final ICicloAcademicoRepo cicloAcademicoRepo;
     private final IPreferenciaRepo preferenciaRepo;
@@ -181,12 +183,20 @@ public class AsignacionServiceImpl
 
              */
 
+            Carga carga = Carga.builder()
+                    .algoritmo(algoritmoPrincipal)
+                    .cicloAcademico(cicloAcademico)
+                    .createdAt(LocalDateTime.now())
+                    .enabled(true)
+                    .build();
+            cargaRepo.save(carga);
+
 
             System.out.println("=== Asignaciones anteriores eliminadas ===");
 
             // 5. Ejecutar algoritmo híbrido actualizado
             List<Asignacion> asignacionesOptimas = algoritmoService.ejecutarAlgoritmoHibrido(
-                    docentes, cursos, cicloAcademico, disponibilidadPorDocente, preferenciasPorDocente,algoritmoPrincipal);
+                    docentes, cursos, cicloAcademico, disponibilidadPorDocente, preferenciasPorDocente,algoritmoPrincipal,carga);
 
             // 6. Validar y guardar resultados
             if (asignacionesOptimas.isEmpty()) {

@@ -30,14 +30,22 @@ public class DedicacionServiceImpl
 
     public GenericReponse<DedicacionDetalleResponse> saveAll(List<DedicacionCreateRequest> requestList) {
         List<Dedicacion> entities = requestList.stream()
-                .map(dto -> modelMapper.map(dto, Dedicacion.class))
+                .map(dto -> {
+                    Dedicacion dedicacion = modelMapper.map(dto, Dedicacion.class);
+                    dedicacion.setEnabled(true);
+                    return dedicacion;
+                })
                 .toList();
+
         List<Dedicacion> saved = dedicacionRepo.saveAll(entities);
+
         List<DedicacionDetalleResponse> response = saved.stream()
                 .map(ded -> modelMapper.map(ded, DedicacionDetalleResponse.class))
                 .toList();
+
         return new GenericReponse<>(201, "Dedicaciones creadas", response);
     }
+
 
     @Override
     public List<Dedicacion> findByEnabledTrue() {

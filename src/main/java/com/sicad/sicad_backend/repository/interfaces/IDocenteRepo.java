@@ -24,16 +24,21 @@ public interface IDocenteRepo extends IGenericRepo<Docente, Integer> {
     @Query("SELECT DISTINCT c FROM Docente c LEFT JOIN FETCH c.asignaciones")
     List<Docente> findAllWithDocentesAsignacion();
 
+    @Query("SELECT DISTINCT d FROM Docente d LEFT JOIN FETCH d.asignaciones a")
+    List<Docente> findAllWithAsignaciones();
+
+
     @Query("""
     SELECT DISTINCT d FROM Docente d
-    LEFT JOIN FETCH d.asignaciones a
-        ON a.enabled = true
-       AND a.idCarga = :idCarga
-       AND a.cicloAcademico.idCicloAcademico = :idCicloAcademico
+    JOIN FETCH d.asignaciones a
+    WHERE a.enabled = true
+      AND a.carga.idCarga = :idCarga
+      AND a.cicloAcademico.idCicloAcademico = :idCicloAcademico
 """)
     List<Docente> findAllWithAsignacionesByCargaYCiclo(
             @Param("idCarga") Integer idCarga,
             @Param("idCicloAcademico") Integer idCicloAcademico);
+
 
 
     @Query("SELECT DISTINCT c FROM Docente c LEFT JOIN FETCH c.asignaciones WHERE c.idDocente = :idDocente")

@@ -15,10 +15,10 @@ import java.util.Date;
 public class DocenteUsuarioResponse {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer idDocente;
-    private DedicacionResumenResponse dedicacion;
-    private CategoriaResumenResponse categoria;
-    private Integer horasMaxLectivas;
-    private Boolean tienePermisoExceso;
+    //private DedicacionResumenResponse dedicacion;
+    //private CategoriaResumenResponse categoria;
+    //private Integer horasMaxLectivas;
+    //private Boolean tienePermisoExceso;
     private Date createdAt;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private boolean enabled;

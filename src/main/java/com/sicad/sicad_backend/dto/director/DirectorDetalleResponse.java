@@ -14,5 +14,4 @@ public class DirectorDetalleResponse {
     private UsuarioDTO usuario;
     private String cargo;
     private boolean enabled;
-    private FacultadResumenResponse facultad;
 }

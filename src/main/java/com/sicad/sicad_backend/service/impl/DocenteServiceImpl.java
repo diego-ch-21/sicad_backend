@@ -87,15 +87,6 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         usuarioRepo.save(usuario);
 
 
-
-        Integer horasMaxLectivas = request.getHorasMaxLectivas() != null ? request.getHorasMaxLectivas() : 0;
-        boolean tienePermisoExceso = false;
-        if(horasMaxLectivas>12){
-            tienePermisoExceso = true;
-        } else {
-            tienePermisoExceso = false;
-        }
-
         String codigoDocente;
         do {
             codigoDocente = CodigoGeneratorUtil.generarCodigoNumerico(6);
@@ -218,9 +209,6 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
                 .build();
         usuarioRepo.save(usuario);
 
-        // Permiso por horas
-        Integer horasMaxLectivas = request.getHorasMaxLectivas() != null ? request.getHorasMaxLectivas() : 0;
-        boolean tienePermisoExceso = horasMaxLectivas > 12;
 
         // Código docente
         String codigoDocente;
@@ -377,6 +365,7 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         return new GenericReponse<>(200, "Lista de docentes con asignaciones", responseList);
     }
 
+    //solo docentes que tiene asigancione
     public GenericReponse<DocenteAsignacionResponse> listarDocentesCargaConAsignaciones(
             Integer idCicloAcademico,
             Integer idCarga) {
@@ -395,6 +384,36 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
 
         return new GenericReponse<>(200, "Lista de docentes con asignaciones", lista);
     }
+    //todos los docentres (incluso los que no tienen asigancion)
+    public GenericReponse<DocenteAsignacionResponse> listarDocentesCargaConAsignaciones2(
+            Integer idCicloAcademico, Integer idCarga) {
+
+        List<Docente> docentes = docenteRepo.findAllWithAsignaciones();
+
+        if (docentes.isEmpty()) {
+            return new GenericReponse<>(200, "No se encontraron docentes", null);
+        }
+
+        List<DocenteAsignacionResponse> lista = docentes.stream()
+                .map(docente -> {
+                    DocenteAsignacionResponse dto = modelMapper.map(docente, DocenteAsignacionResponse.class);
+
+                    // Filtrar asignaciones
+                    List<AsignacionResumenResponse> asignacionesFiltradas = docente.getAsignaciones().stream()
+                            .filter(a -> a.getEnabled() != null && a.getEnabled() // habilitada
+                                    && a.getCarga().getIdCarga().equals(idCarga)
+                                    && a.getCicloAcademico().getIdCicloAcademico().equals(idCicloAcademico))
+                            .map(a -> modelMapper.map(a, AsignacionResumenResponse.class))
+                            .toList();
+
+                    dto.setAsignaciones(asignacionesFiltradas);
+                    return dto;
+                })
+                .toList();
+
+        return new GenericReponse<>(200, "Lista de docentes con asignaciones", lista);
+    }
+
 
     public GenericObjectResponse<DocenteAsignacionResponse> obtenerDocenteConAsignaciones(Integer idDocente, Integer idCargaElectiva) {
         Optional<Docente> optionalDocente = docenteRepo.findDocenteWithAsignacionesById(idDocente);

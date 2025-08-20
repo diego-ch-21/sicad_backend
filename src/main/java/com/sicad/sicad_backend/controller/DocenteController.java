@@ -87,6 +87,13 @@ public class DocenteController {
         GenericReponse<DocenteAsignacionResponse> response = serviceImpl.listarDocentesConAsingaciones(id);
         return ResponseEntity.status(response.status()).body(response);
     }
+    @GetMapping("/asignaciones-carga/{idCicloAcademico}/{idCarga}")
+    public ResponseEntity<GenericReponse<DocenteAsignacionResponse>>  docentesAsignacionCarga(
+            @PathVariable("idCicloAcademico") Integer idCicloAcademico,
+            @PathVariable("idCarga") Integer idCarga) throws Exception {
+        GenericReponse<DocenteAsignacionResponse> response = serviceImpl.listarDocentesCargaConAsignaciones(idCicloAcademico,idCarga);
+        return ResponseEntity.status(response.status()).body(response);
+    }
 
     @GetMapping("/asignaciones/{idCargaElectiva}/{idDocente}")
     public ResponseEntity<GenericObjectResponse<DocenteAsignacionResponse>>  docentesAsignacion(

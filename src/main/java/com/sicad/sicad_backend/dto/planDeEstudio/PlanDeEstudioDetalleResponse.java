@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PlanDeEstudioDetalleResponse {
     private Integer idPlanDeEstudio;
-    private FacultadResumenResponse facultad;
     private Integer codigo;
     private String nombre;
     private Boolean enabled;

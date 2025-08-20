@@ -23,7 +23,4 @@ public class DocenteCreateRequest {
     private Integer idDedicacion;
     @NotNull(message = "El idCategoria es un campo obligatorio")
     private Integer idCategoria;
-    private Integer horasMaxLectivas;
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private boolean enabled=true;
 }

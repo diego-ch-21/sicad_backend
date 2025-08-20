@@ -42,23 +42,24 @@ public class AlgoritmoServiceImpl
     public GenericObjectResponse<AlgoritmoDetalleResponse> registrarAlgoritmo(AlgoritmoCreateRequest request) {
         // Construir entidad desde el request
         Algoritmo algoritmo = Algoritmo.builder()
-                .poblacion(request.poblacion())
-                .generacionGa(request.generacionGa())
-                .probCruzamientos(request.probCruzamientos())
-                .probMutacion(request.probMutacion())
-                .elitismo(request.elitismo())
-                .enjambrePso(request.enjambrePso())
-                .iteracionesPso(request.iteracionesPso())
-                .inerciaInicial(request.inerciaInicial())
-                .inerciaFinal(request.inerciaFinal())
-                .cUno(request.cUno())
-                .cDos(request.cDos())
-                .velocidadMaxima(request.velocidadMaxima())
-                .cicloHibridos(request.cicloHibridos())
+                .poblacion(request.getPoblacion())
+                .generacionGa(request.getGeneracionGa())
+                .probCruzamientos(request.getProbCruzamientos())
+                .probMutacion(request.getProbMutacion())
+                .elitismo(request.getElitismo())
+                .enjambrePso(request.getEnjambrePso())
+                .iteracionesPso(request.getIteracionesPso())
+                .inerciaInicial(request.getInerciaInicial())
+                .inerciaFinal(request.getInerciaFinal())
+                .cUno(request.getCUno())
+                .cDos(request.getCDos())
+                .velocidadMaxima(request.getVelocidadMaxima())
+                .cicloHibridos(request.getCicloHibridos())
                 .principal(false)
                 .createdAt(LocalDateTime.now())
                 .enabled(true)
                 .build();
+
 
         algoritmoRepo.save(algoritmo);
 
@@ -74,25 +75,27 @@ public class AlgoritmoServiceImpl
         }
 
         // Actualizar solo si no son null
-        if (request.poblacion() != null) algoritmo.setPoblacion(request.poblacion());
-        if (request.generacionGa() != null) algoritmo.setGeneracionGa(request.generacionGa());
-        algoritmo.setProbCruzamientos(request.probCruzamientos());
-        algoritmo.setProbMutacion(request.probMutacion());
-        algoritmo.setElitismo(request.elitismo());
-        if (request.enjambrePso() != null) algoritmo.setEnjambrePso(request.enjambrePso());
-        if (request.iteracionesPso() != null) algoritmo.setIteracionesPso(request.iteracionesPso());
-        algoritmo.setInerciaInicial(request.inerciaInicial());
-        algoritmo.setInerciaFinal(request.inerciaFinal());
-        algoritmo.setCUno(request.cUno());
-        algoritmo.setCDos(request.cDos());
-        algoritmo.setVelocidadMaxima(request.velocidadMaxima());
-        if (request.cicloHibridos() != null) algoritmo.setCicloHibridos(request.cicloHibridos());
+        if (request.getPoblacion() != null) algoritmo.setPoblacion(request.getPoblacion());
+        if (request.getGeneracionGa() != null) algoritmo.setGeneracionGa(request.getGeneracionGa());
+        algoritmo.setProbCruzamientos(request.getProbCruzamientos());
+        algoritmo.setProbMutacion(request.getProbMutacion());
+        algoritmo.setElitismo(request.getElitismo());
+        if (request.getEnjambrePso() != null) algoritmo.setEnjambrePso(request.getEnjambrePso());
+        if (request.getIteracionesPso() != null) algoritmo.setIteracionesPso(request.getIteracionesPso());
+        algoritmo.setInerciaInicial(request.getInerciaInicial());
+        algoritmo.setInerciaFinal(request.getInerciaFinal());
+        algoritmo.setCUno(request.getCUno());
+        algoritmo.setCDos(request.getCDos());
+        algoritmo.setVelocidadMaxima(request.getVelocidadMaxima());
+        if (request.getCicloHibridos() != null) algoritmo.setCicloHibridos(request.getCicloHibridos());
 
         algoritmoRepo.save(algoritmo);
 
         AlgoritmoDetalleResponse dto = modelMapper.map(algoritmo, AlgoritmoDetalleResponse.class);
         return new GenericObjectResponse<>(200, "Algoritmo actualizado exitosamente", dto);
     }
+
+
     public GenericReponse<AlgoritmoDetalleResponse> registrarAlgoritmosMultiples(List<AlgoritmoCreateRequest> requests) {
         List<AlgoritmoDetalleResponse> registrados = new ArrayList<>();
         int errorCount = 0;

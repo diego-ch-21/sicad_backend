@@ -13,6 +13,4 @@ import lombok.NoArgsConstructor;
 public class EscuelaCreateRequest {
     @NotBlank(message = "El nombre es un campo obligatorio")
     private String nombre;
-    @NotNull(message = "La facultad es un campo obligatorio")
-    private Integer idFacultad;
 }

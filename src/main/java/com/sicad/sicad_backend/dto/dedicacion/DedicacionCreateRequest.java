@@ -15,8 +15,8 @@ public class DedicacionCreateRequest {
     private String nombre;
     @NotNull(message = "horasTotales es un campo obligatorio")
     private Integer horasTotales;
-    @NotNull(message = "horasLectivasMinima es un campo obligatorio")
-    private Integer horasLectivasMinima;
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private Boolean enabled=true;
+    @NotNull(message = "horasMinLectivas es un campo obligatorio")
+    private Integer horasMinLectivas;
+    @NotNull(message = "horasMaxLectivas es un campo obligatorio")
+    private Integer horasMaxLectivas;
 }

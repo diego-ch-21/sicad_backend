@@ -41,6 +41,7 @@ public class AlgoritmoAsignacionService {
 
     private int CICLOS_HIBRIDOS = 3;
 
+
     /**
      * Ejecuta el algoritmo híbrido completo para generar asignaciones óptimas
      * ACTUALIZADO: Nuevo modelo de restricciones
@@ -49,7 +50,7 @@ public class AlgoritmoAsignacionService {
                                                      CicloAcademico cicloAcademico,
                                                      Map<Integer, List<Disponibilidad>> disponibilidadPorDocente,
                                                      Map<Integer, List<Preferencia>> preferenciasPorDocente,
-                                                     Algoritmo algoritmo) {
+                                                     Algoritmo algoritmo,Carga carga) {
 
         log.info("=== INICIANDO ALGORITMO HÍBRIDO GA+PSO (MODELO ACTUALIZADO) ===");
         log.info("RESTRICCIONES DURAS: Disponibilidad + horasMaxLectivas");
@@ -128,13 +129,6 @@ public class AlgoritmoAsignacionService {
                 log.info("=== ALGORITMO HÍBRIDO COMPLETADO ===");
                 logearEstadisticasFinales(mejorSolucion, docentes, cursos);
 
-                //crear carga
-                Carga carga = Carga.builder()
-                        .algoritmo(algoritmo)
-                        .cicloAcademico(cicloAcademico)
-                        .createdAt(LocalDateTime.now())
-                        .enabled(true)
-                        .build();
 
 
                 // 5. Convertir a entidades de asignación

@@ -14,6 +14,7 @@ public class DedicacionDetalleResponse {
     private Integer idDedicacion;
     private String nombre;
     private Integer horasTotales;
-    private Integer horasLectivasMinima;
+    private Integer horasMinLectivas;
+    private Integer horasMaxLectivas;
     private Boolean enabled;
 }

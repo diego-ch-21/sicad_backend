@@ -75,7 +75,7 @@ public class AlgoritmoController{
         return ResponseEntity.status(response.status()).body(response);
     }
     @PutMapping("/principal/{idAlgoritmo}")
-    public ResponseEntity<GenericObjectResponse<AlgoritmoDetalleResponse>> principal(@PathVariable("idCurso") Integer id) {
+    public ResponseEntity<GenericObjectResponse<AlgoritmoDetalleResponse>> principal(@PathVariable("idAlgoritmo") Integer id) {
         GenericObjectResponse<AlgoritmoDetalleResponse> response = serviceImpl.asignarPrincipal(id);
         return ResponseEntity.status(response.status()).body(response);
     }

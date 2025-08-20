@@ -12,6 +12,5 @@ public class EscuelaDetalleResponse {
     private Integer idEscuela;
     private String codigo;
     private String nombre;
-    private FacultadResumenResponse facultad;
     private boolean enabled;
 }

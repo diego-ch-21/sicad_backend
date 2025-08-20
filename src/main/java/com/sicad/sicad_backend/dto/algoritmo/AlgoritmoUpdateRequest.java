@@ -1,52 +1,62 @@
 package com.sicad.sicad_backend.dto.algoritmo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record AlgoritmoUpdateRequest(
-        @NotNull(message = "La población es obligatoria")
-        @Positive(message = "La población debe ser un número positivo")
-        Integer poblacion,
+@Data
+@NoArgsConstructor  // 👈 Necesario para ModelMapper
+@AllArgsConstructor // 👈 Constructor con todos los campos
+public class AlgoritmoUpdateRequest {
 
-        @NotNull(message = "La generación GA es obligatoria")
-        @Positive(message = "La generación GA debe ser un número positivo")
-        Integer generacionGa,
+    @NotNull(message = "La población es obligatoria")
+    @Positive(message = "La población debe ser un número positivo")
+    private Integer poblacion;
 
-        @DecimalMin(value = "0.0", message = "La probabilidad de cruzamientos no puede ser negativa")
-        @DecimalMax(value = "1.0", message = "La probabilidad de cruzamientos no puede ser mayor a 1")
-        double probCruzamientos,
+    @NotNull(message = "La generación GA es obligatoria")
+    @Positive(message = "La generación GA debe ser un número positivo")
+    private Integer generacionGa;
 
-        @DecimalMin(value = "0.0", message = "La probabilidad de mutación no puede ser negativa")
-        @DecimalMax(value = "1.0", message = "La probabilidad de mutación no puede ser mayor a 1")
-        double probMutacion,
+    @DecimalMin(value = "0.0", message = "La probabilidad de cruzamientos no puede ser negativa")
+    @DecimalMax(value = "1.0", message = "La probabilidad de cruzamientos no puede ser mayor a 1")
+    private double probCruzamientos;
 
-        @DecimalMin(value = "0.0", message = "El elitismo no puede ser negativo")
-        @DecimalMax(value = "1.0", message = "El elitismo no puede ser mayor a 1")
-        double elitismo,
+    @DecimalMin(value = "0.0", message = "La probabilidad de mutación no puede ser negativa")
+    @DecimalMax(value = "1.0", message = "La probabilidad de mutación no puede ser mayor a 1")
+    private double probMutacion;
 
-        @Positive(message = "El enjambre PSO debe ser un número positivo")
-        Integer enjambrePso,
+    @DecimalMin(value = "0.0", message = "El elitismo no puede ser negativo")
+    @DecimalMax(value = "1.0", message = "El elitismo no puede ser mayor a 1")
+    private double elitismo;
 
-        @Positive(message = "Las iteraciones PSO deben ser un número positivo")
-        Integer iteracionesPso,
+    @Positive(message = "El enjambre PSO debe ser un número positivo")
+    private Integer enjambrePso;
 
-        @DecimalMin(value = "0.0", message = "La inercia inicial no puede ser negativa")
-        double inerciaInicial,
+    @Positive(message = "Las iteraciones PSO deben ser un número positivo")
+    private Integer iteracionesPso;
 
-        @DecimalMin(value = "0.0", message = "La inercia final no puede ser negativa")
-        double inerciaFinal,
+    @DecimalMin(value = "0.0", message = "La inercia inicial no puede ser negativa")
+    private double inerciaInicial;
 
-        @DecimalMin(value = "0.0", message = "cUno no puede ser negativo")
-        double cUno,
+    @DecimalMin(value = "0.0", message = "La inercia final no puede ser negativa")
+    private double inerciaFinal;
 
-        @DecimalMin(value = "0.0", message = "cDos no puede ser negativo")
-        double cDos,
+    @DecimalMin(value = "0.0", message = "cUno no puede ser negativo")
+    @JsonProperty("cUno")
+    private Double cUno;
 
-        @DecimalMin(value = "0.0", message = "La velocidad máxima no puede ser negativa")
-        double velocidadMaxima,
+    @DecimalMin(value = "0.0", message = "cDos no puede ser negativo")
+    @JsonProperty("cDos")
+    private Double cDos;
 
-        @Positive(message = "El ciclo de híbridos debe ser un número positivo")
-        Integer cicloHibridos
-) {}
+    @DecimalMin(value = "0.0", message = "La velocidad máxima no puede ser negativa")
+    private double velocidadMaxima;
+
+    @Positive(message = "El ciclo de híbridos debe ser un número positivo")
+    private Integer cicloHibridos;
+}
