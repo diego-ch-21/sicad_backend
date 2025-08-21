@@ -3,6 +3,8 @@ package com.sicad.sicad_backend.controller;
 import com.sicad.sicad_backend.dto.Aula.AulaCreateRequest;
 import com.sicad.sicad_backend.dto.Aula.AulaDetalleResponse;
 import com.sicad.sicad_backend.dto.Aula.AulaUpdateRequest;
+import com.sicad.sicad_backend.dto.asignatura.AsignaturaCreateRequest;
+import com.sicad.sicad_backend.dto.asignatura.AsignaturaDetalleResponse;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoCreateRequest;
@@ -50,6 +52,11 @@ public class AulaController {
     public ResponseEntity<GenericObjectResponse<AulaDetalleResponse>> registrar(
             @Valid @RequestBody AulaCreateRequest request) {
         GenericObjectResponse<AulaDetalleResponse> response = serviceImpl.registrarAula(request);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+    @PostMapping("/insertar-all")
+    public ResponseEntity<GenericReponse<AulaDetalleResponse>> registrarAll(@Valid @RequestBody List<AulaCreateRequest> dto) {
+        GenericReponse<AulaDetalleResponse> response = serviceImpl.registrarAulasMultiples(dto);
         return ResponseEntity.status(response.status()).body(response);
     }
 

@@ -1,5 +1,6 @@
 package com.sicad.sicad_backend.service.impl;
 
+import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.dto.dedicacion.DedicacionCreateRequest;
 import com.sicad.sicad_backend.dto.dedicacion.DedicacionDetalleResponse;

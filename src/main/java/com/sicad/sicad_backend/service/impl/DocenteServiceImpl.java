@@ -1,5 +1,6 @@
 package com.sicad.sicad_backend.service.impl;
 
+import com.sicad.sicad_backend.dto.Especializacion.EspecializacionResumenResponse;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionResumenResponse;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.dto.curso.CursoDetalleResponse;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -282,6 +284,33 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
     }
 
      */
+    public GenericReponse<DocenteEspecializacionResponse> listarDocentesConEspecializaciones() {
+        List<Docente> docentes = docenteRepo.findAllWithDocentesEspecializacion(); // trae docentes + especializaciones
+
+        if (docentes.isEmpty()) {
+            return new GenericReponse<>(200, "No se encontraron docentes", null);
+        }
+
+        List<DocenteEspecializacionResponse> responseList = docentes.stream()
+                .map(docente -> {
+                    DocenteEspecializacionResponse dto = modelMapper.map(docente, DocenteEspecializacionResponse.class);
+
+                    List<EspecializacionResumenResponse> especializacionesMapeadas = docente.getEspecializaciones().stream()
+                            .map(esp -> modelMapper.map(esp, EspecializacionResumenResponse.class))
+                            .toList();
+
+                    dto.setEspecializaciones(especializacionesMapeadas);
+
+                    return dto;
+                })
+                .toList();
+
+
+        return new GenericReponse<>(200, "Lista de docentes con especializaciones", responseList);
+    }
+
+
+
     public GenericReponse<DocentePreferenciaResponse> listarDocentesConPreferencias(Integer idCargaElectiva) {
         List<Docente> docentes = docenteRepo.findAllWithDocentesPreferencia(); // trae docentes + preferencias
 
@@ -450,6 +479,8 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
     private DocenteCreateRequest convertToDTO(Docente obj) {
         return modelMapper.map(obj, DocenteCreateRequest.class);
     }
+
+
 
     private Docente convertToEntity(DocenteCreateRequest dto) {
         return modelMapper.map(dto, Docente.class);

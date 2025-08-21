@@ -9,5 +9,7 @@ import java.util.List;
 
 public interface IAulaRepo extends IGenericRepo<Aula, Integer> {
     List<Aula> findByEnabledTrue();
+    boolean existsByCodigo(String codigo);
+
 
 }

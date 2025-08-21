@@ -1,0 +1,16 @@
+package com.sicad.sicad_backend.dto.Especializacion;
+
+import com.sicad.sicad_backend.dto.asignatura.AsignaturaResumenResponse;
+import com.sicad.sicad_backend.dto.docente.DocenteResumenResponse;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class EspecializacionResumenResponse {
+    private Integer idEspecializacion;
+    private AsignaturaResumenResponse asignatura;
+    private Boolean enabled;
+}

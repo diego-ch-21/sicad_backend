@@ -72,6 +72,12 @@ public class DocenteController {
     }
 
      */
+    @GetMapping("/especializaciones")
+    public ResponseEntity<GenericReponse<DocenteEspecializacionResponse>> docenteEspecializacion() throws Exception {
+        GenericReponse<DocenteEspecializacionResponse> response = serviceImpl.listarDocentesConEspecializaciones();
+        return  ResponseEntity.status(response.status()).body(response);
+    }
+
     @GetMapping("/preferencias/{idCargaElectiva}")
     public ResponseEntity<GenericReponse<DocentePreferenciaResponse>>  docentesPreferencias(@PathVariable("idCargaElectiva") Integer id) throws Exception {
         GenericReponse<DocentePreferenciaResponse> response = serviceImpl.listarDocentesConPreferencias(id);
@@ -94,7 +100,6 @@ public class DocenteController {
         GenericReponse<DocenteAsignacionResponse> response = serviceImpl.listarDocentesCargaConAsignaciones(idCicloAcademico,idCarga);
         return ResponseEntity.status(response.status()).body(response);
     }
-
     @GetMapping("/asignaciones/{idCargaElectiva}/{idDocente}")
     public ResponseEntity<GenericObjectResponse<DocenteAsignacionResponse>>  docentesAsignacion(
             @PathVariable("idCargaElectiva") Integer idCargaElectiva,
@@ -106,6 +111,7 @@ public class DocenteController {
     private DocenteDetalleResponse convertToResponseDTO(Docente obj) {
         return modelMapper.map(obj, DocenteDetalleResponse.class);
     }
+
     private Docente convertToEntity(DocenteCreateRequest dto) {
         return modelMapper.map(dto, Docente.class);
     }

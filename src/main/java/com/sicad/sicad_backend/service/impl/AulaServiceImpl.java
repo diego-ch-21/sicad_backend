@@ -41,15 +41,35 @@ public class AulaServiceImpl
     }
 
     public GenericObjectResponse<AulaDetalleResponse> registrarAula(AulaCreateRequest request) {
-        Aula aula = construirAulaDesdeRequest(request);
-        if (aula == null) {
+        boolean existe = aulaRepo.existsByCodigo(request.getCodigo());
+        if(existe){
             return new GenericObjectResponse<>(
-                    400,
-                    "El laboratorio debe tener una cantidad válida de equipos",
+                    404,
+                    "el codigo "+request.getCodigo()+" ya esta en uso",
                     null
             );
         }
+        Aula aula = new Aula();
+        String tipo = request.getTipo();
 
+        aula.setTipo(tipo);
+        switch (tipo.toUpperCase()) {
+            case "TEORIA" -> aula.setNumeroEquipos(null);
+            case "LABORATORIO" -> {
+
+                if (request.getNumeroEquipos() != null) {
+                    aula.setNumeroEquipos(request.getNumeroEquipos());
+                } else {
+                    return new GenericObjectResponse<>(404,"el campo de numero de equipos es necesaro para los aulas laboratorio",null);
+                }
+
+            }
+        }
+
+        aula.setCodigo(request.getCodigo());
+        aula.setPiso(request.getPiso());
+        aula.setCapacidad(request.getCapacidad());
+        aula.setEstado(request.getEstado());
         aula.setEnabled(true);
         aulaRepo.save(aula);
         AulaDetalleResponse response  = convertToResponseDTO(aula);
@@ -82,6 +102,17 @@ public class AulaServiceImpl
         if (aulaExistente == null) {
             return new GenericObjectResponse<>(404, "Aula no encontrada", null);
         }
+        if(!(aulaExistente.getCodigo().equals(request.getCodigo()))){
+            boolean existe = aulaRepo.existsByCodigo(request.getCodigo());
+            if(existe){
+                return new GenericObjectResponse<>(
+                        404,
+                        "el codigo "+request.getCodigo()+" ya esta en uso",
+                        null
+                );
+            }
+        }
+
 
         // Actualizar tipo
         if (request.getTipo() != null) {
@@ -90,11 +121,12 @@ public class AulaServiceImpl
 
             // Validación: si es LABORATORIO, numeroEquipos es obligatorio
             if ("LABORATORIO".equals(tipoUpper)) {
-                Integer equipos = request.getNumeroEquipos() != null ? request.getNumeroEquipos() : aulaExistente.getNumeroEquipos();
-                if (equipos == null) {
+                if (request.getNumeroEquipos()== null) {
                     return new GenericObjectResponse<>(400, "Si el tipo es LABORATORIO, debe proporcionar número de equipos", null);
+                } else {
+                    aulaExistente.setNumeroEquipos(request.getNumeroEquipos());
                 }
-                aulaExistente.setNumeroEquipos(equipos);
+
             } else {
                 // Si cambia a TEORIA, se elimina el número de equipos
                 aulaExistente.setNumeroEquipos(null);
@@ -120,28 +152,7 @@ public class AulaServiceImpl
 
 
 
-    private Aula construirAulaDesdeRequest(AulaCreateRequest request) {
-        Aula aula = new Aula();
-        String tipo = request.getTipoAula();
 
-        aula.setTipo(tipo);
-        switch (tipo.toUpperCase()) {
-            case "TEORIA" -> aula.setNumeroEquipos(null);
-            case "LABORATORIO" -> {
-                if (request.getNumeroEquipos() == null) {
-                    return null; // retorna error
-                }
-                aula.setNumeroEquipos(request.getNumeroEquipos());
-            }
-        }
-
-        aula.setCodigo(request.getCodigo());
-        aula.setPiso(request.getPiso());
-        aula.setCapacidad(request.getCapacidad());
-        aula.setEstado(request.getEstado());
-
-        return aula;
-    }
 
     private AulaDetalleResponse convertToResponseDTO(Aula obj) {
         return modelMapper.map(obj, AulaDetalleResponse.class);

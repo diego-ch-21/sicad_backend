@@ -10,8 +10,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor  // 👈 Constructor vacío (obligatorio para ModelMapper)
-@AllArgsConstructor // 👈 Constructor con todos los campos
+@NoArgsConstructor
+@AllArgsConstructor
 public class AlgoritmoCreateRequest {
 
     @NotNull(message = "La población es obligatoria")
