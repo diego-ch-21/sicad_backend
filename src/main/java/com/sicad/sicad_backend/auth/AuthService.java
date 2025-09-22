@@ -7,15 +7,11 @@ import com.sicad.sicad_backend.auth.dto.RolesResponse;
 import com.sicad.sicad_backend.dto.director.DirectorUsuarioResponse;
 import com.sicad.sicad_backend.dto.docente.DocenteDetalleResponse;
 import com.sicad.sicad_backend.dto.docente.DocenteUsuarioResponse;
+import com.sicad.sicad_backend.dto.jefeDepartamento.JefeDepartamentoUsuarioResponse;
+import com.sicad.sicad_backend.dto.logistica.LogisticaUsuarioResponse;
 import com.sicad.sicad_backend.jwt.JwtService;
-import com.sicad.sicad_backend.model.Director;
-import com.sicad.sicad_backend.model.Docente;
-import com.sicad.sicad_backend.model.Rol;
-import com.sicad.sicad_backend.model.Usuario;
-import com.sicad.sicad_backend.repository.interfaces.IDirectorRepo;
-import com.sicad.sicad_backend.repository.interfaces.IDocenteRepo;
-import com.sicad.sicad_backend.repository.interfaces.IRolRepo;
-import com.sicad.sicad_backend.repository.interfaces.IUsuarioRepo;
+import com.sicad.sicad_backend.model.*;
+import com.sicad.sicad_backend.repository.interfaces.*;
 import com.sicad.sicad_backend.dto.usuario.UsuarioDTO;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.utils.CodigoGeneratorUtil;
@@ -36,6 +32,8 @@ public class AuthService {
     private final IUsuarioRepo userRepository;
     private final IDocenteRepo docenteRepository;
     private final IDirectorRepo directorRepository;
+    private final IJefeDepartamentoRepo jefeDepartamentoRepo;
+    private final ILogisticaRepo logisticaRepo;
     private final IRolRepo rolRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
@@ -60,6 +58,8 @@ public class AuthService {
             Integer idRol = usuario.getRol().getIdRol();
             Docente docente=null;
             Director director = null;
+            JefeDepartamento jefeDepartamento = null;
+            Logistica logistica = null;
             switch (idRol){
                 case 1: // Admin
                     break;
@@ -69,6 +69,14 @@ public class AuthService {
                     break;
                 case 3: // Docente
                     docente = docenteRepository.findByUsuario(usuario)
+                            .orElse(null);
+                    break;
+                case 4:
+                    jefeDepartamento =jefeDepartamentoRepo.findByUsuario(usuario)
+                            .orElse(null);
+                    break;
+                case 5:
+                    logistica = logisticaRepo.findByUsuario(usuario)
                             .orElse(null);
                     break;
                 default:
@@ -88,9 +96,27 @@ public class AuthService {
                 directorResponseDTO = null;
             }
 
+            LogisticaUsuarioResponse logisticaResponseDTO;
+            if(logistica != null){
+                logisticaResponseDTO = convertToLogisticaUResponseDTO(logistica);
+            } else {
+                logisticaResponseDTO = null;
+            }
+
+            JefeDepartamentoUsuarioResponse jefeDepartamentoResponseDTO;
+            if(jefeDepartamento != null){
+                jefeDepartamentoResponseDTO = convertToJefeDepartamentoUResponseDTO(jefeDepartamento);
+            } else {
+                jefeDepartamentoResponseDTO = null;
+            }
+
+
+
             RolesResponse rolesResponse = RolesResponse.builder()
                     .docente(docenteResponseDTO)
                     .director(directorResponseDTO)
+                    .logistica(logisticaResponseDTO)
+                    .jefeDepatamento(jefeDepartamentoResponseDTO)
                     .build();
 
 
@@ -167,6 +193,12 @@ public class AuthService {
     }
     private DirectorUsuarioResponse convertToDirectorUResponseDTO(Director obj) {
         return modelMapper.map(obj, DirectorUsuarioResponse.class);
+    }
+    private JefeDepartamentoUsuarioResponse convertToJefeDepartamentoUResponseDTO(JefeDepartamento obj) {
+        return modelMapper.map(obj, JefeDepartamentoUsuarioResponse.class);
+    }
+    private LogisticaUsuarioResponse convertToLogisticaUResponseDTO(Logistica obj) {
+        return modelMapper.map(obj, LogisticaUsuarioResponse.class);
     }
     private Usuario convertToEntity(UsuarioDTO dto) {
         return modelMapper.map(dto, Usuario.class);

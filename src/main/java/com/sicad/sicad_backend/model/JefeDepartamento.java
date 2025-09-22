@@ -9,21 +9,19 @@ import lombok.*;
 @Entity
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name="logistica")
-public class Logistica {
+@Table(name="jefe_departamento")
+public class JefeDepartamento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
-    private Integer idLogistica;
+    private Integer idJefeDepartamento;
 
     @OneToOne
-    @JoinColumn(name = "id_usuario", nullable = false, unique = true)
+    @JoinColumn(name = "id_usuario",nullable = false, unique = true)
     private Usuario usuario;
-
     @Column(nullable = false, name = "cargo")
     private String cargo;
-
     @Column(nullable = false, name = "enabled")
     private boolean enabled;
 
