@@ -13,6 +13,4 @@ public class CategoriaCreateRequest {
     @NotBlank(message = "El nombre es un campo obligatorio")
     private String nombre;
     private String descripcion;
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private boolean enabled = true;
 }

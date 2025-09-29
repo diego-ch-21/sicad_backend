@@ -47,7 +47,9 @@ public class CategoriaController {
 
     @PostMapping("/insertar")
     public ResponseEntity<GenericReponse<CategoriaDetalleResponse>> save(@Valid @RequestBody CategoriaCreateRequest dto) throws Exception {
-        Categoria obj = service.save(convertToEntity(dto));
+        Categoria obj = convertToEntity(dto);
+        obj.setEnabled(true);
+        service.save(obj);
         return new ResponseEntity<>(
                 new GenericReponse<>(201, "Categoría creada", List.of(convertToDetalle(obj))),
                 HttpStatus.CREATED

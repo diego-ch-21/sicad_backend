@@ -48,8 +48,11 @@ public class DedicacionController {
 
     @PostMapping("/insertar")
     public ResponseEntity<GenericReponse<DedicacionDetalleResponse>> save(@Valid @RequestBody DedicacionCreateRequest dto) throws Exception {
-        Dedicacion obj = service.save(convertToEntity(dto));
+
+        Dedicacion obj = convertToEntity(dto);
         obj.setEnabled(true);
+        service.save(obj);
+        System.out.println("obj = " + obj.toString());
         return new ResponseEntity<>(
                 new GenericReponse<>(201, "Dedicación creada", List.of(convertToDetalle(obj))),
                 HttpStatus.CREATED
