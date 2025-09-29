@@ -10,8 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PlanDeEstudioCreateRequest {
-    @NotNull(message = "la idFacultad es un campo obligatorio")
-    private Integer idFacultad;
     @NotBlank(message = "El nombre es un campo obligatorio")
     private String nombre;
 }
