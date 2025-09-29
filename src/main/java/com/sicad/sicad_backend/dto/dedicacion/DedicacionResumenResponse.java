@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class DedicacionResumenResponse {
     private Integer idDedicacion;
     private String nombre;
+    private Integer horasMaxLectivas;
 }
