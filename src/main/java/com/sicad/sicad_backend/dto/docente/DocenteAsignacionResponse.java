@@ -2,7 +2,6 @@ package com.sicad.sicad_backend.dto.docente;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionResumenResponse;
-import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadResumenResponse;
 import com.sicad.sicad_backend.dto.usuario.UsuarioResumenResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;

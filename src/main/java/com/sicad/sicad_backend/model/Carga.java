@@ -36,6 +36,9 @@ public class Carga {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "principal", nullable = false)
+    private Boolean principal;
+
     @Column(name = "enabled", nullable = false)
     private boolean enabled;
 }

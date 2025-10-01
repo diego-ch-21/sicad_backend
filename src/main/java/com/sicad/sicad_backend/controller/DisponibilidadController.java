@@ -29,14 +29,6 @@ public class DisponibilidadController {
     private final DisponibilidadServiceImpl disponibilidadServiceImpl;
     private final ModelMapper modelMapper;
 
-    @GetMapping("/listar/{idDocente}/{idCicloAcademico}")
-    public ResponseEntity<GenericObjectResponse<List<DisponibilidadResumenResponse>>> findByDocenteAndCargaElectiva(
-            @PathVariable("idDocente") Integer idDocente,
-            @PathVariable("idCicloAcademico") Integer idCicloAcademico) throws Exception {
-        GenericObjectResponse<List<DisponibilidadResumenResponse>>  response = disponibilidadServiceImpl.listarDisponibilidadDocente(idDocente, idCicloAcademico);
-        return ResponseEntity.status(response.status()).body(response);
-    }
-
     @GetMapping("/listar")
     public ResponseEntity<GenericReponse<DisponibilidadDetalleResponse>> findAll() throws Exception {
         List<DisponibilidadDetalleResponse> lista = service.findByEnabledTrue()
@@ -48,8 +40,9 @@ public class DisponibilidadController {
                 new GenericReponse<>(200, "Lista de Disponibilidads", lista)
         );
     }
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<DisponibilidadDetalleResponse>>  findById(@PathVariable("id") Integer id) throws Exception {
+    @GetMapping("/buscar/{idDisponibilidad}")
+    public ResponseEntity<GenericObjectResponse<DisponibilidadDetalleResponse>>
+        findById(@PathVariable("idDisponibilidad") Integer id) throws Exception {
         Disponibilidad obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericObjectResponse<>(200, "Disponibilidad encontrada", convertToDetalleDTO(obj))
@@ -67,8 +60,7 @@ public class DisponibilidadController {
         GenericReponse<DisponibilidadDetalleResponse> response = disponibilidadServiceImpl.registrarVariosDisponiblidadAll(requests);
         return ResponseEntity.status(response.status()).body(response);
     }
-
-    @PutMapping("/actualizar/{id}")
+    @PutMapping("/actualizar/{idDisponibilidad}")
     public ResponseEntity<GenericObjectResponse<DisponibilidadDetalleResponse>> actualizar(
             @PathVariable Integer id,
             @Valid @RequestBody DisponibilidadUpdateRequest request) {
@@ -77,10 +69,16 @@ public class DisponibilidadController {
         return ResponseEntity.status(response.status()).body(response);
     }
 
+    @GetMapping("/listar/{idDocente}/{idCicloAcademico}")
+    public ResponseEntity<GenericObjectResponse<List<DisponibilidadResumenResponse>>> findByDocenteAndCargaElectiva(
+            @PathVariable("idDocente") Integer idDocente,
+            @PathVariable("idCicloAcademico") Integer idCicloAcademico) throws Exception {
+        GenericObjectResponse<List<DisponibilidadResumenResponse>>  response = disponibilidadServiceImpl.listarDisponibilidadDocente(idDocente, idCicloAcademico);
+        return ResponseEntity.status(response.status()).body(response);
+    }
     private DisponibilidadDetalleResponse convertToDetalleDTO(Disponibilidad obj) {
         return modelMapper.map(obj, DisponibilidadDetalleResponse.class);
     }
-
     private Disponibilidad convertToEntity(DisponibilidadCreateRequest dto) {
         return modelMapper.map(dto, Disponibilidad.class);
     }

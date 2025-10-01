@@ -40,8 +40,9 @@ public class AulaController {
                 new  GenericReponse<>(200,"Lista de Aulas",list)
         );
     }
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<AulaDetalleResponse>> findById(@PathVariable("id") Integer id) throws Exception {
+    @GetMapping("/buscar/{idAula}")
+    public ResponseEntity<GenericObjectResponse<AulaDetalleResponse>>
+        findById(@PathVariable("idAula") Integer id) throws Exception {
         Aula aula = service.findById(id);
         return ResponseEntity.ok(
                 new GenericObjectResponse<>(200, "Aula encontrado", convertToResponseDTO(aula))
@@ -60,9 +61,9 @@ public class AulaController {
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @PutMapping("/actualizar/{id}")
+    @PutMapping("/actualizar/{idAula}")
     public ResponseEntity<GenericObjectResponse<AulaDetalleResponse>> actualizar(
-            @PathVariable("id") Integer id,
+            @PathVariable("idAula") Integer id,
             @Valid @RequestBody AulaUpdateRequest request) {
         GenericObjectResponse<AulaDetalleResponse> response = serviceImpl.actualizarAula(id, request);
         return ResponseEntity.status(response.status()).body(response);

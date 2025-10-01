@@ -37,8 +37,8 @@ public class LogisticaController {
         );
     }
 
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<LogisticaDetalleResponse>> findById(@PathVariable("id") Integer id) throws Exception {
+    @GetMapping("/buscar/{idLogistica}")
+    public ResponseEntity<GenericObjectResponse<LogisticaDetalleResponse>> findById(@PathVariable("idLogistica") Integer id) throws Exception {
         Logistica obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericObjectResponse<>(200, "Logistica encontrado",convertToResponseDTO(obj))
@@ -52,8 +52,8 @@ public class LogisticaController {
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericObjectResponse<LogisticaDetalleResponse>> update(@Valid @PathVariable("id") Integer id, @Valid @RequestBody LogisticaUpdateRequest dto) throws Exception {
+    @PutMapping("/actualizar/{idLogistica}")
+    public ResponseEntity<GenericObjectResponse<LogisticaDetalleResponse>> update(@Valid @PathVariable("idLogistica") Integer id, @Valid @RequestBody LogisticaUpdateRequest dto) throws Exception {
         GenericObjectResponse<LogisticaDetalleResponse> response = serviceImpl.actualizarLogistica(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }

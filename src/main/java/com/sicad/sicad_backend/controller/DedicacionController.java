@@ -38,8 +38,8 @@ public class DedicacionController {
         );
     }
 
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<DedicacionDetalleResponse>> findById(@PathVariable("id") Integer id) throws Exception {
+    @GetMapping("/buscar/{idDedicacion}")
+    public ResponseEntity<GenericObjectResponse<DedicacionDetalleResponse>> findById(@PathVariable("idDedicacion") Integer id) throws Exception {
         Dedicacion obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericObjectResponse<>(200, "Dedicación encontrada", convertToDetalle(obj))
@@ -52,7 +52,6 @@ public class DedicacionController {
         Dedicacion obj = convertToEntity(dto);
         obj.setEnabled(true);
         service.save(obj);
-        System.out.println("obj = " + obj.toString());
         return new ResponseEntity<>(
                 new GenericReponse<>(201, "Dedicación creada", List.of(convertToDetalle(obj))),
                 HttpStatus.CREATED
@@ -64,12 +63,19 @@ public class DedicacionController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericReponse<DedicacionDetalleResponse>> update(@PathVariable("id") Integer id, @Valid @RequestBody DedicacionCreateRequest dto) throws Exception {
+    @PutMapping("/actualizar/{idDedicacion}")
+    public ResponseEntity<GenericReponse<DedicacionDetalleResponse>>
+        update(@PathVariable("idDedicacion") Integer id, @Valid @RequestBody DedicacionCreateRequest dto) throws Exception {
         Dedicacion obj = service.update(id, convertToEntity(dto));
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Dedicación actualizada", List.of(convertToDetalle(obj)))
         );
+    }
+
+    @GetMapping("/buscar/docente/{idDocente}")
+    public ResponseEntity<GenericObjectResponse<DedicacionDetalleResponse>> buscarDedicacionSegunDocente(@PathVariable("idDocente") Integer id) throws Exception {
+        GenericObjectResponse<DedicacionDetalleResponse> response = dedicacionService.obtenerDedicacion(id);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
 

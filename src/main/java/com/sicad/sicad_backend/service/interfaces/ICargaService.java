@@ -5,6 +5,7 @@ import com.sicad.sicad_backend.model.Carga;
 import com.sicad.sicad_backend.service.base.ICRUD;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ICargaService extends ICRUD<Carga, Integer> {
     List<Carga> findByEnabledTrue();

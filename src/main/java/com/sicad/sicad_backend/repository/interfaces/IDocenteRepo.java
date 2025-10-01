@@ -15,6 +15,13 @@ public interface IDocenteRepo extends IGenericRepo<Docente, Integer> {
     boolean existsByCodigo(String codigo);
     boolean existsByIdDocente(Integer idDocente);
 
+    @Query("SELECT (COUNT(d) > 0) " +
+            "FROM Docente d " +
+            "WHERE d.idDocente = :idDocente " +
+            "AND d.enabled = true")
+    boolean existsDocente(@Param("idDocente") Integer idDocente);
+
+
     @Query("SELECT DISTINCT c FROM Docente c LEFT JOIN FETCH c.preferencias")
     List<Docente> findAllWithDocentesPreferencia();
 
@@ -24,9 +31,7 @@ public interface IDocenteRepo extends IGenericRepo<Docente, Integer> {
     @Query("SELECT DISTINCT c FROM Docente c LEFT JOIN FETCH c.asignaciones")
     List<Docente> findAllWithDocentesAsignacion();
 
-    @Query("SELECT DISTINCT d FROM Docente d " +
-            "LEFT JOIN FETCH d.especializaciones e " +
-            "LEFT JOIN FETCH e.asignatura a")
+    @Query("SELECT DISTINCT d FROM Docente d LEFT JOIN FETCH d.especializaciones e ")
     List<Docente> findAllWithDocentesEspecializacion();
 
 
@@ -34,16 +39,28 @@ public interface IDocenteRepo extends IGenericRepo<Docente, Integer> {
     List<Docente> findAllWithAsignaciones();
 
 
+
+    @Query("""
+    SELECT DISTINCT d FROM Docente d
+    JOIN FETCH d.asignaciones a
+    WHERE a.enabled = true
+      AND a.carga.idCarga = :idCarga
+    """)
+    List<Docente> findAllWithAsignacionesByCargaYCiclo(
+            @Param("idCarga") Integer idCarga);
+
     @Query("""
     SELECT DISTINCT d FROM Docente d
     JOIN FETCH d.asignaciones a
     WHERE a.enabled = true
       AND a.carga.idCarga = :idCarga
       AND a.cicloAcademico.idCicloAcademico = :idCicloAcademico
-""")
-    List<Docente> findAllWithAsignacionesByCargaYCiclo(
-            @Param("idCarga") Integer idCarga,
-            @Param("idCicloAcademico") Integer idCicloAcademico);
+      AND d.idDocente = :idDocente
+    """)
+    Optional<Docente> findWithAsignacionesByCargaYCicloAndDocente(
+            @Param("idDocente") Integer idDocente,
+            @Param("idCicloAcademico") Integer idCicloAcademico,
+            @Param("idCarga") Integer idCarga);
 
 
 

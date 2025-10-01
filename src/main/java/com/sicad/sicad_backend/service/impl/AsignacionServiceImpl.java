@@ -1,11 +1,14 @@
 package com.sicad.sicad_backend.service.impl;
 
 import com.sicad.sicad_backend.algorithm.service.AlgoritmoAsignacionService;
+import com.sicad.sicad_backend.dto.Especializacion.EspecializacionResumenResponse;
 import com.sicad.sicad_backend.dto.algoritmo.AlgoritmoDetalleResponse;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionCreateRequest;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionDetalleResponse;
+import com.sicad.sicad_backend.dto.asignacion.AsignacionResumenResponse;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionUpdateRequest;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
+import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.*;
@@ -17,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.juli.logging.Log;
 import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 
@@ -47,7 +51,7 @@ public class AsignacionServiceImpl
     protected IGenericRepo<Asignacion, Integer> getRepo() {
         return asignacionRepo;
     }
-    /*
+
     public GenericObjectResponse<AsignacionDetalleResponse> registrarAsignacion(AsignacionCreateRequest request) {
         Docente docente = docenteRepo.findById(request.getIdDocente()).orElse(null);
         if (docente == null) {
@@ -75,8 +79,6 @@ public class AsignacionServiceImpl
         AsignacionDetalleResponse dto = modelMapper.map(asignacion, AsignacionDetalleResponse.class);
         return new GenericObjectResponse<>(201, "Asignación registrada exitosamente", dto);
     }
-
-     */
 
     public GenericObjectResponse<AsignacionDetalleResponse> actualizarAsignacion(Integer id, AsignacionUpdateRequest request) {
         Asignacion asignacion = asignacionRepo.findById(id).orElse(null);
@@ -108,25 +110,6 @@ public class AsignacionServiceImpl
             return new GenericObjectResponse<>(400, "Conflicto de unicidad: ya existe una asignación para este docente y horario", null);
         }
     }
-    /*
-    public GenericObjectResponse<String> eliminarAsignacionCicloAcademico(Integer idCicloAcademico) {
-        // Validación de parámetro
-        if (idCicloAcademico == null) {
-            return new GenericObjectResponse<>(400, "ID de ciclo académico no proporcionado", null);
-        }
-
-        Asignacion asignacion = asignacionRepo.findById(idCicloAcademico).orElse(null);
-        if(asignacion == null) {
-            return new GenericObjectResponse<>(404,"Asignacion no encontrada", null);
-        }
-        // desabilitar
-        asignacion.setEnabled(false);
-        String mensaje ="se elimino la asignacion exitosamente";
-
-        return new GenericObjectResponse<>(200, mensaje, null);
-    }
-
-     */
 
 
     //------------------------------------------------------------------------------------------------------
@@ -188,6 +171,7 @@ public class AsignacionServiceImpl
                     .algoritmo(algoritmoPrincipal)
                     .cicloAcademico(cicloAcademico)
                     .createdAt(LocalDateTime.now())
+                    .principal(false)
                     .enabled(true)
                     .build();
             cargaRepo.save(carga);
@@ -388,155 +372,14 @@ public class AsignacionServiceImpl
                         .equals(asignacion.getCurso().getAsignatura().getIdAsignatura()));
     }
 
-    /**
-     * ACTUALIZADO: Obtiene estadísticas detalladas con nuevo modelo de restricciones
-     */
-    public GenericObjectResponse<Map<String, Object>> obtenerEstadisticasAsignacion(Integer idCicloAcademico) {
-        try {
-            // Validar ciclo academico
-            CicloAcademico cicloAcademico = cicloAcademicoRepo.findById(idCicloAcademico).orElse(null);
-            if(cicloAcademico == null) {
-                return new GenericObjectResponse<>(404, "Ciclo Academico no encontrada", null);
-            }
-
-            // Obtener asignaciones actuales
-            List<Asignacion> asignaciones = asignacionRepo.findAll().stream()
-                    .filter(a -> a.getCicloAcademico().getIdCicloAcademico().equals(idCicloAcademico))
-                    .filter(Asignacion::getEnabled)
-                    .collect(Collectors.toList());
-
-            // Obtener datos de contexto
-            List<Docente> docentesDisponibles = obtenerDocentesDisponibles(idCicloAcademico);
-            List<Curso> cursosDelCiclo = obtenerCursosPorCiclo(cicloAcademico.getIdCicloAcademico());
-
-            // Calcular estadísticas
-            Map<String, Object> estadisticas = new HashMap<>();
-
-            // Estadísticas básicas
-            estadisticas.put("totalCursos", cursosDelCiclo.size());
-            estadisticas.put("cursosAsignados", asignaciones.size());
-            estadisticas.put("cursosSinAsignar", cursosDelCiclo.size() - asignaciones.size());
-            estadisticas.put("porcentajeCobertura", cursosDelCiclo.isEmpty() ? 0.0 :
-                    (double) asignaciones.size() / cursosDelCiclo.size() * 100.0);
-
-            // Estadísticas de docentes
-            Set<Integer> docentesUtilizados = asignaciones.stream()
-                    .map(a -> a.getDocente().getIdDocente())
-                    .collect(Collectors.toSet());
-
-            estadisticas.put("totalDocentesDisponibles", docentesDisponibles.size());
-            estadisticas.put("docentesUtilizados", docentesUtilizados.size());
-            estadisticas.put("docentesSinAsignar", docentesDisponibles.size() - docentesUtilizados.size());
-
-            // Distribución de carga por docente
-            Map<String, Integer> cargaPorDocente = new HashMap<>();
-            Map<Integer, Integer> horasPorDocente = new HashMap<>();
-            Map<String, String> limitesDocente = new HashMap<>();
-
-            for (Asignacion asignacion : asignaciones) {
-                String codigoDocente = asignacion.getDocente().getCodigo();
-                Integer idDocente = asignacion.getDocente().getIdDocente();
-
-                int horas = asignacion.getCurso().getCursoHorario().stream()
-                        .mapToInt(CursoHorario::getDuracionHoras)
-                        .sum();
-
-                cargaPorDocente.merge(codigoDocente, horas, Integer::sum);
-                horasPorDocente.merge(idDocente, horas, Integer::sum);
-
-                // ACTUALIZADO: Solo mostrar límite de horasMaxLectivas
-                int limite = asignacion.getDocente().getDedicacion().getHorasMaxLectivas() != null ?
-                        asignacion.getDocente().getDedicacion().getHorasMaxLectivas() : 12;
-                limitesDocente.put(codigoDocente, horas + "/" + limite + " horas (horasMaxLectivas)");
-            }
-
-            estadisticas.put("distribucionCarga", cargaPorDocente);
-            estadisticas.put("limitesDocentes", limitesDocente);
-
-            // Estadísticas de horas
-            if (!horasPorDocente.isEmpty()) {
-                OptionalDouble promedioHoras = horasPorDocente.values().stream()
-                        .mapToInt(Integer::intValue)
-                        .average();
-
-                int maxHoras = horasPorDocente.values().stream()
-                        .mapToInt(Integer::intValue)
-                        .max().orElse(0);
-
-                int minHoras = horasPorDocente.values().stream()
-                        .mapToInt(Integer::intValue)
-                        .min().orElse(0);
-
-                estadisticas.put("promedioHorasPorDocente", promedioHoras.orElse(0.0));
-                estadisticas.put("maximoHoras", maxHoras);
-                estadisticas.put("minimoHoras", minHoras);
-            }
-
-            // ACTUALIZADO: Análisis de violaciones solo de horasMaxLectivas
-            List<String> docentesExcedidos = new ArrayList<>();
-            for (Map.Entry<Integer, Integer> entry : horasPorDocente.entrySet()) {
-                Docente docente = docentesDisponibles.stream()
-                        .filter(d -> d.getIdDocente().equals(entry.getKey()))
-                        .findFirst().orElse(null);
-
-                if (docente != null) {
-                    int limite = docente.getDedicacion().getHorasMaxLectivas() != null ?
-                            docente.getDedicacion().getHorasMaxLectivas() : 12;
-                    if (entry.getValue() > limite) {
-                        docentesExcedidos.add(String.format("%s: %d/%d horas (excede horasMaxLectivas)",
-                                docente.getCodigo(), entry.getValue(), limite));
-                    }
-                }
-            }
-            estadisticas.put("docentesQueExcedenLimite", docentesExcedidos);
-
-            // ACTUALIZADO: Análisis de preferencias como restricción blanda
-            long preferenciasSatisfechas = asignaciones.stream()
-                    .filter(this::verificarPreferenciaSatisfecha)
-                    .count();
-
-            double porcentajePreferencias = asignaciones.isEmpty() ? 0.0 :
-                    (double) preferenciasSatisfechas / asignaciones.size() * 100.0;
-
-            estadisticas.put("preferenciasSatisfechas", preferenciasSatisfechas);
-            estadisticas.put("porcentajePreferencias", porcentajePreferencias);
-            estadisticas.put("notaPreferencias", "Las preferencias son restricciones blandas (opcionales)");
-
-            // Cursos sin asignar
-            List<String> cursosSinAsignar = cursosDelCiclo.stream()
-                    .filter(curso -> asignaciones.stream()
-                            .noneMatch(a -> a.getCurso().getIdCurso().equals(curso.getIdCurso())))
-                    .map(curso -> curso.getCodigo() + " - " + curso.getAsignatura().getNombre())
-                    .collect(Collectors.toList());
-
-            estadisticas.put("cursosSinAsignarDetalle", cursosSinAsignar);
-
-            // ACTUALIZADO: Metadata con nuevo modelo
-            estadisticas.put("cargaElectiva", cicloAcademico.getNombre());
-            estadisticas.put("fechaAnalisis", LocalDate.now().toString());
-            estadisticas.put("totalAsignaciones", asignaciones.size());
-            //estadisticas.put("modeloRestriccion", "ACTUALIZADO: Duras = Disponibilidad + horasMaxLectivas | Blandas = Solo preferencias");
-            estadisticas.put("restriccionesDuras", "Disponibilidad horaria + horasMaxLectivas");
-            estadisticas.put("restriccionesBlandas", "Solo preferencias de docentes (opcionales)");
-            estadisticas.put("eliminado", "Consideración de dedicación y categoría");
-
-            return new GenericObjectResponse<>(200, "Estadísticas generadas con modelo actualizado de restricciones", estadisticas);
-
-        } catch (Exception e) {
-            System.out.println("=== Error al generar estadísticas para carga electiva " + idCicloAcademico + " ===");
-            return new GenericObjectResponse<>(500, "Error al generar estadísticas: " + e.getMessage(), null);
-        }
-    }
+    //---------------------------------------------------------------------------------------
 
     // Métodos auxiliares para el algoritmo
-
     private List<Docente> obtenerDocentesDisponibles(Integer idCicloAcademico) {
         // Obtener docentes que tienen disponibilidad para esta carga electiva
         List<Disponibilidad> disponibilidades = disponibilidadRepo.findByCicloAcademico_IdCicloAcademico(idCicloAcademico);
         return disponibilidades.stream()
                 .map(Disponibilidad::getDocente)
-                .distinct()
-                .filter(docente -> docente.isEnabled())
                 .collect(Collectors.toList());
     }
 
@@ -714,39 +557,40 @@ public class AsignacionServiceImpl
 
         return puedeAsignar;
     }
+    public GenericReponse<AsignacionResumenResponse> obtenerAsignacionesPorDocenteCarga(
+            Integer idDocente,
+            Integer idCarga
+    ){
+        Boolean isDocente = docenteRepo.existsByIdDocente(idDocente);
+        if(!isDocente) {
+            return new GenericReponse<>(200, "No se encontraron docente", null);
+        }
+        Boolean isCarga = cargaRepo.existsByIdCarga(idCarga);
+        if(!isCarga) {
+            return new GenericReponse<>(200, "No se encontraron carga", null);
+        }
+        List<Asignacion> asignaciones = asignacionRepo.findByDocenteAndCargaEnabled(idDocente, idCarga);
+        if(asignaciones.isEmpty()) {
+            return new GenericReponse<>(200, "No se encontraron asignaciones para este docente", null);
+        }
+        // Convertir a DTOs
+        List<AsignacionResumenResponse> listaDTO = asignaciones.stream()
+                .map(this:: convertResumenToDTO)
+                .toList();
+        return new GenericReponse<>(200, "Asignaciones de docente obtenida correctamente", listaDTO);
 
-    /**
-     * ACTUALIZADO: Genera resumen con nuevo modelo de restricciones
-     */
-    private String generarResumenAsignaciones(List<Asignacion> asignaciones, List<Docente> docentes, List<Curso> cursos) {
-        int cursosAsignados = asignaciones.size();
-        int cursosSinAsignar = cursos.size() - cursosAsignados;
-        int docentesUtilizados = (int) asignaciones.stream()
-                .map(a -> a.getDocente().getIdDocente())
-                .distinct()
-                .count();
-
-        // Contar preferencias satisfechas
-        long preferenciasSatisfechas = asignaciones.stream()
-                .filter(this::verificarPreferenciaSatisfecha)
-                .count();
-
-        double porcentajePreferencias = asignaciones.isEmpty() ? 0.0 :
-                (double) preferenciasSatisfechas / asignaciones.size() * 100.0;
-
-        return String.format(
-                "Algoritmo simplificado completado exitosamente.\n" +
-                        "MODELO ACTUALIZADO - RESTRICCIONES DURAS: Disponibilidad + horasMaxLectivas\n" +
-                        "MODELO ACTUALIZADO - RESTRICCIONES BLANDAS: Solo preferencias (%.1f%% satisfechas)\n" +
-                        "ELIMINADO: Consideración de dedicación y categoría\n" +
-                        "Cursos asignados: %d/%d. Docentes utilizados: %d/%d. Cursos sin asignar: %d.",
-                porcentajePreferencias, cursosAsignados, cursos.size(),
-                docentesUtilizados, docentes.size(), cursosSinAsignar
-        );
     }
+
 
     @Override
     public List<Asignacion> findByEnabledTrue() {
         return asignacionRepo.findByEnabledTrue();
     }
+    private AsignacionDetalleResponse convertToDTO(Asignacion obj) {
+        return modelMapper.map(obj, AsignacionDetalleResponse.class);
+    }
+    private AsignacionResumenResponse convertResumenToDTO(Asignacion obj) {
+        return modelMapper.map(obj, AsignacionResumenResponse.class);
+    }
+
 }

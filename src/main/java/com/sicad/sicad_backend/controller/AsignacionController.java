@@ -1,7 +1,9 @@
 package com.sicad.sicad_backend.controller;
 
 
+import com.sicad.sicad_backend.dto.Especializacion.EspecializacionResumenResponse;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionDetalleResponse;
+import com.sicad.sicad_backend.dto.asignacion.AsignacionResumenResponse;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionUpdateRequest;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.model.Asignacion;
@@ -25,7 +27,6 @@ import java.util.Map;
 public class AsignacionController {
     private final IAsignacionService service;
     private final AsignacionServiceImpl asignacionServiceImpl;
-
     private final ModelMapper modelMapper;
 
     @GetMapping("/listar")
@@ -39,14 +40,15 @@ public class AsignacionController {
                 new GenericReponse<>(200, "Lista de Asignacions", lista)
         );
     }
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<AsignacionDetalleResponse>>  findById(@PathVariable("id") Integer id) throws Exception {
+
+    @GetMapping("/buscar/{idAsignacion}")
+    public ResponseEntity<GenericObjectResponse<AsignacionDetalleResponse>>  findById(@PathVariable("idAsignacion") Integer id) throws Exception {
         Asignacion obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericObjectResponse<>(200, "Asignacion encontrada", convertToDTO(obj))
         );
     }
-    /*
+
     @PostMapping("/insertar")
     public ResponseEntity<GenericObjectResponse<AsignacionDetalleResponse>> save(@Valid @RequestBody AsignacionCreateRequest request){
         GenericObjectResponse<AsignacionDetalleResponse> response = asignacionServiceImpl.registrarAsignacion(request);
@@ -54,23 +56,12 @@ public class AsignacionController {
 
     }
 
-     */
-    @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericObjectResponse<AsignacionDetalleResponse>> update(@Valid @PathVariable("id") Integer id, @RequestBody AsignacionUpdateRequest request){
+    @PutMapping("/actualizar/{idAsignacion}")
+    public ResponseEntity<GenericObjectResponse<AsignacionDetalleResponse>> update(@Valid @PathVariable("idAsignacion") Integer id, @RequestBody AsignacionUpdateRequest request){
         GenericObjectResponse<AsignacionDetalleResponse> response = asignacionServiceImpl.actualizarAsignacion(id, request);
         return ResponseEntity.status(response.status()).body(response);
     }
-    private AsignacionDetalleResponse convertToDTO(Asignacion obj) {
-        return modelMapper.map(obj, AsignacionDetalleResponse.class);
-    }
-    /*
-    @DeleteMapping("/eliminar/{idCicloAcademico}")
-    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idCicloAcademico") Integer id) {
-        GenericObjectResponse<String> response = asignacionServiceImpl.eliminarAsignacionCicloAcademico(id);
-        return ResponseEntity.status(response.status()).body(response);
-    }
 
-     */
     // NUEVO ENDPOINT PARA EL ALGORITMO HÍBRIDO GA + PSO
     @PostMapping("/algoritmo/{idCicloAcademico}")
     public ResponseEntity<GenericObjectResponse<List<AsignacionDetalleResponse>>> asignarConAlgoritmoHibrido(
@@ -107,46 +98,19 @@ public class AsignacionController {
                             "Error interno del servidor en algoritmo híbrido: " + e.getMessage(), null));
         }
     }
-    // ENDPOINT PARA OBTENER ESTADÍSTICAS DETALLADAS DEL ALGORITMO
-    @GetMapping("/algoritmo/estadisticas/{idCargaElectiva}")
-    public ResponseEntity<GenericObjectResponse<Map<String, Object>>> obtenerEstadisticasAsignacion(
-            @PathVariable("idCargaElectiva") Integer idCargaElectiva) {
-
-        try {
-            System.out.println("Solicitud de estadísticas de asignación para carga electiva: " + idCargaElectiva);
-
-            // Llamar al service para obtener estadísticas completas
-            GenericObjectResponse<Map<String, Object>> response =
-                    asignacionServiceImpl.obtenerEstadisticasAsignacion(idCargaElectiva);
-
-            // System.out.println del resultado según el status
-            if (response.status() == 200) {
-                Map<String, Object> estadisticas = response.data();
-                if (estadisticas != null) {
-                    System.out.println("Estadísticas generadas exitosamente:");
-                    System.out.println("   • Total cursos: " + estadisticas.get("totalCursos"));
-                    System.out.println("   • Cursos asignados: " + estadisticas.get("cursosAsignados"));
-                    System.out.println("   • Docentes utilizados: " + estadisticas.get("docentesUtilizados"));
-                    System.out.println("   • Cobertura: " + String.format("%.1f", (Double) estadisticas.get("porcentajeCobertura")) + "%");
-                }
-            } else {
-                System.out.println("Error al generar estadísticas - Status: " + response.status() + " - " + response.message());
-            }
-
-            return ResponseEntity.status(response.status()).body(response);
-
-        } catch (IllegalArgumentException e) {
-            System.out.println("Error de validación en estadísticas: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GenericObjectResponse<>(400,
-                            "Error de validación: " + e.getMessage(), null));
-
-        } catch (Exception e) {
-            System.out.println("Error crítico al obtener estadísticas para carga electiva " + idCargaElectiva + ": " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new GenericObjectResponse<>(500,
-                            "Error interno del servidor al obtener estadísticas: " + e.getMessage(), null));
-        }
+    @GetMapping("/listar/{idDocente}/{idCarga}")
+    public ResponseEntity<GenericReponse<AsignacionResumenResponse>> findByDocenteAndCargaElectiva(
+            @PathVariable("idDocente") Integer idDocente,
+            @PathVariable("idCarga") Integer idCarga) throws Exception {
+        GenericReponse<AsignacionResumenResponse>  response = asignacionServiceImpl.obtenerAsignacionesPorDocenteCarga(idDocente, idCarga);
+        return ResponseEntity.status(response.status()).body(response);
     }
+
+
+    private AsignacionDetalleResponse convertToDTO(Asignacion obj) {
+        return modelMapper.map(obj, AsignacionDetalleResponse.class);
+    }
+
+
+
 }

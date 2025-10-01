@@ -2,26 +2,16 @@ package com.sicad.sicad_backend.controller;
 
 import com.sicad.sicad_backend.dto.algoritmo.AlgoritmoCreateRequest;
 import com.sicad.sicad_backend.dto.algoritmo.AlgoritmoDetalleResponse;
-import com.sicad.sicad_backend.dto.algoritmo.AlgoritmoResumenResponse;
 import com.sicad.sicad_backend.dto.algoritmo.AlgoritmoUpdateRequest;
-import com.sicad.sicad_backend.dto.asignatura.AsignaturaCreateRequest;
-import com.sicad.sicad_backend.dto.asignatura.AsignaturaDetalleResponse;
-import com.sicad.sicad_backend.dto.asignatura.AsignaturaUpdateRequest;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.model.Algoritmo;
-import com.sicad.sicad_backend.model.Asignatura;
-import com.sicad.sicad_backend.repository.base.IGenericRepo;
-import com.sicad.sicad_backend.repository.interfaces.IAlgoritmoRepo;
-import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.impl.AlgoritmoServiceImpl;
 import com.sicad.sicad_backend.service.interfaces.IAlgoritmoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -44,8 +34,8 @@ public class AlgoritmoController{
                 new GenericReponse<>(200, "Lista de algoritmos", lista)
         );
     }
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<AlgoritmoDetalleResponse>> findById(@PathVariable("id") Integer id) throws Exception {
+    @GetMapping("/buscar/{idAlgoritmo}")
+    public ResponseEntity<GenericObjectResponse<AlgoritmoDetalleResponse>> findById(@PathVariable("idAlgoritmo") Integer id) throws Exception {
         Algoritmo obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericObjectResponse<>(200, "Algoritmo encontrada", convertToDetalle(obj))
@@ -63,8 +53,8 @@ public class AlgoritmoController{
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericObjectResponse<AlgoritmoDetalleResponse>> actualizar(@PathVariable("id") Integer id, @Valid @RequestBody AlgoritmoUpdateRequest dto) {
+    @PutMapping("/actualizar/{idAlgoritmo}")
+    public ResponseEntity<GenericObjectResponse<AlgoritmoDetalleResponse>> actualizar(@PathVariable("idAlgoritmo") Integer id, @Valid @RequestBody AlgoritmoUpdateRequest dto) {
         GenericObjectResponse<AlgoritmoDetalleResponse> response = serviceImpl.actualizarAlgoritmo(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }

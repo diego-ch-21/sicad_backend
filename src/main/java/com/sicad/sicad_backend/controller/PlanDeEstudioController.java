@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/plan_de_estudio")
+@RequestMapping("/plan-de-estudio")
 @RequiredArgsConstructor
 public class PlanDeEstudioController {
 
@@ -37,8 +37,8 @@ public class PlanDeEstudioController {
         );
     }
 
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<PlanDeEstudioDetalleResponse>> findById(@PathVariable("id") Integer id) throws Exception {
+    @GetMapping("/buscar/{idPlanDeEstudio}")
+    public ResponseEntity<GenericObjectResponse<PlanDeEstudioDetalleResponse>> findById(@PathVariable("idPlanDeEstudio") Integer id) throws Exception {
         PlanDeEstudio obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericObjectResponse<>(200, "Plan de Estudio encontrado", convertToResponseDTO(obj))
@@ -56,8 +56,8 @@ public class PlanDeEstudioController {
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericObjectResponse<PlanDeEstudioDetalleResponse>> actualizar(@PathVariable("id") Integer id, @Valid @RequestBody PlanDeEstudioUpdateRequest dto) {
+    @PutMapping("/actualizar/{idPlanDeEstudio}")
+    public ResponseEntity<GenericObjectResponse<PlanDeEstudioDetalleResponse>> actualizar(@PathVariable("idPlanDeEstudio") Integer id, @Valid @RequestBody PlanDeEstudioUpdateRequest dto) {
         GenericObjectResponse<PlanDeEstudioDetalleResponse> response = serviceImpl.actualizarPlan(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }

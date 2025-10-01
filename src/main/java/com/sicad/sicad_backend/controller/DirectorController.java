@@ -36,8 +36,8 @@ public class DirectorController {
         );
     }
 
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<DirectorDetalleResponse>> findById(@PathVariable("id") Integer id) throws Exception {
+    @GetMapping("/buscar/{idDirector}")
+    public ResponseEntity<GenericObjectResponse<DirectorDetalleResponse>> findById(@PathVariable("idDirector") Integer id) throws Exception {
         Director obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericObjectResponse<>(200, "Director encontrado",convertToResponseDTO(obj))
@@ -53,8 +53,9 @@ public class DirectorController {
 
 
 
-    @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericObjectResponse<DirectorDetalleResponse>> update(@Valid @PathVariable("id") Integer id, @Valid @RequestBody DirectorUpdateRequest dto) throws Exception {
+    @PutMapping("/actualizar/{idDirector}")
+    public ResponseEntity<GenericObjectResponse<DirectorDetalleResponse>>
+        update(@Valid @PathVariable("idDirector") Integer id, @Valid @RequestBody DirectorUpdateRequest dto) throws Exception {
         GenericObjectResponse<DirectorDetalleResponse> response = serviceImpl.actualizarDirector(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }

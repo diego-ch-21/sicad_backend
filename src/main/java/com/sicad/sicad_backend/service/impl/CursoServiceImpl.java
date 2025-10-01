@@ -54,19 +54,12 @@ public class CursoServiceImpl
 
         return new GenericReponse<>(200, "Lista de Cursos", responseList);
     }
+
     public GenericReponse<CursoDetalleResponse> listarCursosPorCicloAcademico(Integer idCicloAcademico) {
         CicloAcademico cicloAcademico = cicloAcademicoRepo.findById(idCicloAcademico).orElse(null);
         if (cicloAcademico == null) {
             return new GenericReponse<>(404, "Ciclo académico no encontrado", null);
         }
-        /*
-        Carga carga = cargaRepo.findById(idCarga).orElse(null);
-        if(carga == null) {
-            return new GenericReponse<>(404, "Carga no encontrada", null);
-        }
-
-         */
-
         List<Curso> cursos = cursoRepo.buscarPorCicloAcademico(idCicloAcademico);
 
         List<CursoDetalleResponse> responseList = cursos.stream()
@@ -162,7 +155,6 @@ public class CursoServiceImpl
         String mensaje = String.format("Curso registrado. Horarios registrados: %d, fallidos: %d", registrados, fallidos);
         return new GenericObjectResponse<>(201, mensaje, cursoResponse);
     }
-
 
     public GenericReponse<CursoDetalleResponse> registrarCursosMultiples(List<CursoCreateRequest> requests) {
         List<CursoDetalleResponse> registrados = new ArrayList<>();
@@ -264,7 +256,6 @@ public class CursoServiceImpl
 
         return new GenericObjectResponse<>(200, mensaje, null);
     }
-
 
     @Override
     public List<Curso> findByEnabledTrue() {

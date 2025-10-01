@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/ciclo_academico")
+@RequestMapping("/ciclo-academico")
 @RequiredArgsConstructor
 public class CicloAcademicoController {
 
@@ -38,8 +38,9 @@ public class CicloAcademicoController {
         );
     }
 
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<CicloAcademicoDetalleResponse>> findById(@PathVariable("id") Integer id) throws Exception {
+    @GetMapping("/buscar/{idCicloAcademico}")
+    public ResponseEntity<GenericObjectResponse<CicloAcademicoDetalleResponse>>
+        findById(@PathVariable("idCicloAcademico") Integer id) throws Exception {
         CicloAcademico ciclo = service.findById(id);
         return ResponseEntity.ok(
                 new GenericObjectResponse<>(200, "Ciclo académico encontrado", convertToResponseDTO(ciclo))
@@ -53,9 +54,9 @@ public class CicloAcademicoController {
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @PutMapping("/actualizar/{id}")
+    @PutMapping("/actualizar/{idCicloAcademico}")
     public ResponseEntity<GenericObjectResponse<CicloAcademicoDetalleResponse>> actualizar(
-            @PathVariable("id") Integer id,
+            @PathVariable("idCicloAcademico") Integer id,
             @Valid @RequestBody CicloAcademicoUpdateRequest request) {
         GenericObjectResponse<CicloAcademicoDetalleResponse> response = serviceImpl.actualizarCiclo(id, request);
         return ResponseEntity.status(response.status()).body(response);

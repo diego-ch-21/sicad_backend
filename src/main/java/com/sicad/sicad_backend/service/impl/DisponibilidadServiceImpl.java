@@ -152,8 +152,6 @@ public class DisponibilidadServiceImpl extends CRUDImpl<Disponibilidad, Integer>
 
         return new GenericObjectResponse<>(200, "Lista obtenida correctamente", listaDTO);
     }
-
-
     @Override
     public List<Disponibilidad> findByEnabledTrue() {
         return disponibilidadRepo.findByEnabledTrue();

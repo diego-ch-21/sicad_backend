@@ -35,8 +35,8 @@ public class JefeDepartamentoController {
         );
     }
 
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<JefeDepartamentoDetalleResponse>> findById(@PathVariable("id") Integer id) throws Exception {
+    @GetMapping("/buscar/{idJefeDepartamento}")
+    public ResponseEntity<GenericObjectResponse<JefeDepartamentoDetalleResponse>> findById(@PathVariable("idJefeDepartamento") Integer id) throws Exception {
         JefeDepartamento obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericObjectResponse<>(200, "JefeDepartamento encontrado",convertToResponseDTO(obj))
@@ -50,8 +50,8 @@ public class JefeDepartamentoController {
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericObjectResponse<JefeDepartamentoDetalleResponse>> update(@Valid @PathVariable("id") Integer id, @Valid @RequestBody JefeDepartamentoUpdateRequest dto) throws Exception {
+    @PutMapping("/actualizar/{idJefeDepartamento}")
+    public ResponseEntity<GenericObjectResponse<JefeDepartamentoDetalleResponse>> update(@Valid @PathVariable("idJefeDepartamento") Integer id, @Valid @RequestBody JefeDepartamentoUpdateRequest dto) throws Exception {
         GenericObjectResponse<JefeDepartamentoDetalleResponse> response = serviceImpl.actualizarJefeDepartamento(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }

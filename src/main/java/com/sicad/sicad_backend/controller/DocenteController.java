@@ -35,15 +35,15 @@ public class DocenteController {
                 new GenericReponse<>(200, "Lista de Docentes", lista)
         );
     }
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<DocenteDetalleResponse>>  findById(@PathVariable("id") Integer id) throws Exception {
+    @GetMapping("/buscar/{idDocente}")
+    public ResponseEntity<GenericObjectResponse<DocenteDetalleResponse>>  findById(@PathVariable("idDocente") Integer id) throws Exception {
         Docente obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericObjectResponse<>(200, "Docente encontrada", convertToResponseDTO(obj))
         );
     }
-    @GetMapping("/usuario/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<DocenteDetalleResponse>>  findByIdUsuario(@PathVariable("id") Integer id) throws Exception {
+    @GetMapping("/usuario/buscar/{idUsuario}")
+    public ResponseEntity<GenericObjectResponse<DocenteDetalleResponse>>  findByIdUsuario(@PathVariable("idUsuario") Integer id) throws Exception {
         GenericObjectResponse<DocenteDetalleResponse> response = serviceImpl.obtenerDocentePorUsuario(id);
         return ResponseEntity.status(response.status()).body(response);
     }
@@ -59,52 +59,36 @@ public class DocenteController {
     }
 
 
-    @PutMapping("/actualizar/{id}")
+    @PutMapping("/actualizar/{idDocente}")
     public ResponseEntity<GenericObjectResponse<DocenteDetalleResponse>> update(@Valid @PathVariable("id") Integer id, @Valid @RequestBody DocenteUpdateRequest dto) throws Exception {
         GenericObjectResponse<DocenteDetalleResponse> response = serviceImpl.actualizarDocente(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }
-    /*
-    @GetMapping("/preferencias/{idCargaElectiva}")
-    public ResponseEntity<GenericReponse<DocentePreferenciaResponse>>  docentesPreferenciaAll(@PathVariable("idCargaElectiva") Integer id) throws Exception {
-        GenericReponse<DocentePreferenciaResponse> response = serviceImpl.listarDocentesPreferencia(id);
-        return ResponseEntity.status(response.status()).body(response);
-    }
 
-     */
-    @GetMapping("/especializaciones")
+    @GetMapping("/listar/especializaciones")
     public ResponseEntity<GenericReponse<DocenteEspecializacionResponse>> docenteEspecializacion() throws Exception {
         GenericReponse<DocenteEspecializacionResponse> response = serviceImpl.listarDocentesConEspecializaciones();
         return  ResponseEntity.status(response.status()).body(response);
     }
 
-    @GetMapping("/preferencias/{idCargaElectiva}")
-    public ResponseEntity<GenericReponse<DocentePreferenciaResponse>>  docentesPreferencias(@PathVariable("idCargaElectiva") Integer id) throws Exception {
+    @GetMapping("/preferencias/{idCicloAcademico}")
+    public ResponseEntity<GenericReponse<DocentePreferenciaResponse>>
+        docentesPreferencias(@PathVariable("idCicloAcademico") Integer id) throws Exception {
         GenericReponse<DocentePreferenciaResponse> response = serviceImpl.listarDocentesConPreferencias(id);
         return ResponseEntity.status(response.status()).body(response);
     }
-    @GetMapping("/disponibilidades/{idCargaElectiva}")
-    public ResponseEntity<GenericReponse<DocenteDisponibilidadResponse>>  docentesDisponibilidad(@PathVariable("idCargaElectiva") Integer id) throws Exception {
+    @GetMapping("/disponibilidades/{idCicloAcademico}")
+    public ResponseEntity<GenericReponse<DocenteDisponibilidadResponse>>
+        docentesDisponibilidad(@PathVariable("idCicloAcademico") Integer id) throws Exception {
         GenericReponse<DocenteDisponibilidadResponse> response = serviceImpl.listarDocentesConDisponibilidad(id);
         return ResponseEntity.status(response.status()).body(response);
     }
-    @GetMapping("/asignaciones/{idCargaElectiva}")
-    public ResponseEntity<GenericReponse<DocenteAsignacionResponse>>  docentesAsignaciones(@PathVariable("idCargaElectiva") Integer id) throws Exception {
-        GenericReponse<DocenteAsignacionResponse> response = serviceImpl.listarDocentesConAsingaciones(id);
-        return ResponseEntity.status(response.status()).body(response);
-    }
-    @GetMapping("/asignaciones-carga/{idCicloAcademico}/{idCarga}")
-    public ResponseEntity<GenericReponse<DocenteAsignacionResponse>>  docentesAsignacionCarga(
-            @PathVariable("idCicloAcademico") Integer idCicloAcademico,
+
+    @GetMapping("/asignaciones/{idCarga}")
+    public ResponseEntity<GenericReponse<DocenteAsignacionResponse>>
+        docentesAsignacionesCicloAcademicoAndCarga(
             @PathVariable("idCarga") Integer idCarga) throws Exception {
-        GenericReponse<DocenteAsignacionResponse> response = serviceImpl.listarDocentesCargaConAsignaciones(idCicloAcademico,idCarga);
-        return ResponseEntity.status(response.status()).body(response);
-    }
-    @GetMapping("/asignaciones/{idCargaElectiva}/{idDocente}")
-    public ResponseEntity<GenericObjectResponse<DocenteAsignacionResponse>>  docentesAsignacion(
-            @PathVariable("idCargaElectiva") Integer idCargaElectiva,
-            @PathVariable("idDocente") Integer idDocente) throws Exception {
-        GenericObjectResponse<DocenteAsignacionResponse> response = serviceImpl.obtenerDocenteConAsignaciones(idCargaElectiva,idDocente);
+        GenericReponse<DocenteAsignacionResponse> response = serviceImpl.listarDocentesCargaConAsignaciones(idCarga);
         return ResponseEntity.status(response.status()).body(response);
     }
 

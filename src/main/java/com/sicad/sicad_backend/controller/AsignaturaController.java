@@ -36,8 +36,8 @@ public class AsignaturaController {
         );
     }
 
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<AsignaturaDetalleResponse>> findById(@PathVariable("id") Integer id) throws Exception {
+    @GetMapping("/buscar/{idAsignatura}")
+    public ResponseEntity<GenericObjectResponse<AsignaturaDetalleResponse>> findById(@PathVariable("idAsignatura") Integer id) throws Exception {
         Asignatura obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericObjectResponse<>(200, "Asignatura encontrada", convertToDetalle(obj))
@@ -55,8 +55,8 @@ public class AsignaturaController {
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericObjectResponse<AsignaturaDetalleResponse>> actualizar(@PathVariable("id") Integer id, @Valid @RequestBody AsignaturaUpdateRequest dto) {
+    @PutMapping("/actualizar/{idAsignatura}")
+    public ResponseEntity<GenericObjectResponse<AsignaturaDetalleResponse>> actualizar(@PathVariable("idAsignatura") Integer id, @Valid @RequestBody AsignaturaUpdateRequest dto) {
         GenericObjectResponse<AsignaturaDetalleResponse> response = serviceImpl.actualizarAsignatura(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }

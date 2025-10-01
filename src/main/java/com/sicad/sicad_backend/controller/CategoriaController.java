@@ -5,6 +5,7 @@ import com.sicad.sicad_backend.dto.categoria.CategoriaCreateRequest;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.dto.categoria.CategoriaDetalleResponse;
 import com.sicad.sicad_backend.dto.categoria.CategoriaResumenResponse;
+import com.sicad.sicad_backend.dto.dedicacion.DedicacionDetalleResponse;
 import com.sicad.sicad_backend.model.Categoria;
 import com.sicad.sicad_backend.service.impl.CategoriaServiceImpl;
 import com.sicad.sicad_backend.service.interfaces.ICategoriaService;
@@ -37,8 +38,8 @@ public class CategoriaController {
         );
     }
 
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<CategoriaDetalleResponse>> findById(@PathVariable("id") Integer id) throws Exception {
+    @GetMapping("/buscar/{idCategoria}")
+    public ResponseEntity<GenericObjectResponse<CategoriaDetalleResponse>> findById(@PathVariable("idCategoria") Integer id) throws Exception {
         Categoria obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericObjectResponse<>(200, "Categoría encontrada", convertToDetalle(obj))
@@ -61,13 +62,19 @@ public class CategoriaController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericReponse<CategoriaDetalleResponse>> update(@PathVariable("id") Integer id, @Valid @RequestBody CategoriaCreateRequest dto) throws Exception {
+    @PutMapping("/actualizar/{idCategoria}")
+    public ResponseEntity<GenericReponse<CategoriaDetalleResponse>> update(@PathVariable("idCategoria") Integer id, @Valid @RequestBody CategoriaCreateRequest dto) throws Exception {
         Categoria obj = service.update(id, convertToEntity(dto));
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Categoría actualizada", List.of(convertToDetalle(obj)))
         );
     }
+    @GetMapping("/buscar/docente/{idDocente}")
+    public ResponseEntity<GenericObjectResponse<CategoriaDetalleResponse>> buscarCategoriaSegunDocente(@PathVariable("idDocente") Integer id) throws Exception {
+        GenericObjectResponse<CategoriaDetalleResponse> response = categoriaService.obtenerCategoria(id);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
 
 
     private CategoriaDetalleResponse convertToDetalle(Categoria obj) {

@@ -10,5 +10,14 @@ import java.util.List;
 
 public interface IAsignacionRepo extends IGenericRepo<Asignacion, Integer> {
     List<Asignacion> findByEnabledTrue();
-
+    @Query("""
+    SELECT a FROM Asignacion a
+    WHERE a.docente.idDocente = :idDocente
+      AND a.carga.idCarga = :idCarga
+      AND a.enabled = true
+    """)
+    List<Asignacion> findByDocenteAndCargaEnabled(
+            @Param("idDocente") Integer idDocente,
+            @Param("idCarga") Integer idCarga
+    );
 }

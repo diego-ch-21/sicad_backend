@@ -27,14 +27,6 @@ public class PreferenciaController {
     private final ModelMapper modelMapper;
     private final PreferenciaServiceImpl preferenciaServiceImpl;
 
-    @GetMapping("/listar/{idDocente}/{idCicloAcademico}")
-    public ResponseEntity<GenericObjectResponse<List<PreferenciaResumenResponse>>> findByDocenteAndCargaElectiva(
-            @PathVariable("idDocente") Integer idDocente,
-            @PathVariable("idCicloAcademico") Integer idCicloAcademico) throws Exception {
-        GenericObjectResponse<List<PreferenciaResumenResponse>>  response = preferenciaServiceImpl.listarPreferenciaDocente(idDocente, idCicloAcademico);
-        return ResponseEntity.status(response.status()).body(response);
-    }
-
     @GetMapping("/listar")
     public ResponseEntity<GenericReponse<PreferenciaDetalleResponse>> findAll() throws Exception {
         List<PreferenciaDetalleResponse> lista = service.findByEnabledTrue()
@@ -45,15 +37,13 @@ public class PreferenciaController {
                 new GenericReponse<>(200, "Lista de Preferencias", lista)
         );
     }
-
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<PreferenciaDetalleResponse>> findById(@PathVariable("id") Integer id) throws Exception {
+    @GetMapping("/buscar/{idPreferencia}")
+    public ResponseEntity<GenericObjectResponse<PreferenciaDetalleResponse>> findById(@PathVariable("idPreferencia") Integer id) throws Exception {
         Preferencia obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericObjectResponse<>(200, "Preferencia encontrada", convertToDTO(obj))
         );
     }
-
     @PostMapping("/insertar")
     public ResponseEntity<GenericObjectResponse<PreferenciaDetalleResponse>> save(@Valid @RequestBody PreferenciaCreateRequest request){
         GenericObjectResponse<PreferenciaDetalleResponse> response = preferenciaServiceImpl.registrarPreferencia(request);
@@ -64,14 +54,18 @@ public class PreferenciaController {
         GenericReponse<PreferenciaDetalleResponse> response = preferenciaServiceImpl.registrarVariosPreferencias(requests);
         return ResponseEntity.status(response.status()).body(response);
     }
-
-    @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericObjectResponse<PreferenciaDetalleResponse>> update(@PathVariable("id") Integer id, @Valid @RequestBody PreferenciaUpdateRequest request) throws Exception {
+    @PutMapping("/actualizar/{idPreferencia}")
+    public ResponseEntity<GenericObjectResponse<PreferenciaDetalleResponse>> update(@PathVariable("idPreferencia") Integer id, @Valid @RequestBody PreferenciaUpdateRequest request) throws Exception {
         GenericObjectResponse<PreferenciaDetalleResponse> response = preferenciaServiceImpl.actualizarPreferencia(id, request);
         return ResponseEntity.status(response.status()).body(response);
     }
-
-
+    @GetMapping("/listar/{idDocente}/{idCicloAcademico}")
+    public ResponseEntity<GenericObjectResponse<List<PreferenciaResumenResponse>>> findByDocenteAndCargaElectiva(
+            @PathVariable("idDocente") Integer idDocente,
+            @PathVariable("idCicloAcademico") Integer idCicloAcademico) throws Exception {
+        GenericObjectResponse<List<PreferenciaResumenResponse>>  response = preferenciaServiceImpl.listarPreferenciaDocente(idDocente, idCicloAcademico);
+        return ResponseEntity.status(response.status()).body(response);
+    }
     private PreferenciaDetalleResponse convertToDTO(Preferencia obj) {
         return modelMapper.map(obj, PreferenciaDetalleResponse.class);
     }

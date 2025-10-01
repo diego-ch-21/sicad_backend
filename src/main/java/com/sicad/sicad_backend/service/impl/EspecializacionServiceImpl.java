@@ -2,13 +2,10 @@ package com.sicad.sicad_backend.service.impl;
 
 import com.sicad.sicad_backend.dto.Especializacion.EspecializacionCreateRequest;
 import com.sicad.sicad_backend.dto.Especializacion.EspecializacionDetalleResponse;
+import com.sicad.sicad_backend.dto.Especializacion.EspecializacionResumenResponse;
 import com.sicad.sicad_backend.dto.Especializacion.EspecializacionUdpdateRequest;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
-import com.sicad.sicad_backend.dto.dedicacion.DedicacionCreateRequest;
-import com.sicad.sicad_backend.dto.dedicacion.DedicacionDetalleResponse;
-import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioDetalleResponse;
-import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioUpdateRequest;
 import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.IAsignaturaRepo;
@@ -23,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +31,7 @@ public class EspecializacionServiceImpl
     private final IEspecializacionRepo especializacionRepo;
     private final IDocenteRepo docenteRepo;
     private final IAsignaturaRepo asignaturaRepo;
+    private final ICicloAcademicoRepo cicloAcademicoRepo;
     private final ModelMapper modelMapper;
 
     @Override
@@ -96,6 +95,28 @@ public class EspecializacionServiceImpl
 
         EspecializacionDetalleResponse dto = modelMapper.map(esp, EspecializacionDetalleResponse.class);
         return new GenericObjectResponse<>(200, "Especialización actualizado exitosamente", dto);
+    }
+
+    public GenericObjectResponse<List<EspecializacionResumenResponse>> listarEspecializacionDocente(Integer idDocente) {
+        // Validar existencia de docente
+        if (!docenteRepo.existsByIdDocente(idDocente)) {
+            return new GenericObjectResponse<>(400, "Docente no encontrado", null);
+        }
+
+
+        // Obtener preferencias filtradas
+        List<Especializacion> especializaciones = especializacionRepo.listarEspecializacionesPorDocente(idDocente);
+        if(especializaciones.isEmpty()){
+            return new GenericObjectResponse<>(400, "No hay especializacion registradas para este docente en este ciclo academico", null);
+        }
+
+        // Convertir a DTOs
+        List<EspecializacionResumenResponse> listaDTO = especializaciones.stream()
+                .map(p -> modelMapper.map(p, EspecializacionResumenResponse.class))
+                .collect(Collectors.toList());
+
+
+        return new GenericObjectResponse<>(200, "Especializaciones de docente obtenida correctamente", listaDTO);
     }
 
     private EspecializacionDetalleResponse convertToDetalle(Especializacion especializacion){

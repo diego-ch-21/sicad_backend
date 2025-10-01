@@ -40,8 +40,8 @@ public class EscuelaController {
         );
     }
 
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<EscuelaDetalleResponse>> findById(@PathVariable("id") Integer id) throws Exception {
+    @GetMapping("/buscar/{idEscuela}")
+    public ResponseEntity<GenericObjectResponse<EscuelaDetalleResponse>> findById(@PathVariable("idEscuela") Integer id) throws Exception {
         Escuela obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericObjectResponse<>(200, "Escuela encontrada", convertToResponseDTO(obj))
@@ -59,9 +59,9 @@ public class EscuelaController {
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @PutMapping("/actualizar/{id}")
+    @PutMapping("/actualizar/{idEscuela}")
     public ResponseEntity<GenericObjectResponse<EscuelaDetalleResponse>> actualizar(
-            @PathVariable("id") Integer id,
+            @PathVariable("idEscuela") Integer id,
             @Valid @RequestBody EscuelaUpdateRequest dto) {
         GenericObjectResponse<EscuelaDetalleResponse> response = serviceImpl.actualizarEscuela(id, dto);
         return ResponseEntity.status(response.status()).body(response);
