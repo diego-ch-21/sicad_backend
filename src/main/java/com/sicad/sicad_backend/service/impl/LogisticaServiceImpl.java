@@ -133,6 +133,23 @@ public class LogisticaServiceImpl extends CRUDImpl<Logistica, Integer> implement
 
         return new GenericObjectResponse<>(200, "Director actualizado exitosamente", convertToResponseDTO(logistica));
     }
+    public GenericObjectResponse<String> eliminarLogistica(Integer idLogistica) {
+        // Validación de parámetro
+        if (idLogistica == null) {
+            return new GenericObjectResponse<>(400, "idLogistica no proporcionado", null);
+        }
+
+        // Validar existencia del curso
+        Logistica logistica = logisticaRepo.findById(idLogistica).orElse(null);
+        if (logistica == null) {
+            return new GenericObjectResponse<>(404, "Logistica  no encontrado", null);
+        }
+
+        // desabilitar
+        logistica.setEnabled(false);
+        logisticaRepo.save(logistica);
+        return new GenericObjectResponse<>(200, "se elimino la logsitica exitosamente", null);
+    }
     private LogisticaDetalleResponse convertToResponseDTO(Logistica obj) {
         return modelMapper.map(obj, LogisticaDetalleResponse.class);
     }

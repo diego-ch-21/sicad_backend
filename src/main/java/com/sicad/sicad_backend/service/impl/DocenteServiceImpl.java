@@ -146,14 +146,6 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         }
         usuarioRepo.save(usuario);
 
-        Integer horasMaxLectivas = request.getHorasMaxLectivas() != null ? request.getHorasMaxLectivas() : 0;
-        boolean tienePermisoExceso = false;
-        if(horasMaxLectivas>12){
-            tienePermisoExceso = true;
-        } else {
-            tienePermisoExceso = false;
-        }
-
         // 5. Actualizar datos del Docente
         docente.setDedicacion(dedicacion);
         docente.setCategoria(categoria);
@@ -257,37 +249,7 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
 
         return new GenericReponse<>(201, mensaje, registrados);
     }
-    /*
-    public GenericReponse<DocentePreferenciaResponse> listarDocentesPreferencia(Integer idCargaElectiva) {
-        List<Docente> docentes = docenteRepo.findAllWithPreferenciasByCargaElectiva(idCargaElectiva);
 
-        if (docentes.isEmpty()) {
-            return new GenericReponse<>(200, "No se encontraron docentes", null);
-        }
-
-        List<DocentePreferenciaResponse> responseList = docentes.stream()
-                .map(docente -> modelMapper.map(docente, DocentePreferenciaResponse.class))
-                .toList();
-
-        return new GenericReponse<>(200, "Lista de docentes", responseList);
-    }
-
-     */
-    /*
-    public GenericReponse<DocentePreferenciaResponse> listarDocentesConPreferencias() {
-        List<Docente> docentes = docenteRepo.findAllWithDocentes();
-        if(docentes.isEmpty()) {
-            return new GenericReponse<>(200, "No se encontraron docentes", null);
-        }
-
-        List<DocentePreferenciaResponse> responseList = docentes.stream()
-                .map(docente -> modelMapper.map(docente, DocentePreferenciaResponse.class))
-                .toList();
-
-        return new GenericReponse<>(200, "Lista de docentes", responseList);
-    }
-
-     */
     public GenericReponse<DocenteEspecializacionResponse> listarDocentesConEspecializaciones() {
         List<Docente> docentes = docenteRepo.findAllWithDocentesEspecializacion(); // trae docentes + especializaciones
 
@@ -302,9 +264,11 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         return new GenericReponse<>(200, "Lista de docentes con especializaciones", listaDTO);
     }
 
-
-
     public GenericReponse<DocentePreferenciaResponse> listarDocentesConPreferencias(Integer idCicloAcademico) {
+        if (idCicloAcademico == null) {
+            return new GenericReponse<>(400, "idCicloAcademico no proporcionado", null);
+        }
+
         List<Docente> docentes = docenteRepo.findAllWithDocentesPreferencia(); // trae docentes + preferencias
 
         if(docentes.isEmpty()) {
@@ -331,7 +295,11 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
 
         return new GenericReponse<>(200, "Lista de docentes con preferencias", responseList);
     }
+
     public GenericReponse<DocenteDisponibilidadResponse> listarDocentesConDisponibilidad(Integer idCicloAcademico) {
+        if (idCicloAcademico == null) {
+            return new GenericReponse<>(400, "idCicloAcademico no proporcionado", null);
+        }
         List<Docente> docentes = docenteRepo.findAllWithDocentesDisponibilidad(); // trae docentes + disponibilidad
 
         if(docentes.isEmpty()) {
@@ -359,37 +327,12 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         return new GenericReponse<>(200, "Lista de docentes con preferencias", responseList);
     }
 
-    public GenericReponse<DocenteAsignacionResponse> listarDocentesConAsingaciones(Integer idCargaElectiva) {
-        List<Docente> docentes = docenteRepo.findAllWithDocentesAsignacion(); // trae docentes + disponibilidad
-
-        if(docentes.isEmpty()) {
-            return new GenericReponse<>(200, "No se encontraron docentes", null);
-        }
-
-        List<DocenteAsignacionResponse> responseList = docentes.stream()
-                .map(docente -> {
-                    // Mapear entidad Docente a DTO
-                    DocenteAsignacionResponse dto = modelMapper.map(docente, DocenteAsignacionResponse.class);
-
-                    // Filtrar preferencias por idCargaElectiva
-                    List<AsignacionResumenResponse> asignacionFiltradas = docente.getAsignaciones().stream()
-                            .filter(asic -> asic.getCicloAcademico() != null &&
-                                    asic.getCicloAcademico().getIdCicloAcademico().equals(idCargaElectiva))
-                            .map(asic -> modelMapper.map(asic, AsignacionResumenResponse.class))
-                            .toList();
-
-                    dto.setAsignaciones(asignacionFiltradas);
-
-                    return dto;
-                })
-                .toList();
-
-        return new GenericReponse<>(200, "Lista de docentes con asignaciones", responseList);
-    }
-
     //solo docentes que tiene asigancione
     public GenericReponse<DocenteAsignacionResponse> listarDocentesCargaConAsignaciones(
             Integer idCarga) {
+        if (idCarga == null) {
+            return new GenericReponse<>(400, "idCarga no proporcionado", null);
+        }
 
         Boolean isCarga = cargaRepo.existsByIdCarga(idCarga);
         if(!isCarga) {
@@ -411,48 +354,26 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         return new GenericReponse<>(200, "Lista de docentes con asignaciones", lista);
     }
 
+    public GenericObjectResponse<String> eliminarDocente(Integer idDocente) {
+        // Validación de parámetro
+        if (idDocente == null) {
+            return new GenericObjectResponse<>(400, "idDocente no proporcionado", null);
+        }
 
-    public GenericObjectResponse<DocenteAsignacionResponse> obtenerDocenteConAsignaciones(Integer idDocente,Integer idCicloAcademico,Integer idCarga) {
-        //obtener la carga por defecto que se encuentrea en un ciclo academico
-        Boolean isDocente = docenteRepo.existsByIdDocente(idDocente);
-        if(!isDocente) {
-            return new GenericObjectResponse<>(200, "No se encontraron docente", null);
+        // Validar existencia
+        Docente docente = docenteRepo.findById(idDocente).orElse(null);
+        if (docente == null) {
+            return new GenericObjectResponse<>(404, "Docente  no encontrado", null);
         }
-        Boolean isCicloAcademico= cicloAcademicoRepo.existsByIdCicloAcademico(idCicloAcademico);
-        if(!isCicloAcademico) {
-            return new GenericObjectResponse<>(200, "No se encontraron ciclo academico", null);
-        }
-        Boolean isCarga = cargaRepo.existsByIdCarga(idCarga);
-        if(!isCarga) {
-            return new GenericObjectResponse<>(200, "No se encontraron carga", null);
-        }
-        Boolean isCondicion = cargaRepo.existsByIdCargaAndCicloAcademico_IdCicloAcademico(idCarga, idCicloAcademico);
-        if(!isCondicion) {
-            return new GenericObjectResponse<>(200, "La carga no pertenece a este ciclo academico", null);
-        }
-        Optional<Docente> docenteObject = docenteRepo.findWithAsignacionesByCargaYCicloAndDocente(idDocente,idCicloAcademico,idCarga);
-        if (docenteObject.isEmpty()) {
-            return new GenericObjectResponse<>(404, "Docente con asignaciones no encontrado", null);
-        }
-        Docente docente = docenteObject.get();
-        // Mapear entidad Docente a DTO
-        DocenteAsignacionResponse dto = modelMapper.map(docente, DocenteAsignacionResponse.class);
-        return new GenericObjectResponse<>(200, "Docente con asignaciones", dto);
+
+        // desabilitar
+        docente.setEnabled(false);
+        docenteRepo.save(docente);
+        return new GenericObjectResponse<>(200, "se elimino el docente exitosamente", null);
     }
 
-
-
-    private DocenteDetalleResponse convertToResponseDTO(Docente obj) {
-        return modelMapper.map(obj, DocenteDetalleResponse.class);
-    }
     private DocenteAsignacionResponse convertToAsignacionResponseDTO(Docente obj) {
         return modelMapper.map(obj, DocenteAsignacionResponse.class);
-    }
-    private DocenteCreateRequest convertToDTO(Docente obj) {
-        return modelMapper.map(obj, DocenteCreateRequest.class);
-    }
-    private Docente convertToEntity(DocenteCreateRequest dto) {
-        return modelMapper.map(dto, Docente.class);
     }
     private DocenteEspecializacionResponse convertToDocenteEspecializacion(Docente obj){
         return modelMapper.map(obj, DocenteEspecializacionResponse.class);

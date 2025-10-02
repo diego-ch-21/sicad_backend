@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface IPreMatriculaService extends ICRUD<PreMatricula,Integer> {
     List<PreMatricula> findByEnabledTrue();
-    List<PreMatricula> findByEnabledTrueAndCicloAcademico_idCicloAcademico(Integer idCicloAcademico);
+    List<PreMatricula> findPreMatriculasActivasPorCiclo(Integer idCicloAcademico);
 }

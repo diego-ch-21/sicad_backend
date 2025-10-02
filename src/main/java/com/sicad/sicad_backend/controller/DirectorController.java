@@ -44,14 +44,11 @@ public class DirectorController {
         );
     }
 
-
     @PostMapping("/insertar")
     public ResponseEntity<GenericObjectResponse<DirectorDetalleResponse>> registrarDocente(@Valid @RequestBody DirectorCreateRequest request) {
         GenericObjectResponse<DirectorDetalleResponse> response = serviceImpl.registrarDirector(request);
         return ResponseEntity.status(response.status()).body(response);
     }
-
-
 
     @PutMapping("/actualizar/{idDirector}")
     public ResponseEntity<GenericObjectResponse<DirectorDetalleResponse>>
@@ -59,6 +56,13 @@ public class DirectorController {
         GenericObjectResponse<DirectorDetalleResponse> response = serviceImpl.actualizarDirector(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }
+
+    @DeleteMapping("/eliminar/{idDirector}")
+    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idDirector") Integer id) {
+        GenericObjectResponse<String> response = serviceImpl.eliminarDirector(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
 
     private DirectorCreateRequest convertToDTO(Director obj) {
         return modelMapper.map(obj, DirectorCreateRequest.class);

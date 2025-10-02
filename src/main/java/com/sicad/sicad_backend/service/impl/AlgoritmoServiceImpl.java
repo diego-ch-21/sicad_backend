@@ -156,27 +156,19 @@ public class AlgoritmoServiceImpl
     }
 
     @Transactional
-    public GenericObjectResponse<AlgoritmoDetalleResponse> eliminarAlgoritmo(Integer idAlgoritmo) {
-        // 1. Buscar el algoritmo
+    public GenericObjectResponse<String> eliminarAlgoritmo(Integer idAlgoritmo) {
+        if (idAlgoritmo == null) {
+            return new GenericObjectResponse<>(400, "idAlgoritmo no proporcionado", null);
+        }
         Algoritmo algoritmo = algoritmoRepo.findById(idAlgoritmo).orElse(null);
         if (algoritmo == null) {
             return new GenericObjectResponse<>(404, "Algoritmo no encontrado", null);
         }
-
-        // 2. Marcar como eliminado
         algoritmo.setEnabled(false);
-
-        // 3. Si era principal → desmarcar
-        if (algoritmo.isPrincipal()) {
-            algoritmo.setPrincipal(false);
-        }
-
-        // 4. Guardar cambios
+        algoritmo.setPrincipal(false);
         algoritmoRepo.save(algoritmo);
 
-        // 5. Mapear a DTO y responder
-        AlgoritmoDetalleResponse dto = modelMapper.map(algoritmo, AlgoritmoDetalleResponse.class);
-        return new GenericObjectResponse<>(200, "Algoritmo eliminado correctamente", dto);
+        return new GenericObjectResponse<>(200, "Algoritmo eliminado correctamente", null);
     }
 
 

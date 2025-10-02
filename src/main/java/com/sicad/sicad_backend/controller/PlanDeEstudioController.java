@@ -50,6 +50,7 @@ public class PlanDeEstudioController {
         GenericObjectResponse<PlanDeEstudioDetalleResponse> response = serviceImpl.registrarPlan(request);
         return ResponseEntity.status(response.status()).body(response);
     }
+
     @PostMapping("/insertar-all")
     public ResponseEntity<GenericReponse<PlanDeEstudioDetalleResponse>> registrarAll(@Valid @RequestBody List<PlanDeEstudioCreateRequest> requestAll) {
         GenericReponse<PlanDeEstudioDetalleResponse> response = serviceImpl.registrarPlanesMultiples(requestAll);
@@ -61,6 +62,12 @@ public class PlanDeEstudioController {
         GenericObjectResponse<PlanDeEstudioDetalleResponse> response = serviceImpl.actualizarPlan(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }
+    @DeleteMapping("/eliminar/{idPlanEstudio}")
+    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idPlanEstudio") Integer id) {
+        GenericObjectResponse<String> response = serviceImpl.eliminarPlanDeEstudio(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
 
     private PlanDeEstudioDetalleResponse convertToResponseDTO(PlanDeEstudio obj) {
         return modelMapper.map(obj, PlanDeEstudioDetalleResponse.class);

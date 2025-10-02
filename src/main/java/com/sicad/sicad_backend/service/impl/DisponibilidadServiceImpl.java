@@ -152,6 +152,23 @@ public class DisponibilidadServiceImpl extends CRUDImpl<Disponibilidad, Integer>
 
         return new GenericObjectResponse<>(200, "Lista obtenida correctamente", listaDTO);
     }
+    public GenericObjectResponse<String> eliminarDisponibilidad(Integer idDisponibilidad) {
+        // Validación de parámetro
+        if (idDisponibilidad == null) {
+            return new GenericObjectResponse<>(400, "idDisponibilidad no proporcionado", null);
+        }
+
+        // Validar existencia del curso
+        Disponibilidad disponibilidad = disponibilidadRepo.findById(idDisponibilidad).orElse(null);
+        if (disponibilidad == null) {
+            return new GenericObjectResponse<>(404, "Disponibilidad  no encontrado", null);
+        }
+
+        // desabilitar
+        disponibilidad.setEnabled(false);
+        disponibilidadRepo.save(disponibilidad);
+        return new GenericObjectResponse<>(200, "se elimino la disponibilidad exitosamente", null);
+    }
     @Override
     public List<Disponibilidad> findByEnabledTrue() {
         return disponibilidadRepo.findByEnabledTrue();

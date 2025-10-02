@@ -81,6 +81,20 @@ public class AsignaturaServiceImpl
         String mensaje = String.format("Asignaturas registradas: %d. Fallidos: %d.", registrados.size(), errores);
         return new GenericReponse<>(201, mensaje, registrados.isEmpty() ? null : registrados);
     }
+    public GenericObjectResponse<String> eliminarAsignatura(Integer idAsignatura) {
+        if (idAsignatura == null) {
+            return new GenericObjectResponse<>(400, "idAsignatura no proporcionado", null);
+        }
+
+        Asignatura asignatura = asignaturaRepo.findById(idAsignatura).orElse(null);
+        if (asignatura == null) {
+            return new GenericObjectResponse<>(404, "Asignatura  no encontrado", null);
+        }
+
+        asignatura.setEnabled(false);
+        asignaturaRepo.save(asignatura);
+        return new GenericObjectResponse<>(200, "se elimino la asignatura exitosamente", null);
+    }
 
     @Override
     public List<Asignatura> findByEnabledTrue() {

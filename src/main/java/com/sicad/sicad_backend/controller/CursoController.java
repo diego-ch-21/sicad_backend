@@ -3,11 +3,16 @@ package com.sicad.sicad_backend.controller;
 
 import com.sicad.sicad_backend.dto.asignatura.AsignaturaDetalleResponse;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
+import com.sicad.sicad_backend.dto.categoria.CategoriaCreateRequest;
+import com.sicad.sicad_backend.dto.categoria.CategoriaDetalleResponse;
 import com.sicad.sicad_backend.dto.curso.CursoCreateRequest;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.dto.curso.CursoDetalleResponse;
+import com.sicad.sicad_backend.dto.curso.CursoUpdateRequest;
 import com.sicad.sicad_backend.dto.cursoHorario.HorarioCreateRequest;
 import com.sicad.sicad_backend.dto.cursoHorario.HorarioDetalleResponse;
+import com.sicad.sicad_backend.dto.cursoHorario.HorarioUpdateRequest;
+import com.sicad.sicad_backend.model.Categoria;
 import com.sicad.sicad_backend.model.Curso;
 import com.sicad.sicad_backend.service.impl.CursoServiceImpl;
 import com.sicad.sicad_backend.service.interfaces.ICursoService;
@@ -25,7 +30,7 @@ import java.util.List;
 public class CursoController {
 
     private final ICursoService service;
-    private final CursoServiceImpl cursoServiceImpl;
+    private final CursoServiceImpl serviceImpl;
     private final ModelMapper modelMapper;
 
 
@@ -46,36 +51,61 @@ public class CursoController {
                 new GenericObjectResponse<>(200, "Curso encontrado", convertToDetalle(curso))
         );
     }
+
     @PostMapping("/insertar")
     public ResponseEntity<GenericObjectResponse<CursoDetalleResponse>> save(@Valid @RequestBody CursoCreateRequest request) {
-        GenericObjectResponse<CursoDetalleResponse> response = cursoServiceImpl.registrarCurso(request);
+        GenericObjectResponse<CursoDetalleResponse> response = serviceImpl.registrarCurso(request);
         return ResponseEntity.status(response.status()).body(response);
     }
+
     @PostMapping("/insertar-all")
     public ResponseEntity<GenericReponse<CursoDetalleResponse>> saveAll(@Valid @RequestBody List<CursoCreateRequest> request) {
-        GenericReponse<CursoDetalleResponse> response = cursoServiceImpl.registrarCursosMultiples(request);
+        GenericReponse<CursoDetalleResponse> response = serviceImpl.registrarCursosMultiples(request);
         return ResponseEntity.status(response.status()).body(response);
     }
+
+    @PutMapping("/actualizar/{idCurso}")
+    public ResponseEntity<GenericObjectResponse<CursoDetalleResponse>>
+            update(@PathVariable("idCurso") Integer id, @Valid @RequestBody CursoUpdateRequest request) throws Exception {
+        GenericObjectResponse<CursoDetalleResponse> response  = serviceImpl.actualizarCurso(id, request);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
     @DeleteMapping("/eliminar/{idCurso}")
     public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idCurso") Integer id) {
-        GenericObjectResponse<String> response = cursoServiceImpl.eliminarCursoPorCicloAcademico(id);
+        GenericObjectResponse<String> response = serviceImpl.eliminarCurso(id);
         return ResponseEntity.status(response.status()).body(response);
     }
+
     @GetMapping("/listar/{idCicloAcademico}")
     public ResponseEntity<GenericReponse<CursoDetalleResponse>> findByDocenteAndCargaElectiva(
             @PathVariable("idCicloAcademico") Integer idCicloAcademico) throws Exception {
-        GenericReponse<CursoDetalleResponse> response = cursoServiceImpl.listarCursosPorCicloAcademico(idCicloAcademico);
+        GenericReponse<CursoDetalleResponse> response = serviceImpl.listarCursosPorCicloAcademico(idCicloAcademico);
         return ResponseEntity.status(response.status()).body(response);
     }
+
     @PostMapping("/{idCurso}/horario/insertar")
     public ResponseEntity<GenericObjectResponse<HorarioDetalleResponse> > saveHorario(@PathVariable("idCurso") Integer id,@Valid @RequestBody HorarioCreateRequest request) {
-        GenericObjectResponse<HorarioDetalleResponse>  response = cursoServiceImpl.registrarCursoHorario(id,request);
+        GenericObjectResponse<HorarioDetalleResponse>  response = serviceImpl.registrarCursoHorario(id,request);
         return ResponseEntity.status(response.status()).body(response);
     }
 
     @PostMapping("/{idCurso}/horario/insertar-all")
     public ResponseEntity<GenericReponse<HorarioDetalleResponse> > saveHorarioAll(@PathVariable("idCurso") Integer id,@Valid @RequestBody List<HorarioCreateRequest> request) {
-        GenericReponse<HorarioDetalleResponse>   response = cursoServiceImpl.registrarVariosCursoHorario(id,request);
+        GenericReponse<HorarioDetalleResponse>   response = serviceImpl.registrarVariosCursoHorario(id,request);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
+    @DeleteMapping("/horario/eliminar/{idCursoHorario}")
+    public ResponseEntity<GenericObjectResponse<String>> deleteHorario(@PathVariable("idCursoHorario") Integer id) {
+        GenericObjectResponse<String> response = serviceImpl.eliminarCursoHorario(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
+    @PostMapping("/horario/actualizar/{idCursoHorario}")
+    public ResponseEntity<GenericObjectResponse<HorarioDetalleResponse>>
+            actualizarHorario(@PathVariable("idCursoHorario") Integer id,@Valid @RequestBody HorarioUpdateRequest request) {
+        GenericObjectResponse<HorarioDetalleResponse>  response = serviceImpl.actualizarCursoHorario(id,request);
         return ResponseEntity.status(response.status()).body(response);
     }
 

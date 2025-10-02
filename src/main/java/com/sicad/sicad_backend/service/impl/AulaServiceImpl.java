@@ -149,10 +149,23 @@ public class AulaServiceImpl
                 response
         );
     }
+    public GenericObjectResponse<String> eliminarAula(Integer idAula) {
+        // Validación de parámetro
+        if (idAula == null) {
+            return new GenericObjectResponse<>(400, "idAula no proporcionado", null);
+        }
 
+        // Validar existencia
+        Aula aula = aulaRepo.findById(idAula).orElse(null);
+        if (aula == null) {
+            return new GenericObjectResponse<>(404, "Aula  no encontrado", null);
+        }
 
-
-
+        // desabilitar
+        aula.setEnabled(false);
+        aulaRepo.save(aula);
+        return new GenericObjectResponse<>(200, "se elimino el aula exitosamente", null);
+    }
 
     private AulaDetalleResponse convertToResponseDTO(Aula obj) {
         return modelMapper.map(obj, AulaDetalleResponse.class);

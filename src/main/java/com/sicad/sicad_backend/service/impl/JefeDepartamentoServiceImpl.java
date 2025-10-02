@@ -136,6 +136,23 @@ public class JefeDepartamentoServiceImpl extends CRUDImpl<JefeDepartamento, Inte
     private JefeDepartamentoDetalleResponse convertToResponseDTO(JefeDepartamento obj) {
         return modelMapper.map(obj, JefeDepartamentoDetalleResponse.class);
     }
+    public GenericObjectResponse<String> eliminarJefeDepartamento(Integer idJefeDepartamento) {
+        // Validación de parámetro
+        if (idJefeDepartamento == null) {
+            return new GenericObjectResponse<>(400, "idJefeDepartamento no proporcionado", null);
+        }
+
+        // Validar existencia del curso
+        JefeDepartamento jefeDepartamento = jefeDepartamentoRepo.findById(idJefeDepartamento).orElse(null);
+        if (jefeDepartamento == null) {
+            return new GenericObjectResponse<>(404, "Jefe departamento  no encontrado", null);
+        }
+
+        // desabilitar
+        jefeDepartamento.setEnabled(false);
+        jefeDepartamentoRepo.save(jefeDepartamento);
+        return new GenericObjectResponse<>(200, "se elimino el Jefe departamento exitosamente", null);
+    }
 
     @Override
     public List<JefeDepartamento> findByEnabledTrue() {

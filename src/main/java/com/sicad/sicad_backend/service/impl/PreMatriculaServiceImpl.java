@@ -105,12 +105,29 @@ public class PreMatriculaServiceImpl
         if(cicloAcademico == null){
             return new GenericReponse<>(404,"ciclo academico no encontrado",null);
         }
-        List<PreMatriculaDetalleResponse> lista = findByEnabledTrueAndCicloAcademico_idCicloAcademico(idCicloAcademico)
+        List<PreMatriculaDetalleResponse> lista = findPreMatriculasActivasPorCiclo(idCicloAcademico)
                 .stream()
                 .map(this::convertToDTO)
                 .toList();
 
         return new GenericReponse<>(200, "Lista de Pre-matricula por cicloAcademico", lista);
+    }
+    public GenericObjectResponse<String> eliminarPreMatricula(Integer idPreMatricula) {
+        // Validación de parámetro
+        if (idPreMatricula == null) {
+            return new GenericObjectResponse<>(400, "idPreMatricula no proporcionado", null);
+        }
+
+        // Validar existencia
+        PreMatricula preMatricula = preMatriculaRepo.findById(idPreMatricula).orElse(null);
+        if (preMatricula == null) {
+            return new GenericObjectResponse<>(404, "PreMatricula  no encontrado", null);
+        }
+
+        // desabilitar
+        preMatricula.setEnabled(false);
+        preMatriculaRepo.save(preMatricula);
+        return new GenericObjectResponse<>(200, "se elimino la PreMatricula exitosamente", null);
     }
 
 
@@ -124,8 +141,8 @@ public class PreMatriculaServiceImpl
     }
 
     @Override
-    public List<PreMatricula> findByEnabledTrueAndCicloAcademico_idCicloAcademico(Integer idCicloAcademico) {
-        return preMatriculaRepo.findByEnabledTrueAndCicloAcademico_idCicloAcademico(idCicloAcademico);
+    public List<PreMatricula> findPreMatriculasActivasPorCiclo(Integer idCicloAcademico) {
+        return preMatriculaRepo.findPreMatriculasActivasPorCiclo(idCicloAcademico);
     }
 
 

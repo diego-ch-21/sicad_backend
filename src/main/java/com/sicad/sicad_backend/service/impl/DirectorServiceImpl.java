@@ -134,6 +134,23 @@ public class DirectorServiceImpl extends CRUDImpl<Director, Integer> implements 
         DirectorDetalleResponse dto = modelMapper.map(director, DirectorDetalleResponse.class);
         return new GenericObjectResponse<>(200, "Director actualizado exitosamente", dto);
     }
+    public GenericObjectResponse<String> eliminarDirector(Integer idDirector) {
+        // Validación de parámetro
+        if (idDirector == null) {
+            return new GenericObjectResponse<>(400, "idDirector no proporcionado", null);
+        }
+
+        // Validar existencia del curso
+        Director director = directorRepo.findById(idDirector).orElse(null);
+        if (director == null) {
+            return new GenericObjectResponse<>(404, "Director  no encontrado", null);
+        }
+
+        // desabilitar
+        director.setEnabled(false);
+        directorRepo.save(director);
+        return new GenericObjectResponse<>(200, "se elimino el director exitosamente", null);
+    }
 
     @Override
     public List<Director> findByEnabledTrue() {

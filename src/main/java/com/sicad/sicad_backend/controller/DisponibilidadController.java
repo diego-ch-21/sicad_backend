@@ -26,7 +26,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DisponibilidadController {
     private final IDisponibilidadService service;
-    private final DisponibilidadServiceImpl disponibilidadServiceImpl;
+    private final DisponibilidadServiceImpl serviceImpl;
     private final ModelMapper modelMapper;
 
     @GetMapping("/listar")
@@ -52,12 +52,12 @@ public class DisponibilidadController {
     public ResponseEntity<GenericObjectResponse<DisponibilidadDetalleResponse>> registrar(
             @Valid @RequestBody DisponibilidadCreateRequest request) {
         GenericObjectResponse<DisponibilidadDetalleResponse> response =
-                disponibilidadServiceImpl.registrarDisponibilidad(request);
+                serviceImpl.registrarDisponibilidad(request);
         return ResponseEntity.status(response.status()).body(response);
     }
     @PostMapping("/insertar-all")
     public ResponseEntity<GenericReponse<DisponibilidadDetalleResponse>> saveAll(@Valid @RequestBody List<DisponibilidadCreateRequest> requests){
-        GenericReponse<DisponibilidadDetalleResponse> response = disponibilidadServiceImpl.registrarVariosDisponiblidadAll(requests);
+        GenericReponse<DisponibilidadDetalleResponse> response = serviceImpl.registrarVariosDisponiblidadAll(requests);
         return ResponseEntity.status(response.status()).body(response);
     }
     @PutMapping("/actualizar/{idDisponibilidad}")
@@ -65,15 +65,22 @@ public class DisponibilidadController {
             @PathVariable Integer id,
             @Valid @RequestBody DisponibilidadUpdateRequest request) {
         GenericObjectResponse<DisponibilidadDetalleResponse> response =
-                disponibilidadServiceImpl.actualizarDisponibilidad(id, request);
+                serviceImpl.actualizarDisponibilidad(id, request);
         return ResponseEntity.status(response.status()).body(response);
     }
+
+    @DeleteMapping("/eliminar/{idDisponibilidad}")
+    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idDisponibilidad") Integer id) {
+        GenericObjectResponse<String> response = serviceImpl.eliminarDisponibilidad(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
 
     @GetMapping("/listar/{idDocente}/{idCicloAcademico}")
     public ResponseEntity<GenericObjectResponse<List<DisponibilidadResumenResponse>>> findByDocenteAndCargaElectiva(
             @PathVariable("idDocente") Integer idDocente,
             @PathVariable("idCicloAcademico") Integer idCicloAcademico) throws Exception {
-        GenericObjectResponse<List<DisponibilidadResumenResponse>>  response = disponibilidadServiceImpl.listarDisponibilidadDocente(idDocente, idCicloAcademico);
+        GenericObjectResponse<List<DisponibilidadResumenResponse>>  response = serviceImpl.listarDisponibilidadDocente(idDocente, idCicloAcademico);
         return ResponseEntity.status(response.status()).body(response);
     }
     private DisponibilidadDetalleResponse convertToDetalleDTO(Disponibilidad obj) {

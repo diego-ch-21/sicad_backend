@@ -56,6 +56,24 @@ public class CategoriaServiceImpl
         return new GenericObjectResponse<>(201,"categoria encontrada exitosamente",convertToDetalle(categoria));
 
     }
+    public GenericObjectResponse<String> eliminarCategoria(Integer idCategoria) {
+        // Validación de parámetro
+        if (idCategoria == null) {
+            return new GenericObjectResponse<>(400, "idCategoria no proporcionado", null);
+        }
+
+        // Validar existencia
+        Categoria categoria = categoriaRepo.findById(idCategoria).orElse(null);
+        if (categoria == null) {
+            return new GenericObjectResponse<>(404, "Categoria  no encontrado", null);
+        }
+
+        // desabilitar
+        categoria.setEnabled(false);
+        categoriaRepo.save(categoria);
+        return new GenericObjectResponse<>(200, "se elimino la categoria exitosamente", null);
+    }
+
     private CategoriaDetalleResponse convertToDetalle(Categoria obj) {
         return modelMapper.map(obj, CategoriaDetalleResponse.class);
     }

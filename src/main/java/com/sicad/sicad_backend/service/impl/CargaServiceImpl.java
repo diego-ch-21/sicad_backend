@@ -52,6 +52,24 @@ public class CargaServiceImpl
         }
         return new GenericObjectResponse<>(200, "Carga encontrada correctamente", convertToDetalle(cargaObejct.get()));
     }
+    public GenericObjectResponse<String> eliminarCarga(Integer idCarga) {
+        // Validación de parámetro
+        if (idCarga == null) {
+            return new GenericObjectResponse<>(400, "idCarga no proporcionado", null);
+        }
+
+        // Validar existencia del curso
+        Carga carga = cargaRepo.findById(idCarga).orElse(null);
+        if (carga == null) {
+            return new GenericObjectResponse<>(404, "Carga  no encontrado", null);
+        }
+
+        // desabilitar
+        carga.setEnabled(false);
+        carga.setPrincipal(false);
+        cargaRepo.save(carga);
+        return new GenericObjectResponse<>(200, "se elimino la carga exitosamente", null);
+    }
 
     private CargaDetalleResponse convertToDetalle(Carga obj) {
         return modelMapper.map(obj, CargaDetalleResponse.class);

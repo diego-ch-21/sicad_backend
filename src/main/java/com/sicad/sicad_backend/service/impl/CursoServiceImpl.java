@@ -3,10 +3,7 @@ package com.sicad.sicad_backend.service.impl;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
 import com.sicad.sicad_backend.dto.curso.*;
-import com.sicad.sicad_backend.dto.cursoHorario.CursoHorarioCreateRequest;
-import com.sicad.sicad_backend.dto.cursoHorario.CursoHorarioDetalleResponse;
-import com.sicad.sicad_backend.dto.cursoHorario.HorarioCreateRequest;
-import com.sicad.sicad_backend.dto.cursoHorario.HorarioDetalleResponse;
+import com.sicad.sicad_backend.dto.cursoHorario.*;
 import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.*;
@@ -156,6 +153,59 @@ public class CursoServiceImpl
         return new GenericObjectResponse<>(201, mensaje, cursoResponse);
     }
 
+    public GenericObjectResponse<CursoDetalleResponse> actualizarCurso(Integer idCurso, CursoUpdateRequest request) {
+        // Validar si el curso existe
+        Curso curso = cursoRepo.findById(idCurso).orElse(null);
+        if (curso == null) {
+            return new GenericObjectResponse<>(404, "Curso no encontrado", null);
+        }
+
+        // Validaciones de entidades relacionadas si se envían en la request
+        if (request.getIdAsignatura() != null) {
+            Asignatura asignatura = asignaturaRepo.findById(request.getIdAsignatura()).orElse(null);
+            if (asignatura == null) {
+                return new GenericObjectResponse<>(404, "Asignatura no encontrada", null);
+            }
+            curso.setAsignatura(asignatura);
+        }
+
+        if (request.getIdPlanDeEstudio() != null) {
+            PlanDeEstudio plan = planDeEstudioRepo.findById(request.getIdPlanDeEstudio()).orElse(null);
+            if (plan == null) {
+                return new GenericObjectResponse<>(404, "Plan de estudio no encontrado", null);
+            }
+            curso.setPlanDeEstudio(plan);
+        }
+
+        if (request.getIdEscuela() != null) {
+            Escuela escuela = escuelaRepo.findById(request.getIdEscuela()).orElse(null);
+            if (escuela == null) {
+                return new GenericObjectResponse<>(404, "Escuela no encontrada", null);
+            }
+            curso.setEscuela(escuela);
+        }
+
+        if (request.getIdCicloAcademico() != null) {
+            CicloAcademico ciclo = cicloAcademicoRepo.findById(request.getIdCicloAcademico()).orElse(null);
+            if (ciclo == null) {
+                return new GenericObjectResponse<>(404, "Ciclo académico no encontrado", null);
+            }
+            curso.setCicloAcademico(ciclo);
+        }
+
+        if (request.getGrupo() != null && !request.getGrupo().isBlank()) {
+            curso.setGrupo(request.getGrupo());
+        }
+
+        // Guardar cambios
+        cursoRepo.save(curso);
+
+        // Mapear a DTO de respuesta
+        CursoDetalleResponse dto = modelMapper.map(curso, CursoDetalleResponse.class);
+        return new GenericObjectResponse<>(200, "Curso actualizado exitosamente", dto);
+    }
+
+
     public GenericReponse<CursoDetalleResponse> registrarCursosMultiples(List<CursoCreateRequest> requests) {
         List<CursoDetalleResponse> registrados = new ArrayList<>();
         int errorCount = 0;
@@ -237,25 +287,100 @@ public class CursoServiceImpl
         return new GenericReponse<>(201, mensaje, horariosRegistrados);
     }
 
-    //@Transactional
-    public GenericObjectResponse<String> eliminarCursoPorCicloAcademico(Integer idCicloAcademico) {
+    public GenericObjectResponse<String> eliminarCurso(Integer idCurso) {
         // Validación de parámetro
-        if (idCicloAcademico == null) {
-            return new GenericObjectResponse<>(400, "ID de ciclo académico no proporcionado", null);
+        if (idCurso == null) {
+            return new GenericObjectResponse<>(400, "idCurso no proporcionado", null);
         }
 
-        // Validar existencia del ciclo académico
-        CicloAcademico ciclo = cicloAcademicoRepo.findById(idCicloAcademico).orElse(null);
-        if (ciclo == null) {
-            return new GenericObjectResponse<>(404, "Ciclo académico no encontrado", null);
+        // Validar existencia del curso
+        Curso curso = cursoRepo.findById(idCurso).orElse(null);
+        if (curso == null) {
+            return new GenericObjectResponse<>(404, "Curso  no encontrado", null);
         }
 
         // desabilitar
-        ciclo.setEnabled(false);
-        String mensaje ="se elimino el curso exitosamente";
-
-        return new GenericObjectResponse<>(200, mensaje, null);
+        curso.setEnabled(false);
+        for(CursoHorario i : curso.getCursoHorario()){
+            i.setEnabled(false);
+        }
+        cursoRepo.save(curso);
+        return new GenericObjectResponse<>(200, "se elimino el curso exitosamente", null);
     }
+    public GenericObjectResponse<String> eliminarCursoHorario(Integer idCursoHorario) {
+        // Validación de parámetro
+        if (idCursoHorario == null) {
+            return new GenericObjectResponse<>(400, "idCursoHorario no proporcionado", null);
+        }
+
+        // Validar existencia del curso
+        CursoHorario cursoHorario = cursoHorarioRepo.findById(idCursoHorario).orElse(null);
+        if (cursoHorario == null) {
+            return new GenericObjectResponse<>(404, "CursoHorario  no encontrado", null);
+        }
+
+        // desabilitar
+        cursoHorario.setEnabled(false);
+        cursoHorarioRepo.save(cursoHorario);
+        return new GenericObjectResponse<>(200, "se elimino el CursoHorario exitosamente", null);
+    }
+    public GenericObjectResponse<HorarioDetalleResponse> actualizarCursoHorario(Integer idCursoHorario, HorarioUpdateRequest request) {
+        // Validar existencia del horario
+        CursoHorario horario = cursoHorarioRepo.findById(idCursoHorario).orElse(null);
+        if (horario == null) {
+            return new GenericObjectResponse<>(404, "CursoHorario no encontrado", null);
+        }
+
+        try {
+            // Actualizar tipo de sesión si se envía
+            if (request.getTipoSesion() != null && !request.getTipoSesion().isBlank()) {
+                horario.setTipoSesion(request.getTipoSesion());
+            }
+
+            // Actualizar día de semana
+            if (request.getDiaSemana() != null && !request.getDiaSemana().isBlank()) {
+                horario.setDiaSemana(request.getDiaSemana());
+            }
+
+            // Actualizar horas si se envían
+            if (request.getHoraInicio() != null && request.getHoraFin() != null) {
+                Time horaInicioTime = Time.valueOf(request.getHoraInicio());
+                Time horaFinTime = Time.valueOf(request.getHoraFin());
+
+                if (horaFinTime.before(horaInicioTime)) {
+                    return new GenericObjectResponse<>(400, "La hora de fin debe ser posterior a la de inicio", null);
+                }
+
+                int duracionCalculada = (horaFinTime.getHours() - horaInicioTime.getHours());
+                if (request.getDuracionHoras() != null && !request.getDuracionHoras().equals(duracionCalculada)) {
+                    return new GenericObjectResponse<>(400, "La duración no coincide con la diferencia entre hora inicio y fin", null);
+                }
+
+                horario.setHoraInicio(horaInicioTime);
+                horario.setHoraFin(horaFinTime);
+
+                // Si no envían duración, se calcula automáticamente
+                if (request.getDuracionHoras() == null) {
+                    horario.setDuracionHoras(duracionCalculada);
+                } else {
+                    horario.setDuracionHoras(request.getDuracionHoras());
+                }
+            } else if (request.getDuracionHoras() != null) {
+                // Si solo envían duración, actualizarla directamente
+                horario.setDuracionHoras(request.getDuracionHoras());
+            }
+
+            // Guardar cambios
+            cursoHorarioRepo.save(horario);
+
+            HorarioDetalleResponse dto = modelMapper.map(horario, HorarioDetalleResponse.class);
+            return new GenericObjectResponse<>(200, "Horario actualizado exitosamente", dto);
+
+        } catch (Exception e) {
+            return new GenericObjectResponse<>(400, "Error al procesar la actualización del horario", null);
+        }
+    }
+
 
     @Override
     public List<Curso> findByEnabledTrue() {

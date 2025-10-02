@@ -151,6 +151,24 @@ public class PreferenciaServiceImpl
         return new GenericObjectResponse<>(200, mensaje, listaDTO);
     }
 
+    public GenericObjectResponse<String> eliminarPreferencia(Integer idPreferencia) {
+        // Validación de parámetro
+        if (idPreferencia == null) {
+            return new GenericObjectResponse<>(400, "idPreferencia no proporcionado", null);
+        }
+
+        // Validar existencia del curso
+        Preferencia preferencia = preferenciaRepo.findById(idPreferencia).orElse(null);
+        if (preferencia == null) {
+            return new GenericObjectResponse<>(404, "Preferencia  no encontrado", null);
+        }
+
+        // desabilitar
+        preferencia.setEnabled(false);
+        preferenciaRepo.save(preferencia);
+        return new GenericObjectResponse<>(200, "se elimino la preferencia exitosamente", null);
+    }
+
 
     @Override
     public List<Preferencia> findByEnabledTrue() {

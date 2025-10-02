@@ -87,7 +87,21 @@ public class EscuelaServiceImpl
         EscuelaDetalleResponse dto = modelMapper.map(escuela, EscuelaDetalleResponse.class);
         return new GenericObjectResponse<>(200, "Escuela actualizada exitosamente", dto);
     }
-
+    public GenericObjectResponse<String> eliminarEscuela(Integer idEscuela) {
+        // Validación de parámetro
+        if (idEscuela == null) {
+            return new GenericObjectResponse<>(400, "idEscuela no proporcionado", null);
+        }
+        // Validar existencia del curso
+        Escuela escuela = escuelaRepo.findById(idEscuela).orElse(null);
+        if (escuela == null) {
+            return new GenericObjectResponse<>(404, "Escuela  no encontrado", null);
+        }
+        // desabilitar
+        escuela.setEnabled(false);
+        escuelaRepo.save(escuela);
+        return new GenericObjectResponse<>(200, "se elimino el escuela exitosamente", null);
+    }
 
     @Override
     public List<Escuela> findByEnabledTrue() {

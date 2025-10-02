@@ -25,7 +25,7 @@ public class CategoriaController {
 
     private final ICategoriaService service;
     private final ModelMapper modelMapper;
-    private final CategoriaServiceImpl categoriaService;
+    private final CategoriaServiceImpl serviceImpl;
 
     @GetMapping("/listar")
     public ResponseEntity<GenericReponse<CategoriaDetalleResponse>> findAll() throws Exception {
@@ -58,7 +58,7 @@ public class CategoriaController {
     }
     @PostMapping("/insertar-all")
     public ResponseEntity<GenericReponse<CategoriaDetalleResponse>> saveAll(@Valid @RequestBody List<CategoriaCreateRequest> lista) throws Exception {
-        GenericReponse<CategoriaDetalleResponse> response = categoriaService.saveAll(lista);
+        GenericReponse<CategoriaDetalleResponse> response = serviceImpl.saveAll(lista);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -69,9 +69,16 @@ public class CategoriaController {
                 new GenericReponse<>(200, "Categoría actualizada", List.of(convertToDetalle(obj)))
         );
     }
+
+    @DeleteMapping("/eliminar/{idCategoria}")
+    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idCategoria") Integer id) {
+        GenericObjectResponse<String> response = serviceImpl.eliminarCategoria(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
     @GetMapping("/buscar/docente/{idDocente}")
     public ResponseEntity<GenericObjectResponse<CategoriaDetalleResponse>> buscarCategoriaSegunDocente(@PathVariable("idDocente") Integer id) throws Exception {
-        GenericObjectResponse<CategoriaDetalleResponse> response = categoriaService.obtenerCategoria(id);
+        GenericObjectResponse<CategoriaDetalleResponse> response = serviceImpl.obtenerCategoria(id);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 

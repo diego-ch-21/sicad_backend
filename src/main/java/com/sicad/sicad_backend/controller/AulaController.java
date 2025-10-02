@@ -68,6 +68,12 @@ public class AulaController {
         GenericObjectResponse<AulaDetalleResponse> response = serviceImpl.actualizarAula(id, request);
         return ResponseEntity.status(response.status()).body(response);
     }
+    @DeleteMapping("/eliminar/{idAula}")
+    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idAula") Integer id) {
+        GenericObjectResponse<String> response = serviceImpl.eliminarAula(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
 
     private AulaDetalleResponse convertToResponseDTO(Aula obj) {
         return modelMapper.map(obj, AulaDetalleResponse.class);

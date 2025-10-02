@@ -58,7 +58,6 @@ public class EscuelaController {
         GenericReponse<EscuelaDetalleResponse> response = serviceImpl.registrarEscuelaMultiples(request);
         return ResponseEntity.status(response.status()).body(response);
     }
-
     @PutMapping("/actualizar/{idEscuela}")
     public ResponseEntity<GenericObjectResponse<EscuelaDetalleResponse>> actualizar(
             @PathVariable("idEscuela") Integer id,
@@ -66,6 +65,13 @@ public class EscuelaController {
         GenericObjectResponse<EscuelaDetalleResponse> response = serviceImpl.actualizarEscuela(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }
+    @DeleteMapping("/eliminar/{idEscuela}")
+    public ResponseEntity<GenericObjectResponse<String>>
+            delete(@PathVariable("idEscuela") Integer id) {
+        GenericObjectResponse<String> response = serviceImpl.eliminarEscuela(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
 
     private EscuelaDetalleResponse convertToResponseDTO(Escuela obj) {
         return modelMapper.map(obj, EscuelaDetalleResponse.class);

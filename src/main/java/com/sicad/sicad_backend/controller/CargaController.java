@@ -12,10 +12,7 @@ import com.sicad.sicad_backend.service.interfaces.ICargaService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -24,13 +21,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CargaController {
 
-    private final ICargaService serviceIml;
-    private final CargaServiceImpl cargaService;
+    private final ICargaService service;
+    private final CargaServiceImpl serviceImpl;
     private final ModelMapper modelMapper;
 
     @GetMapping("/listar")
     public ResponseEntity<GenericReponse<CargaDetalleResponse>> findAll() throws Exception {
-        List<CargaDetalleResponse> lista = serviceIml.findByEnabledTrue()
+        List<CargaDetalleResponse> lista = service.findByEnabledTrue()
                 .stream()
                 .map(this::convertToDetalle)
                 .toList();
@@ -41,7 +38,7 @@ public class CargaController {
     @GetMapping("/listar/{idCicloAcademico}")
     public ResponseEntity<GenericReponse<CargaDetalleResponse>>
         findAllCicloAcademico(@PathVariable("idCicloAcademico") Integer idCicloAcademico) throws Exception {
-        List<CargaDetalleResponse> lista = serviceIml.findByEnabledTrueAndCicloAcademico_Id(idCicloAcademico)
+        List<CargaDetalleResponse> lista = service.findByEnabledTrueAndCicloAcademico_Id(idCicloAcademico)
                 .stream()
                 .map(this::convertToDetalle)
                 .toList();
@@ -51,14 +48,21 @@ public class CargaController {
     }
     @GetMapping("buscar/{idCarga}")
     public ResponseEntity<GenericObjectResponse<CargaDetalleResponse>>  findByIdCarga(@PathVariable("idCarga") Integer id) throws Exception {
-        Carga obj  = serviceIml.findById(id);
+        Carga obj  = service.findById(id);
         return ResponseEntity.ok(
                 new GenericObjectResponse<>(200, "Docente encontrada", convertToDetalle(obj))
         );
     }
     @GetMapping("principal/{idCicloAcademico}")
     public ResponseEntity<GenericObjectResponse<CargaDetalleResponse>>  obtenerCargaPrincipal(@PathVariable("idCicloAcademico") Integer id) throws Exception {
-        GenericObjectResponse<CargaDetalleResponse> response = cargaService.obtenerCargaDefecto(id);
+        GenericObjectResponse<CargaDetalleResponse> response = serviceImpl.obtenerCargaDefecto(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
+    @DeleteMapping("/eliminar/{idCarga}")
+    public ResponseEntity<GenericObjectResponse<String>>
+            delete(@PathVariable("idCarga") Integer id) {
+        GenericObjectResponse<String> response = serviceImpl.eliminarCarga(id);
         return ResponseEntity.status(response.status()).body(response);
     }
 

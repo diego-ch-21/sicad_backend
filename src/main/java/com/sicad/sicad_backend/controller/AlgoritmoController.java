@@ -59,14 +59,15 @@ public class AlgoritmoController{
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @DeleteMapping("/eliminar/{idAlgoritmo}")
-    public ResponseEntity<GenericObjectResponse<AlgoritmoDetalleResponse>> delete(@PathVariable("idAlgoritmo") Integer id) {
-        GenericObjectResponse<AlgoritmoDetalleResponse> response = serviceImpl.eliminarAlgoritmo(id);
-        return ResponseEntity.status(response.status()).body(response);
-    }
     @PutMapping("/principal/{idAlgoritmo}")
     public ResponseEntity<GenericObjectResponse<AlgoritmoDetalleResponse>> principal(@PathVariable("idAlgoritmo") Integer id) {
         GenericObjectResponse<AlgoritmoDetalleResponse> response = serviceImpl.asignarPrincipal(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
+    @DeleteMapping("/eliminar/{idAlgoritmo}")
+    public ResponseEntity<GenericObjectResponse<String>> delete(@Valid @PathVariable("idAlgoritmo") Integer id) {
+        GenericObjectResponse<String> response = serviceImpl.eliminarAlgoritmo(id);
         return ResponseEntity.status(response.status()).body(response);
     }
 

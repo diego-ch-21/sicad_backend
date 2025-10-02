@@ -64,6 +64,13 @@ public class EspecializacionController {
         GenericObjectResponse<EspecializacionDetalleResponse> response = serviceImpl.actualizarEspecialidad(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }
+
+    @DeleteMapping("/eliminar/{idEspecializacion}")
+    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idEspecializacion") Integer id) {
+        GenericObjectResponse<String> response = serviceImpl.eliminarEspecializacion(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
     @GetMapping("/listar/{idDocente}")
     public ResponseEntity<GenericObjectResponse<List<EspecializacionResumenResponse>>> findByDocenteAndCargaElectiva(
             @PathVariable("idDocente") Integer idDocente) throws Exception {

@@ -35,8 +35,8 @@ public class UsuarioController {
         );
     }
     //para el login
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<UsuarioDTO>>  findById(@PathVariable("id") Integer id) throws Exception {
+    @GetMapping("/buscar/{idUsuario}")
+    public ResponseEntity<GenericObjectResponse<UsuarioDTO>>  findById(@PathVariable("idUsuario") Integer id) throws Exception {
         Usuario obj = service.findById(id);
         return ResponseEntity.ok(
                 new GenericObjectResponse<>(200, "Usuario encontrada", convertToDTO(obj))
@@ -50,8 +50,8 @@ public class UsuarioController {
         ), HttpStatus.CREATED);
     }
     //para actualizar
-    @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericReponse<UsuarioDTO>> update(@Valid @PathVariable("id") Integer id, @RequestBody UsuarioDTO dto) throws Exception {
+    @PutMapping("/actualizar/{idUsuario}")
+    public ResponseEntity<GenericReponse<UsuarioDTO>> update(@Valid @PathVariable("idUsuario") Integer id, @RequestBody UsuarioDTO dto) throws Exception {
         Usuario obj = service.update(id,convertToEntity(dto));
         return ResponseEntity.ok(
                 new GenericReponse<>(200, "Usuario actualizada", List.of(convertToDTO(obj)))

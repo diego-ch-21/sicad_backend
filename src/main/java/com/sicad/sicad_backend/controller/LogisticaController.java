@@ -57,6 +57,11 @@ public class LogisticaController {
         GenericObjectResponse<LogisticaDetalleResponse> response = serviceImpl.actualizarLogistica(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }
+    @DeleteMapping("/eliminar/{idLogistica}")
+    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idLogistica") Integer id) {
+        GenericObjectResponse<String> response = serviceImpl.eliminarLogistica(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
 
     private LogisticaCreateRequest convertToDTO(Logistica obj) {
         return modelMapper.map(obj, LogisticaCreateRequest.class);

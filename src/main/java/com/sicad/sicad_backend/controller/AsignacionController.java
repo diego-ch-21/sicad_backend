@@ -26,7 +26,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AsignacionController {
     private final IAsignacionService service;
-    private final AsignacionServiceImpl asignacionServiceImpl;
+    private final AsignacionServiceImpl serviceImpl;
     private final ModelMapper modelMapper;
 
     @GetMapping("/listar")
@@ -51,14 +51,14 @@ public class AsignacionController {
 
     @PostMapping("/insertar")
     public ResponseEntity<GenericObjectResponse<AsignacionDetalleResponse>> save(@Valid @RequestBody AsignacionCreateRequest request){
-        GenericObjectResponse<AsignacionDetalleResponse> response = asignacionServiceImpl.registrarAsignacion(request);
+        GenericObjectResponse<AsignacionDetalleResponse> response = serviceImpl.registrarAsignacion(request);
         return ResponseEntity.status(response.status()).body(response);
 
     }
 
     @PutMapping("/actualizar/{idAsignacion}")
     public ResponseEntity<GenericObjectResponse<AsignacionDetalleResponse>> update(@Valid @PathVariable("idAsignacion") Integer id, @RequestBody AsignacionUpdateRequest request){
-        GenericObjectResponse<AsignacionDetalleResponse> response = asignacionServiceImpl.actualizarAsignacion(id, request);
+        GenericObjectResponse<AsignacionDetalleResponse> response = serviceImpl.actualizarAsignacion(id, request);
         return ResponseEntity.status(response.status()).body(response);
     }
 
@@ -72,7 +72,7 @@ public class AsignacionController {
 
             // Llamar al método del service que ejecuta el algoritmo híbrido GA+PSO
             GenericObjectResponse<List<AsignacionDetalleResponse>> response =
-                    asignacionServiceImpl.asignarConAlgoritmoGeneticoPSO(idCicloAcademico);
+                    serviceImpl.asignarConAlgoritmoGeneticoPSO(idCicloAcademico);
 
             // Log del resultado
             if (response.status() == 201) {
@@ -98,19 +98,22 @@ public class AsignacionController {
                             "Error interno del servidor en algoritmo híbrido: " + e.getMessage(), null));
         }
     }
+
     @GetMapping("/listar/{idDocente}/{idCarga}")
     public ResponseEntity<GenericReponse<AsignacionResumenResponse>> findByDocenteAndCargaElectiva(
             @PathVariable("idDocente") Integer idDocente,
             @PathVariable("idCarga") Integer idCarga) throws Exception {
-        GenericReponse<AsignacionResumenResponse>  response = asignacionServiceImpl.obtenerAsignacionesPorDocenteCarga(idDocente, idCarga);
+        GenericReponse<AsignacionResumenResponse>  response = serviceImpl.obtenerAsignacionesPorDocenteCarga(idDocente, idCarga);
         return ResponseEntity.status(response.status()).body(response);
     }
 
+    @DeleteMapping("/eliminar/{idAsignacion}")
+    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idAsignacion") Integer id) {
+        GenericObjectResponse<String> response = serviceImpl.eliminarAsignacion(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
 
     private AsignacionDetalleResponse convertToDTO(Asignacion obj) {
         return modelMapper.map(obj, AsignacionDetalleResponse.class);
     }
-
-
-
 }

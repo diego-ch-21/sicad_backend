@@ -580,6 +580,23 @@ public class AsignacionServiceImpl
         return new GenericReponse<>(200, "Asignaciones de docente obtenida correctamente", listaDTO);
 
     }
+    public GenericObjectResponse<String> eliminarAsignacion(Integer idAsignacion) {
+        // Validación de parámetro
+        if (idAsignacion == null) {
+            return new GenericObjectResponse<>(400, "IdAsignacion no proporcionado", null);
+        }
+
+        // Validar existencia del curso
+        Asignacion asignacion = asignacionRepo.findById(idAsignacion).orElse(null);
+        if (asignacion == null) {
+            return new GenericObjectResponse<>(404, "Asignación  no encontrado", null);
+        }
+
+        // desabilitar
+        asignacion.setEnabled(false);
+        asignacionRepo.save(asignacion);
+        return new GenericObjectResponse<>(200, "se elimino la asignación exitosamente", null);
+    }
 
 
     @Override

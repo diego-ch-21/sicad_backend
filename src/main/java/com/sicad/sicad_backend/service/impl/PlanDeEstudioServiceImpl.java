@@ -83,6 +83,23 @@ public class PlanDeEstudioServiceImpl extends CRUDImpl<PlanDeEstudio, Integer> i
         String mensaje = String.format("Planes registrados: %d. Fallidos: %d.", registrados.size(), errorCount);
         return new GenericReponse<>(201, mensaje, registrados.isEmpty() ? null : registrados);
     }
+    public GenericObjectResponse<String> eliminarPlanDeEstudio(Integer idPlanDeEstudio) {
+        // Validación de parámetro
+        if (idPlanDeEstudio == null) {
+            return new GenericObjectResponse<>(400, "idPlanDeEstudio no proporcionado", null);
+        }
+
+        // Validar existencia del curso
+        PlanDeEstudio planDeEstudio = planRepo.findById(idPlanDeEstudio).orElse(null);
+        if (planDeEstudio == null) {
+            return new GenericObjectResponse<>(404, "Plan de estudio no encontrado", null);
+        }
+
+        // desabilitar
+        planDeEstudio.setEnabled(false);
+        planRepo.save(planDeEstudio);
+        return new GenericObjectResponse<>(200, "se elimino el Plan de estudio exitosamente", null);
+    }
 
     @Override
     public List<PlanDeEstudio> findByEnabledTrue() {

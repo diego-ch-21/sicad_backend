@@ -59,6 +59,23 @@ public class DedicacionServiceImpl
         return new GenericObjectResponse<>(201,"dedicacion encontrada exitosamente",convertToDetalle(dedicacion));
 
     }
+    public GenericObjectResponse<String> eliminarDedicacion(Integer idDedicacion) {
+        // Validación de parámetro
+        if (idDedicacion == null) {
+            return new GenericObjectResponse<>(400, "idDedicacion no proporcionado", null);
+        }
+
+        // Validar existencia
+        Dedicacion dedicacion = dedicacionRepo.findById(idDedicacion).orElse(null);
+        if (dedicacion == null) {
+            return new GenericObjectResponse<>(404, "Dedicación  no encontrado", null);
+        }
+
+        // desabilitar
+        dedicacion.setEnabled(false);
+        dedicacionRepo.save(dedicacion);
+        return new GenericObjectResponse<>(200, "se elimino la Dedicación exitosamente", null);
+    }
 
     private DedicacionDetalleResponse convertToDetalle(Dedicacion obj) {
         return modelMapper.map(obj, DedicacionDetalleResponse.class);

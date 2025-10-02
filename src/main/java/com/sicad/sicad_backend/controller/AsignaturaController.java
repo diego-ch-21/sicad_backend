@@ -61,6 +61,12 @@ public class AsignaturaController {
         return ResponseEntity.status(response.status()).body(response);
     }
 
+    @DeleteMapping("/eliminar/{idAsignatura}")
+    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idAsignatura") Integer id) {
+        GenericObjectResponse<String> response = serviceImpl.eliminarAsignatura(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
     private AsignaturaDetalleResponse convertToDetalle(Asignatura obj) {
         return modelMapper.map(obj, AsignaturaDetalleResponse.class);
     }

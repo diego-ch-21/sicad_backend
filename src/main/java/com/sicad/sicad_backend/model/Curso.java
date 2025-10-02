@@ -43,7 +43,7 @@ public class Curso {
     @Column(nullable = false, unique = true, name = "codigo")
     private String codigo;
 
-    @Column(nullable = false, name = "grupo")
+    @Column(nullable = true, name = "grupo")
     private String grupo;
 
     @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

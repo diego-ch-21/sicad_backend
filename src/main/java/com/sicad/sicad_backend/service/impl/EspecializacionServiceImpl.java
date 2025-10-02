@@ -118,11 +118,27 @@ public class EspecializacionServiceImpl
 
         return new GenericObjectResponse<>(200, "Especializaciones de docente obtenida correctamente", listaDTO);
     }
+    public GenericObjectResponse<String> eliminarEspecializacion(Integer idEspecializacion) {
+        // Validación de parámetro
+        if (idEspecializacion == null) {
+            return new GenericObjectResponse<>(400, "idEspecializacion no proporcionado", null);
+        }
+
+        // Validar existencia del curso
+        Especializacion especializacion = especializacionRepo.findById(idEspecializacion).orElse(null);
+        if (especializacion == null) {
+            return new GenericObjectResponse<>(404, "Especializacion  no encontrado", null);
+        }
+
+        // desabilitar
+        especializacion.setEnabled(false);
+        especializacionRepo.save(especializacion);
+        return new GenericObjectResponse<>(200, "se elimino la Especialización exitosamente", null);
+    }
 
     private EspecializacionDetalleResponse convertToDetalle(Especializacion especializacion){
         return modelMapper.map(especializacion, EspecializacionDetalleResponse.class);
     }
-
 
     @Override
     public List<Especializacion> findByEnabledTrue() {

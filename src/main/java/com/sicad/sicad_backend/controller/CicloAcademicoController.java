@@ -61,6 +61,11 @@ public class CicloAcademicoController {
         GenericObjectResponse<CicloAcademicoDetalleResponse> response = serviceImpl.actualizarCiclo(id, request);
         return ResponseEntity.status(response.status()).body(response);
     }
+    @DeleteMapping("/eliminar/{idCicloAcademico}")
+    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idCicloAcademico") Integer id) {
+        GenericObjectResponse<String> response = serviceImpl.eliminarCicloAcademico(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
 
     // Utilidades
     private CicloAcademicoDetalleResponse convertToResponseDTO(CicloAcademico obj) {

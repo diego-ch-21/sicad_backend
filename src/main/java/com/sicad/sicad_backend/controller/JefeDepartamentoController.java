@@ -55,6 +55,11 @@ public class JefeDepartamentoController {
         GenericObjectResponse<JefeDepartamentoDetalleResponse> response = serviceImpl.actualizarJefeDepartamento(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }
+    @DeleteMapping("/eliminar/{idJefeDepartamento}")
+    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idJefeDepartamento") Integer id) {
+        GenericObjectResponse<String> response = serviceImpl.eliminarJefeDepartamento(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
 
     private JefeDepartamentoCreateRequest convertToDTO(JefeDepartamento obj) {
         return modelMapper.map(obj, JefeDepartamentoCreateRequest.class);

@@ -21,7 +21,6 @@ import java.util.List;
 public class DocenteController {
     private final IDocenteService service;
     private final DocenteServiceImpl serviceImpl;
-
     private final ModelMapper modelMapper;
 
     @GetMapping("/listar")
@@ -62,6 +61,13 @@ public class DocenteController {
     @PutMapping("/actualizar/{idDocente}")
     public ResponseEntity<GenericObjectResponse<DocenteDetalleResponse>> update(@Valid @PathVariable("id") Integer id, @Valid @RequestBody DocenteUpdateRequest dto) throws Exception {
         GenericObjectResponse<DocenteDetalleResponse> response = serviceImpl.actualizarDocente(id, dto);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
+    @DeleteMapping("/eliminar/{idDocente}")
+    public ResponseEntity<GenericObjectResponse<String>>
+            delete(@PathVariable("idDocente") Integer id) {
+        GenericObjectResponse<String> response = serviceImpl.eliminarDocente(id);
         return ResponseEntity.status(response.status()).body(response);
     }
 

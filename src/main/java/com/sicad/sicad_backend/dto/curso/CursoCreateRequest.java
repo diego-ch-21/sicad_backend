@@ -27,14 +27,8 @@ public class CursoCreateRequest {
     @NotNull(message = "El idCicloAcademico es un campo obligatorio")
     private Integer idCicloAcademico;
 
-    @NotBlank(message = "El grupo es un campo obligatorio")
-    private String grupo;
+    private String grupo=null;
 
     private List<CursoHorarioCreateRequest> cursoHorario;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private Integer carga = null;
-
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private boolean enabled = true;
 }

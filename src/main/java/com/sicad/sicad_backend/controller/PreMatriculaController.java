@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/pre_matricula")
+@RequestMapping("/pre-matricula")
 @RequiredArgsConstructor
 public class PreMatriculaController {
 
     private final IPreMatriculaService service;
     private final ModelMapper modelMapper;
-    private final PreMatriculaServiceImpl preMatriculaServiceImpl;
+    private final PreMatriculaServiceImpl serviceImpl;
 
     @GetMapping("/listar")
     public ResponseEntity<GenericReponse<PreMatriculaDetalleResponse>> findAll() throws Exception {
@@ -34,38 +34,46 @@ public class PreMatriculaController {
                 new GenericReponse<>(200, "Lista de Pre-matricula", lista)
         );
     }
-    @GetMapping("/listar/{idCicloAcademico}")
-    public ResponseEntity<GenericReponse<PreMatriculaDetalleResponse>> findAllPorCicloAcademico(
-            @PathVariable("idCicloAcademico") Integer id) throws Exception {
 
-        GenericReponse<PreMatriculaDetalleResponse> response = preMatriculaServiceImpl.listarPorCicloAcademico(id);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<GenericObjectResponse<PreMatriculaDetalleResponse>> findById(@PathVariable("id") Integer id) throws Exception {
+    @GetMapping("/buscar/{idPreMatricula}")
+    public ResponseEntity<GenericObjectResponse<PreMatriculaDetalleResponse>>
+            findById(@PathVariable("idPreMatricula") Integer id) throws Exception {
         PreMatricula obj = service.findById(id);
         return ResponseEntity.ok(
-                new GenericObjectResponse<>(200, "Pre-matricula encontrada", convertToDTO(obj))
+                new GenericObjectResponse<>(200, "idPreMatricula encontrada", convertToDTO(obj))
         );
     }
 
     @PostMapping("/insertar")
     public ResponseEntity<GenericObjectResponse<PreMatriculaDetalleResponse>> save(@Valid @RequestBody PreMatriculaCreateRequest request){
-        GenericObjectResponse<PreMatriculaDetalleResponse> response = preMatriculaServiceImpl.registrarPreMatricula(request);
+        GenericObjectResponse<PreMatriculaDetalleResponse> response = serviceImpl.registrarPreMatricula(request);
         return ResponseEntity.status(response.status()).body(response);
     }
     @PostMapping("/insertar-all")
     public ResponseEntity<GenericReponse<PreMatriculaDetalleResponse>> saveAll(@Valid @RequestBody List<PreMatriculaCreateRequest> requests){
-        GenericReponse<PreMatriculaDetalleResponse> response = preMatriculaServiceImpl.registrarVariosPreMatricula(requests);
+        GenericReponse<PreMatriculaDetalleResponse> response = serviceImpl.registrarVariosPreMatricula(requests);
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @PutMapping("/actualizar/{id}")
-    public ResponseEntity<GenericObjectResponse<PreMatriculaDetalleResponse>> update(@PathVariable("id") Integer id, @Valid @RequestBody PreMatriculaUpdateRequest request) throws Exception {
-        GenericObjectResponse<PreMatriculaDetalleResponse> response = preMatriculaServiceImpl.actualizarPreMatricula(id, request);
+    @PutMapping("/actualizar/{idPreMatricula}")
+    public ResponseEntity<GenericObjectResponse<PreMatriculaDetalleResponse>>
+            update(@PathVariable("idPreMatricula") Integer id, @Valid @RequestBody PreMatriculaUpdateRequest request) throws Exception {
+        GenericObjectResponse<PreMatriculaDetalleResponse> response = serviceImpl.actualizarPreMatricula(id, request);
         return ResponseEntity.status(response.status()).body(response);
     }
+    @DeleteMapping("/eliminar/{idPreMatricula}")
+    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idPreMatricula") Integer id) {
+        GenericObjectResponse<String> response = serviceImpl.eliminarPreMatricula(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+    @GetMapping("/listar/{idCicloAcademico}")
+    public ResponseEntity<GenericReponse<PreMatriculaDetalleResponse>> findAllPorCicloAcademico(
+            @PathVariable("idCicloAcademico") Integer id) throws Exception {
+
+        GenericReponse<PreMatriculaDetalleResponse> response = serviceImpl.listarPorCicloAcademico(id);
+        return ResponseEntity.ok(response);
+    }
+
 
 
     private PreMatriculaDetalleResponse convertToDTO(PreMatricula obj) {

@@ -24,7 +24,7 @@ import java.util.List;
 public class DedicacionController {
 
     private final IDedicacionService service;
-    private final DedicacionServiceImpl dedicacionService;
+    private final DedicacionServiceImpl serviceImpl;
     private final ModelMapper modelMapper;
 
     @GetMapping("/listar")
@@ -59,7 +59,7 @@ public class DedicacionController {
     }
     @PostMapping("/insertar-all")
     public ResponseEntity<GenericReponse<DedicacionDetalleResponse>> saveAll(@Valid @RequestBody List<DedicacionCreateRequest> lista) throws Exception {
-        GenericReponse<DedicacionDetalleResponse> response = dedicacionService.saveAll(lista);
+        GenericReponse<DedicacionDetalleResponse> response = serviceImpl.saveAll(lista);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -72,9 +72,15 @@ public class DedicacionController {
         );
     }
 
+    @DeleteMapping("/eliminar/{idDedicacion}")
+    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idDedicacion") Integer id) {
+        GenericObjectResponse<String> response = serviceImpl.eliminarDedicacion(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
     @GetMapping("/buscar/docente/{idDocente}")
     public ResponseEntity<GenericObjectResponse<DedicacionDetalleResponse>> buscarDedicacionSegunDocente(@PathVariable("idDocente") Integer id) throws Exception {
-        GenericObjectResponse<DedicacionDetalleResponse> response = dedicacionService.obtenerDedicacion(id);
+        GenericObjectResponse<DedicacionDetalleResponse> response = serviceImpl.obtenerDedicacion(id);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 

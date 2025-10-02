@@ -131,6 +131,23 @@ public class CicloAcademicoServiceImpl
         CicloAcademicoDetalleResponse dto = modelMapper.map(ciclo, CicloAcademicoDetalleResponse.class);
         return new GenericObjectResponse<>(200, "Ciclo académico actualizado exitosamente", dto);
     }
+    public GenericObjectResponse<String> eliminarCicloAcademico(Integer idCicloAcademico) {
+        // Validación de parámetro
+        if (idCicloAcademico == null) {
+            return new GenericObjectResponse<>(400, "idCicloAcademico no proporcionado", null);
+        }
+
+        // Validar existencia del curso
+        CicloAcademico cicloAcademico = cicloAcademicoRepo.findById(idCicloAcademico).orElse(null);
+        if (cicloAcademico == null) {
+            return new GenericObjectResponse<>(404, "CicloAcademico  no encontrado", null);
+        }
+
+        // desabilitar
+        cicloAcademico.setEnabled(false);
+        cicloAcademicoRepo.save(cicloAcademico);
+        return new GenericObjectResponse<>(200, "se elimino el cicloAcademico exitosamente", null);
+    }
 
     @Override
     public List<CicloAcademico> findByEnabledTrue() {
