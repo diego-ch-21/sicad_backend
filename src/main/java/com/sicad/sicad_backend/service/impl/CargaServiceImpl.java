@@ -42,16 +42,55 @@ public class CargaServiceImpl
     }
 
     public GenericObjectResponse<CargaDetalleResponse> obtenerCargaDefecto(Integer idCicloAcademico){
-        Boolean isCicloAcademico = cicloAcademicoRepo.existsById(idCicloAcademico);
-        if(isCicloAcademico){
-            return new GenericObjectResponse<>(404, "Docente no encontrado", null);
-        }
-        Optional<Carga> cargaObejct = cargaRepo.findByCicloAcademicoAndEnabledTrue(idCicloAcademico);
+        Optional<Carga> cargaObejct = cargaRepo.findPrincipalByCicloAcademicoAndEnabledTrue(idCicloAcademico);
         if(!cargaObejct.isPresent()){
             return new GenericObjectResponse<>(200, "carga no encontrada", null);
         }
         return new GenericObjectResponse<>(200, "Carga encontrada correctamente", convertToDetalle(cargaObejct.get()));
     }
+
+    public GenericObjectResponse<CargaDetalleResponse> insertarCargaDefecto(Integer idCicloAcademico, Integer idCarga) {
+        // Validar si el ciclo académico existe
+        boolean cicloExiste = cicloAcademicoRepo.existsById(idCicloAcademico);
+        if (!cicloExiste) {
+            return new GenericObjectResponse<>(404, "Ciclo académico no encontrado", null);
+        }
+
+        // Validar si la carga existe
+        Optional<Carga> cargaOpt = cargaRepo.findById(idCarga);
+        if (cargaOpt.isEmpty()) {
+            return new GenericObjectResponse<>(404, "Carga no encontrada", null);
+        }
+
+        Carga cargaPrincipal = cargaOpt.get();
+
+        // Verificar que pertenezca al ciclo académico dado
+        if (!Objects.equals(cargaPrincipal.getCicloAcademico().getIdCicloAcademico(), idCicloAcademico)) {
+            return new GenericObjectResponse<>(400, "La carga no pertenece al ciclo académico indicado", null);
+        }
+
+        // Obtener todas las cargas activas del ciclo y desmarcarlas
+        List<Carga> cargas = cargaRepo.findByEnabledTrueAndCicloAcademico_IdCicloAcademico(idCicloAcademico);
+        for (Carga c : cargas) {
+            c.setPrincipal(false);
+            cargaRepo.save(c);
+        }
+
+        // Marcar como principal la carga seleccionada
+        cargaPrincipal.setPrincipal(true);
+        cargaRepo.save(cargaPrincipal);
+
+        // Retornar respuesta correcta
+        return new GenericObjectResponse<>(
+                200,
+                "Carga principal actualizada correctamente",
+                convertToDetalle(cargaPrincipal)
+        );
+    }
+
+
+
+
     public GenericObjectResponse<String> eliminarCarga(Integer idCarga) {
         // Validación de parámetro
         if (idCarga == null) {

@@ -53,9 +53,16 @@ public class CargaController {
                 new GenericObjectResponse<>(200, "Docente encontrada", convertToDetalle(obj))
         );
     }
-    @GetMapping("principal/{idCicloAcademico}")
+    @GetMapping("principal/buscar/{idCicloAcademico}")
     public ResponseEntity<GenericObjectResponse<CargaDetalleResponse>>  obtenerCargaPrincipal(@PathVariable("idCicloAcademico") Integer id) throws Exception {
         GenericObjectResponse<CargaDetalleResponse> response = serviceImpl.obtenerCargaDefecto(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
+    @PostMapping("principal/insertar/{idCicloAcademico}/{idCarga}")
+    public ResponseEntity<GenericObjectResponse<CargaDetalleResponse>>
+            insertarCargaPrincipal(@PathVariable("idCicloAcademico") Integer idCarga,@PathVariable("idCicloAcademico") Integer idCicloAcademico) throws Exception {
+        GenericObjectResponse<CargaDetalleResponse> response = serviceImpl.insertarCargaDefecto(idCicloAcademico,idCarga);
         return ResponseEntity.status(response.status()).body(response);
     }
 
