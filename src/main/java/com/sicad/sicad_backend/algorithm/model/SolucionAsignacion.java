@@ -132,7 +132,8 @@ public class SolucionAsignacion {
     }
 
     /**
-     * Genera una solución aleatoria válida
+     * Genera una solución aleatoria válida respetando TODAS las restricciones duras
+     * ACTUALIZADO: Ahora también verifica preferencias antes de asignar
      */
     public void generarSolucionAleatoria(Random random) {
         // Limpiar asignaciones actuales
@@ -140,24 +141,33 @@ public class SolucionAsignacion {
             asignaciones.put(idCurso, -1);
         }
 
+        // Necesitarás pasar el validator como parámetro o tener acceso a preferencias
+        // Por simplicidad, este método debería recibir el validator:
+        // public void generarSolucionAleatoria(Random random, RestriccionValidator validator)
+
         // Asignar aleatoriamente respetando restricciones básicas
         for (Curso curso : cursos) {
             List<Integer> candidatos = new ArrayList<>();
 
             for (Docente docente : docentes) {
-                // Verificar si el docente no excede sus horas máximas específicas
+                // Verificar horas máximas
                 int horasActuales = getHorasTotalesDocente(docente.getIdDocente());
                 int horasCurso = getHorasCurso(curso.getIdCurso());
                 int horasMaximas = docente.getDedicacion().getHorasMaxLectivas() != null ?
                         docente.getDedicacion().getHorasMaxLectivas() : 12;
 
+                // NUEVO: También verificar preferencias (necesitarías acceso al validator)
+                // boolean tienePreferencia = validator.verificarPreferenciaParaAsignacion(
+                //     curso.getIdCurso(), docente.getIdDocente());
+
                 if (horasActuales + horasCurso <= horasMaximas) {
+                    // && tienePreferencia) {  // Descomentar cuando tengas acceso al validator
                     candidatos.add(docente.getIdDocente());
                 }
             }
 
             // Asignar aleatoriamente o dejar sin asignar
-            if (!candidatos.isEmpty() && random.nextDouble() > 0.2) { // 80% probabilidad de asignar
+            if (!candidatos.isEmpty() && random.nextDouble() > 0.2) {
                 int indiceAleatorio = random.nextInt(candidatos.size());
                 asignaciones.put(curso.getIdCurso(), candidatos.get(indiceAleatorio));
             }

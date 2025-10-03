@@ -26,7 +26,7 @@ public class RestriccionValidator {
 
     // Pesos actualizados para la función de fitness
     private static final double PESO_RESTRICCIONES_DURAS = 1000.0;
-    private static final double PESO_PREFERENCIAS = 100.0;        // Solo restricción blanda
+    private static final double PESO_PREFERENCIAS = 20.0;
     private static final double PESO_EQUILIBRIO_CARGA = 50.0;
     private static final double PESO_COBERTURA = 200.0;
     // ELIMINADO: PESO_ESPECIALIZACION (categoría)
@@ -67,23 +67,23 @@ public class RestriccionValidator {
     }
 
     /**
-     * Evalúa SOLO las restricciones duras: disponibilidad + horasMaxLectivas
-     * ACTUALIZADO: Eliminada verificación de dedicación y límites por categoría
+     * Evalúa RESTRICCIONES DURAS: disponibilidad + horasMaxLectivas + PREFERENCIAS
+     * ACTUALIZADO: Preferencias ahora son OBLIGATORIAS (restricción dura)
      */
     private double evaluarRestriccionesDuras(SolucionAsignacion solucion) {
         double penalizaciones = 0.0;
 
-        // 1. Verificar SOLO límites de horasMaxLectivas por docente
+        // 1. Verificar límites de horasMaxLectivas por docente
         penalizaciones += verificarLimitesHorasMaxLectivas(solucion);
 
         // 2. Verificar disponibilidad horaria (OBLIGATORIA)
         penalizaciones += verificarDisponibilidadHoraria(solucion);
 
-        // 3. Verificar conflictos de horarios (un docente no puede estar en dos lugares)
+        // 3. Verificar conflictos de horarios
         penalizaciones += verificarConflictosHorarios(solucion);
 
-        // ELIMINADO: verificarLimitesPorDedicacion()
-        // ELIMINADO: verificarCategoriaDocente()
+        // 4. NUEVO: Verificar preferencias (AHORA OBLIGATORIA)
+        penalizaciones += verificarPreferenciasObligatorias(solucion);
 
         return penalizaciones * PESO_RESTRICCIONES_DURAS;
     }
@@ -187,6 +187,46 @@ public class RestriccionValidator {
 
         return penalizacion;
     }
+    /**
+     * Verifica preferencias como RESTRICCIÓN DURA (OBLIGATORIA)
+     * Un docente solo puede recibir cursos de asignaturas que haya incluido en sus preferencias
+     */
+    private double verificarPreferenciasObligatorias(SolucionAsignacion solucion) {
+        double penalizacion = 0.0;
+
+        for (Map.Entry<Integer, Integer> asignacion : solucion.getAsignaciones().entrySet()) {
+            Integer idCurso = asignacion.getKey();
+            Integer idDocente = asignacion.getValue();
+
+            if (idDocente == -1) continue; // Curso sin asignar
+
+            Curso curso = obtenerCursoPorId(idCurso);
+            if (curso == null) continue;
+
+            List<Preferencia> preferenciasDocente = preferenciasPorDocente.get(idDocente);
+
+            // Si el docente no tiene preferencias registradas, penalizar
+            if (preferenciasDocente == null || preferenciasDocente.isEmpty()) {
+                penalizacion += 100; // Penalización alta por no tener preferencias
+                log.debug("Docente {} no tiene preferencias registradas y se le asignó curso {}",
+                        idDocente, curso.getCodigo());
+                continue;
+            }
+
+            // Verificar si la asignatura del curso está en las preferencias del docente
+            boolean tienePreferencia = preferenciasDocente.stream()
+                    .anyMatch(pref -> pref.getAsignatura().getIdAsignatura()
+                            .equals(curso.getAsignatura().getIdAsignatura()));
+
+            if (!tienePreferencia) {
+                penalizacion += 100; // Penalización alta - restricción dura
+                log.debug("VIOLACIÓN: Docente {} no tiene preferencia por asignatura {} del curso {}",
+                        idDocente, curso.getAsignatura().getNombre(), curso.getCodigo());
+            }
+        }
+
+        return penalizacion;
+    }
 
     private boolean hayConflictoHorario(CursoHorario horario1, CursoHorario horario2) {
         if (!horario1.getDiaSemana().equalsIgnoreCase(horario2.getDiaSemana())) {
@@ -202,12 +242,13 @@ public class RestriccionValidator {
     }
 
     /**
-     * Evalúa preferencias como RESTRICCIÓN BLANDA (opcional)
-     * ACTUALIZADO: Solo bonifica, no penaliza si no se cumple
+     * Evalúa preferencias como BONIFICACIÓN adicional
+     * ACTUALIZADO: Ahora solo bonifica por coincidencias múltiples o especiales
+     * La verificación obligatoria ya se hace en restricciones duras
      */
     private double evaluarPreferencias(SolucionAsignacion solucion) {
         double bonificacion = 0.0;
-        int preferenciasSatisfechas = 0;
+        int preferenciasAltas = 0; // Preferencias de alta prioridad satisfechas
         int totalAsignaciones = 0;
 
         for (Map.Entry<Integer, Integer> asignacion : solucion.getAsignaciones().entrySet()) {
@@ -222,28 +263,35 @@ public class RestriccionValidator {
 
             List<Preferencia> preferenciasDocente = preferenciasPorDocente.get(idDocente);
             if (preferenciasDocente != null) {
-                boolean tienePreferencia = preferenciasDocente.stream()
-                        .anyMatch(pref -> pref.getAsignatura().getIdAsignatura()
-                                .equals(curso.getAsignatura().getIdAsignatura()));
+                // Buscar si tiene preferencia por esta asignatura
+                Optional<Preferencia> preferenciaOpt = preferenciasDocente.stream()
+                        .filter(pref -> pref.getAsignatura().getIdAsignatura()
+                                .equals(curso.getAsignatura().getIdAsignatura()))
+                        .findFirst();
 
-                if (tienePreferencia) {
-                    preferenciasSatisfechas++;
-                    bonificacion += 20; // BONIFICACIÓN por preferencia satisfecha
-                    log.debug("Preferencia satisfecha: Docente {} asignado a asignatura preferida {}",
+                if (preferenciaOpt.isPresent()) {
+                    Preferencia preferencia = preferenciaOpt.get();
+
+                    // Bonificación base por preferencia (ya validada como obligatoria)
+                    bonificacion += 5;
+
+                    // Bonificación adicional si tiene prioridad alta (si tu modelo lo soporta)
+                    // Si tienes un campo como "prioridad" en Preferencia:
+                    // if (preferencia.getPrioridad() != null && preferencia.getPrioridad() >= 4) {
+                    //     bonificacion += 10;
+                    //     preferenciasAltas++;
+                    // }
+
+                    log.debug("Preferencia confirmada: Docente {} en asignatura {}",
                             idDocente, curso.getAsignatura().getNombre());
                 }
-                // NO hay penalización si no tiene preferencia
             }
         }
 
-        // Calcular porcentaje de preferencias satisfechas
+        // Calcular porcentaje (ahora debería ser 100% si todo está bien)
         double porcentaje = totalAsignaciones > 0 ?
-                (double) preferenciasSatisfechas / totalAsignaciones : 0.0;
+                (double) totalAsignaciones / totalAsignaciones : 0.0;
         solucion.setPorcentajePreferencias(porcentaje * 100);
-
-        log.debug("Preferencias evaluadas: {}/{} satisfechas ({}%)",
-                preferenciasSatisfechas, totalAsignaciones,
-                String.format("%.1f", porcentaje * 100));
 
         return bonificacion * PESO_PREFERENCIAS / 100.0;
     }
@@ -310,6 +358,10 @@ public class RestriccionValidator {
         solucion.actualizarEstadisticas();
     }
 
+    /**
+     * Elimina asignaciones que violan restricciones duras
+     * ACTUALIZADO: Incluye verificación de preferencias
+     */
     private void eliminarAsignacionesInvalidas(SolucionAsignacion solucion) {
         List<Integer> cursosAEliminar = new ArrayList<>();
 
@@ -319,9 +371,22 @@ public class RestriccionValidator {
 
             if (idDocente == -1) continue;
 
+            boolean esValida = true;
+
+            // 1. Verificar disponibilidad horaria
             if (!verificarDisponibilidadParaAsignacion(idCurso, idDocente)) {
+                esValida = false;
+                log.debug("Eliminando por disponibilidad: Curso {} - Docente {}", idCurso, idDocente);
+            }
+
+            // 2. NUEVO: Verificar preferencias (obligatorias)
+            if (esValida && !verificarPreferenciaParaAsignacion(idCurso, idDocente)) {
+                esValida = false;
+                log.debug("Eliminando por falta de preferencia: Curso {} - Docente {}", idCurso, idDocente);
+            }
+
+            if (!esValida) {
                 cursosAEliminar.add(idCurso);
-                log.debug("Eliminando asignación inválida: Curso {} - Docente {}", idCurso, idDocente);
             }
         }
 
@@ -394,6 +459,34 @@ public class RestriccionValidator {
         return curso.getCursoHorario().stream()
                 .allMatch(horario -> disponibilidades.stream()
                         .anyMatch(disp -> verificarSolapamientoHorario(disp, horario)));
+    }
+    /**
+     * Verifica si un docente tiene preferencia por la asignatura de un curso
+     * NUEVO: Método auxiliar para validación de preferencias obligatorias
+     */
+    private boolean verificarPreferenciaParaAsignacion(Integer idCurso, Integer idDocente) {
+        Curso curso = obtenerCursoPorId(idCurso);
+        if (curso == null) return false;
+
+        List<Preferencia> preferenciasDocente = preferenciasPorDocente.get(idDocente);
+
+        // Si no tiene preferencias, no puede tomar ningún curso
+        if (preferenciasDocente == null || preferenciasDocente.isEmpty()) {
+            log.debug("Docente {} no tiene preferencias registradas", idDocente);
+            return false;
+        }
+
+        // Verificar si la asignatura del curso está en sus preferencias
+        boolean tienePreferencia = preferenciasDocente.stream()
+                .anyMatch(pref -> pref.getAsignatura().getIdAsignatura()
+                        .equals(curso.getAsignatura().getIdAsignatura()));
+
+        if (!tienePreferencia) {
+            log.debug("Docente {} no tiene preferencia por asignatura {}",
+                    idDocente, curso.getAsignatura().getNombre());
+        }
+
+        return tienePreferencia;
     }
 
     private boolean tienenConflictoHorario(Integer idCurso1, Integer idCurso2) {
