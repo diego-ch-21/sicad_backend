@@ -9,6 +9,7 @@ import com.sicad.sicad_backend.dto.asignacion.AsignacionResumenResponse;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionUpdateRequest;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.dto.carga.CargaDetalleResponse;
 import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.*;
@@ -118,15 +119,7 @@ public class AsignacionServiceImpl
      * MÉTODO PRINCIPAL ACTUALIZADO: Ejecuta algoritmo híbrido GA+PSO con nuevo modelo de restricciones
      */
     @Transactional
-    public GenericObjectResponse<List<AsignacionDetalleResponse>> asignarConAlgoritmoGeneticoPSO(Integer idCicloAcademico) {
-        System.out.println("=== Iniciando asignación con algoritmo híbrido actualizado para carga electiva: " + idCicloAcademico + " ===");
-        System.out.println("MODELO ACTUALIZADO - RESTRICCIONES DURAS: Disponibilidad + horasMaxLectivas + preferencias");
-        //System.out.println("MODELO ACTUALIZADO - RESTRICCIONES DURAS: Disponibilidad + horasMaxLectivas");
-        //System.out.println("MODELO ACTUALIZADO - RESTRICCIONES BLANDAS: Solo preferencias (opcionales)");
-        //System.out.println("ELIMINADO: Consideración de dedicación y categoría");
-
-
-
+    public GenericObjectResponse<CargaDetalleResponse> asignarConAlgoritmoGeneticoPSO(Integer idCicloAcademico) {
         try {
             // 1. Validaciones iniciales
             CicloAcademico cicloAcademico = cicloAcademicoRepo.findById(idCicloAcademico).orElse(null);
@@ -161,12 +154,7 @@ public class AsignacionServiceImpl
             System.out.println("=== Datos preparados - Disponibilidad y preferencias por docente ===");
             logearLimitesDocentesActualizado(docentes);
 
-            /*
-            // 4. Eliminar asignaciones anteriores para esta carga electiva
-            asignacionRepo.deshabilitarPorCicloAcademico(idCicloAcademico);
-
-             */
-
+            //4. crear carga
             Carga carga = Carga.builder()
                     .algoritmo(algoritmoPrincipal)
                     .cicloAcademico(cicloAcademico)
@@ -190,6 +178,8 @@ public class AsignacionServiceImpl
 
             // 7. Persistir las asignaciones
             List<Asignacion> asignacionesGuardadas = asignacionRepo.saveAll(asignacionesOptimas);
+
+            /*
             System.out.println("=== Asignaciones guardadas exitosamente ===");
 
             // 8. Convertir a DTOs
@@ -198,14 +188,26 @@ public class AsignacionServiceImpl
                     .collect(Collectors.toList());
 
             // 9. Generar resumen de resultados actualizado
-            String resumen = generarResumenAlgoritmoActualizado(asignacionesGuardadas, docentes, cursos,carga);
+
 
             return new GenericObjectResponse<>(201, resumen, response);
+
+             */
+            generarResumenAlgoritmoActualizado(asignacionesGuardadas, docentes, cursos,carga);
+
+            Carga obj = cargaRepo.findById(idCicloAcademico).orElse(null);
+            if(obj == null) {
+                return new GenericObjectResponse<>(400,"carga no encontrada",null);
+            }
+            return new GenericObjectResponse(200,"Algoritmo hibrido realizado exitosamente", convertToDetalle(carga));
 
         } catch (Exception e) {
             System.out.println("=== Error en asignación con algoritmo híbrido actualizado ===");
             return new GenericObjectResponse<>(500, "Error interno en algoritmo híbrido actualizado: " + e.getMessage(), null);
         }
+    }
+    private CargaDetalleResponse convertToDetalle(Carga obj) {
+        return modelMapper.map(obj, CargaDetalleResponse.class);
     }
 
     /**
@@ -257,7 +259,7 @@ public class AsignacionServiceImpl
     /**
      * ACTUALIZADO: Genera resumen detallado del algoritmo con nuevo modelo
      */
-    private String generarResumenAlgoritmoActualizado(List<Asignacion> asignaciones, List<Docente> docentes, List<Curso> cursos,Carga carga) {
+    private void generarResumenAlgoritmoActualizado(List<Asignacion> asignaciones, List<Docente> docentes, List<Curso> cursos,Carga carga) {
         int cursosAsignados = asignaciones.size();
         int cursosSinAsignar = cursos.size() - cursosAsignados;
 
@@ -331,32 +333,6 @@ public class AsignacionServiceImpl
         cargaRepo.save(carga);
 
 
-        return String.format(
-                " ALGORITMO HÍBRIDO GA+PSO COMPLETADO (MODELO ACTUALIZADO) \n" +
-                        "RESTRICCIONES DURAS: Disponibilidad + horasMaxLectivas + preferencias\n" +
-                        //"RESTRICCIONES DURAS: Disponibilidad + horasMaxLectivas\n" +
-                        //"RESTRICCIONES BLANDAS: Solo preferencias (opcionales)\n" +
-                        "ELIMINADO: Consideración de dedicación y categoría\n" +
-                        "RESULTADOS:\n" +
-                        "  • Cursos asignados: %d/%d (%.1f%%)\n" +
-                        "  • Cursos sin asignar: %d\n" +
-                        "  • Docentes utilizados: %d/%d (%.1f%%)\n" +
-                        "  • Preferencias satisfechas: %.1f%% (opcional)\n" +
-                        "DISTRIBUCIÓN DE CARGA:\n" +
-                        "  • Promedio horas/docente: %.1f\n" +
-                        "  • Máximo horas: %d\n" +
-                        "  • Mínimo horas: %d\n" +
-                        "    • Docentes que exceden horasMaxLectivas: %d\n" +
-                        "  Optimización completada con nuevo modelo de restricciones",
-                cursosAsignados, cursos.size(), (double) cursosAsignados / cursos.size() * 100.0,
-                cursosSinAsignar,
-                docentesUtilizados.size(), docentes.size(), (double) docentesUtilizados.size() / docentes.size() * 100.0,
-                porcentajePreferencias,
-                promedioHoras.orElse(0.0),
-                maxHoras,
-                minHoras,
-                docentesExcedidos
-        );
     }
 
     /**

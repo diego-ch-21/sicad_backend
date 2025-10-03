@@ -12,4 +12,5 @@ import java.time.LocalDate;
 public class CicloAcademicoResumenResponse {
     private Integer idCicloAcademico;
     private String nombre;
+    private Boolean enable;
 }

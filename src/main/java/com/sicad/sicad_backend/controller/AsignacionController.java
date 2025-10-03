@@ -6,6 +6,7 @@ import com.sicad.sicad_backend.dto.asignacion.AsignacionDetalleResponse;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionResumenResponse;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionUpdateRequest;
 import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
+import com.sicad.sicad_backend.dto.carga.CargaDetalleResponse;
 import com.sicad.sicad_backend.model.Asignacion;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionCreateRequest;
 import com.sicad.sicad_backend.dto.base.GenericReponse;
@@ -13,6 +14,8 @@ import com.sicad.sicad_backend.service.impl.AsignacionServiceImpl;
 import com.sicad.sicad_backend.service.interfaces.IAsignacionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +27,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/asignacion")
 @RequiredArgsConstructor
+@Slf4j
 public class AsignacionController {
     private final IAsignacionService service;
     private final AsignacionServiceImpl serviceImpl;
@@ -64,35 +68,23 @@ public class AsignacionController {
 
     // NUEVO ENDPOINT PARA EL ALGORITMO HÍBRIDO GA + PSO
     @PostMapping("/algoritmo/{idCicloAcademico}")
-    public ResponseEntity<GenericObjectResponse<List<AsignacionDetalleResponse>>> asignarConAlgoritmoHibrido(
+    public ResponseEntity<GenericObjectResponse<CargaDetalleResponse>> asignarConAlgoritmoHibrido(
             @PathVariable("idCicloAcademico") Integer idCicloAcademico) {
 
         try {
-            System.out.println("Solicitud de asignación con algoritmo híbrido para ciclo academico: " + idCicloAcademico);
 
-            // Llamar al método del service que ejecuta el algoritmo híbrido GA+PSO
-            GenericObjectResponse<List<AsignacionDetalleResponse>> response =
+            GenericObjectResponse<CargaDetalleResponse> response =
                     serviceImpl.asignarConAlgoritmoGeneticoPSO(idCicloAcademico);
-
-            // Log del resultado
-            if (response.status() == 201) {
-                System.out.println("Algoritmo híbrido completado exitosamente. Asignaciones generadas: " +
-                        (response.data() != null ? response.data().size() : 0));
-            } else {
-                System.out.println("Algoritmo híbrido falló con status: " + response.status() +
-                        " - Mensaje: " + response.message());
-            }
-
             return ResponseEntity.status(response.status()).body(response);
 
         } catch (IllegalArgumentException e) {
-            System.out.println("Error de validación en algoritmo híbrido: " + e.getMessage());
+            log.info("Error de validación en algoritmo híbrido: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new GenericObjectResponse<>(400,
                             "Error de validación: " + e.getMessage(), null));
 
         } catch (Exception e) {
-            System.out.println("Error crítico en algoritmo híbrido para carga electiva " + idCicloAcademico + ": " + e.getMessage());
+            log.info("Error crítico en algoritmo híbrido para carga electiva " + idCicloAcademico + ": " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new GenericObjectResponse<>(500,
                             "Error interno del servidor en algoritmo híbrido: " + e.getMessage(), null));
