@@ -95,19 +95,19 @@ public class CursoController {
         GenericReponse<HorarioDetalleResponse>   response = serviceImpl.registrarVariosCursoHorario(id,request);
         return ResponseEntity.status(response.status()).body(response);
     }
-
+    @PostMapping("/horario/actualizar/{idCursoHorario}")
+    public ResponseEntity<GenericObjectResponse<HorarioDetalleResponse>>
+    actualizarHorario(@PathVariable("idCursoHorario") Integer id,@Valid @RequestBody HorarioUpdateRequest request) {
+        GenericObjectResponse<HorarioDetalleResponse>  response = serviceImpl.actualizarCursoHorario(id,request);
+        return ResponseEntity.status(response.status()).body(response);
+    }
     @DeleteMapping("/horario/eliminar/{idCursoHorario}")
     public ResponseEntity<GenericObjectResponse<String>> deleteHorario(@PathVariable("idCursoHorario") Integer id) {
         GenericObjectResponse<String> response = serviceImpl.eliminarCursoHorario(id);
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @PostMapping("/horario/actualizar/{idCursoHorario}")
-    public ResponseEntity<GenericObjectResponse<HorarioDetalleResponse>>
-            actualizarHorario(@PathVariable("idCursoHorario") Integer id,@Valid @RequestBody HorarioUpdateRequest request) {
-        GenericObjectResponse<HorarioDetalleResponse>  response = serviceImpl.actualizarCursoHorario(id,request);
-        return ResponseEntity.status(response.status()).body(response);
-    }
+
 
     private CursoDetalleResponse convertToDetalle(Curso curso) {
         return modelMapper.map(curso, CursoDetalleResponse.class);

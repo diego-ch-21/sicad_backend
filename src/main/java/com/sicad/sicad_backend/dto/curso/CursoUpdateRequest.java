@@ -14,5 +14,5 @@ public class CursoUpdateRequest {
     private Integer idPlanDeEstudio;
     private Integer idEscuela;
     private Integer idCicloAcademico;
-    private String grupo=null;
+    private String grupo;
 }
