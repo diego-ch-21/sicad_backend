@@ -7,6 +7,7 @@ import com.sicad.sicad_backend.dto.director.DirectorUpdateRequest;
 import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.IDirectorRepo;
+import com.sicad.sicad_backend.repository.interfaces.IEscuelaRepo;
 import com.sicad.sicad_backend.repository.interfaces.IRolRepo;
 import com.sicad.sicad_backend.repository.interfaces.IUsuarioRepo;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
@@ -28,6 +29,7 @@ public class DirectorServiceImpl extends CRUDImpl<Director, Integer> implements 
     private final IUsuarioRepo userRepository;
     private final IDirectorRepo directorRepo;
     private final IUsuarioRepo usuarioRepo;
+    private final IEscuelaRepo escuelaRepo;
     private final IRolRepo rolRepository;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
@@ -79,9 +81,14 @@ public class DirectorServiceImpl extends CRUDImpl<Director, Integer> implements 
             codigoDirector = CodigoGeneratorUtil.generarCodigoNumerico(6);
         } while (directorRepo.existsByCodigo(codigoDirector));
 
+        Optional<Escuela> escuelaObj= escuelaRepo.findById(request.getIdEscuela());
+        if(!escuelaObj.isPresent()){
+            return new GenericObjectResponse<>(404, "Escuela no encontrada", null);
+        }
+
         Director director = Director.builder()
                 .usuario(usuario)
-                .cargo(request.getCargo())
+                .escuela(escuelaObj.get())
                 .enabled(true)
                 .codigo(codigoDirector)
                 .build();
@@ -124,9 +131,14 @@ public class DirectorServiceImpl extends CRUDImpl<Director, Integer> implements 
 
         usuarioRepo.save(usuario);
 
-        // 5. Actualizar cargo si fue enviado
-        if (request.getCargo() != null) {
-            director.setCargo(request.getCargo());
+        if(request.getIdEscuela() != null){
+            Optional<Escuela> escuelaObj= escuelaRepo.findById(request.getIdEscuela());
+            if(!escuelaObj.isPresent()){
+                return new GenericObjectResponse<>(404, "Escuela no encontrada", null);
+            } else {
+                director.setEscuela(escuelaObj.get());
+            }
+
         }
 
         directorRepo.save(director);

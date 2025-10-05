@@ -14,5 +14,6 @@ public class DirectorUpdateRequest {
     private String password;
     private String nombre;
     private String apellido;
-    private String cargo;
+    private Integer idEscuela;
+
 }

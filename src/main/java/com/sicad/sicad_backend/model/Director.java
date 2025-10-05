@@ -23,9 +23,10 @@ public class Director {
     @Column(nullable = false, unique = true, length = 6, name = "codigo")
     private String codigo;
 
-
-    @Column(nullable = false, name = "cargo")
-    private String cargo;
+    @ManyToOne
+    @JoinColumn(name = "id_escuela", nullable = true,
+            foreignKey = @ForeignKey(name = "FK_DIRECTOR_ESCUELA"))
+    private Escuela escuela;
 
     @Column(nullable = false, name = "enabled")
     private Boolean enabled;
