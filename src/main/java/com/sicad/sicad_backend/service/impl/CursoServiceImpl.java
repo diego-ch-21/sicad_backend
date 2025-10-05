@@ -32,6 +32,7 @@ public class CursoServiceImpl
     private final IEscuelaRepo escuelaRepo;
     private final ICicloAcademicoRepo cicloAcademicoRepo;
     private final ICargaRepo cargaRepo;
+    private final IAulaRepo aulaRepo;
     private final ModelMapper modelMapper;
 
     @Override
@@ -246,6 +247,14 @@ public class CursoServiceImpl
             Time horaInicioTime = Time.valueOf(request.getHoraInicio());
             Time horaFinTime = Time.valueOf(request.getHoraFin());
 
+            Aula aulaObj =null;
+            if(request.getIdAula() !=null){
+                aulaObj = aulaRepo.getById(request.getIdAula());
+                if(aulaObj == null) {
+                    return new GenericObjectResponse<>(400, "Aula no encontrada", null);
+                }
+            }
+
             CursoHorario horario = CursoHorario.builder()
                     .curso(curso)
                     .tipoSesion(request.getTipoSesion())
@@ -253,6 +262,7 @@ public class CursoServiceImpl
                     .horaInicio(horaInicioTime)
                     .horaFin(horaFinTime)
                     .duracionHoras(request.getDuracionHoras())
+                    .aula(aulaObj)
                     .enabled(true)
                     .build();
 
@@ -368,6 +378,15 @@ public class CursoServiceImpl
             } else if (request.getDuracionHoras() != null) {
                 // Si solo envían duración, actualizarla directamente
                 horario.setDuracionHoras(request.getDuracionHoras());
+            }
+
+            if(request.getIdAula() !=null){
+                Aula aulaObj = aulaRepo.getById(request.getIdAula());
+                if(aulaObj == null) {
+                    return new GenericObjectResponse<>(400, "Aula no encontrada", null);
+                } else {
+                    horario.setAula(aulaObj);
+                }
             }
 
             // Guardar cambios

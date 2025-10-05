@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 public class AulaDetalleResponse {
     private Integer idAula;
     private String tipo;
-    private String codigo;
+    private String nombre;
     private Integer piso;
     private Integer capacidad;
     private Integer numeroEquipos;

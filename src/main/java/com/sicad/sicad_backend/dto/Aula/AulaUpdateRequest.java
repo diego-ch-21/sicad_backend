@@ -12,8 +12,7 @@ public class AulaUpdateRequest {
     @Pattern(regexp = "^(LABORATORIO|TEORIA)$", message = "El tipo debe ser LABORATORIO o TEORIA")
     private String tipo;
 
-    @Size(max = 3, message = "El (código) no debe exceder los 3 caracteres")
-    private String codigo;
+    private String nombre;
 
     @Min(value = 1, message = "El piso debe ser mínimo 1")
     @Max(value = 3, message = "El piso debe ser máximo 3")

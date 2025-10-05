@@ -41,11 +41,11 @@ public class AulaServiceImpl
     }
 
     public GenericObjectResponse<AulaDetalleResponse> registrarAula(AulaCreateRequest request) {
-        boolean existe = aulaRepo.existsByCodigo(request.getCodigo());
+        boolean existe = aulaRepo.existsNombre(request.getNombre());
         if(existe){
             return new GenericObjectResponse<>(
                     404,
-                    "el codigo "+request.getCodigo()+" ya esta en uso",
+                    "el nombre "+request.getNombre()+" ya esta en uso",
                     null
             );
         }
@@ -66,7 +66,7 @@ public class AulaServiceImpl
             }
         }
 
-        aula.setCodigo(request.getCodigo());
+        aula.setNombre(request.getNombre());
         aula.setPiso(request.getPiso());
         aula.setCapacidad(request.getCapacidad());
         aula.setEstado(request.getEstado());
@@ -102,12 +102,12 @@ public class AulaServiceImpl
         if (aulaExistente == null) {
             return new GenericObjectResponse<>(404, "Aula no encontrada", null);
         }
-        if(!(aulaExistente.getCodigo().equals(request.getCodigo()))){
-            boolean existe = aulaRepo.existsByCodigo(request.getCodigo());
+        if(!(aulaExistente.getNombre().equals(request.getNombre()))){
+            boolean existe = aulaRepo.existsNombre(request.getNombre());
             if(existe){
                 return new GenericObjectResponse<>(
                         404,
-                        "el codigo "+request.getCodigo()+" ya esta en uso",
+                        "el nombre "+request.getNombre()+" ya esta en uso",
                         null
                 );
             }
@@ -134,7 +134,7 @@ public class AulaServiceImpl
         }
 
         // Actualizar los demás campos solo si vienen en el request
-        if (request.getCodigo() != null) aulaExistente.setCodigo(request.getCodigo());
+        if (request.getNombre() != null) aulaExistente.setNombre(request.getNombre());
         if (request.getPiso() != null) aulaExistente.setPiso(request.getPiso());
         if (request.getCapacidad() != null) aulaExistente.setCapacidad(request.getCapacidad());
         if (request.getEstado() != null) aulaExistente.setEstado(request.getEstado());

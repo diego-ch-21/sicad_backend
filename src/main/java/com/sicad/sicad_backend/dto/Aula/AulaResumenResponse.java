@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 public class AulaResumenResponse {
     private Integer idAula;
     private String tipo;
+    private String nombre;
     private boolean enabled;
 }

@@ -1,5 +1,6 @@
 package com.sicad.sicad_backend.dto.cursoHorario;
 
+import com.sicad.sicad_backend.dto.Aula.AulaResumenResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,5 +15,6 @@ public class CursoHorarioDetalleResponse {
     private String horaInicio;
     private String horaFin;
     private Integer duracionHoras;
+    private AulaResumenResponse aula;
     private boolean enabled;
 }

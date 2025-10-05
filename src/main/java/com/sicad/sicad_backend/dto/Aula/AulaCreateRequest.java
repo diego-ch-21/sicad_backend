@@ -15,9 +15,8 @@ public class AulaCreateRequest {
     @Pattern(regexp = "^(LABORATORIO|TEORIA)$", message = "El tipo debe ser LABORATORIO o TEORIA")
     private String tipo;
 
-    @NotBlank(message = "El (código) es obligatorio")
-    @Size(max = 3, message = "El (código) no debe exceder los 3 caracteres")
-    private String codigo;
+    @NotBlank(message = "El nombre es obligatorio")
+    private String nombre;
 
     @NotNull(message = "El piso es obligatorio")
     @Min(value = 1, message = "El piso debe ser mínimo 1")

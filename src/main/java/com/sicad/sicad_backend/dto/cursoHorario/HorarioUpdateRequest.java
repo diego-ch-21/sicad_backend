@@ -24,4 +24,6 @@ public class HorarioUpdateRequest {
 
     @Min(value = 1, message = "La duración debe ser al menos de 1 hora")
     private Integer duracionHoras;
+
+    private Integer idAula;
 }

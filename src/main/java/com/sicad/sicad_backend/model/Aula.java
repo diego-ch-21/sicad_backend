@@ -18,8 +18,8 @@ public class Aula {
     private Integer idAula;
     @Column(name = "tipo", nullable = false)
     private String tipo;
-    @Column(name = "codigo", nullable = false)
-    private String codigo;
+    @Column(name = "nombre", nullable = true)
+    private String nombre;
     @Column(name = "piso", nullable = false)
     private Integer piso;
     @Column(name = "capacidad", nullable = false)

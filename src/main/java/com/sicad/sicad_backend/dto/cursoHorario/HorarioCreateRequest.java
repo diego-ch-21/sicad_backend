@@ -31,4 +31,6 @@ public class HorarioCreateRequest {
     @NotNull(message = "La duración es un campo obligatorio")
     @Min(value = 1, message = "La duración debe ser al menos de 1 hora")
     private Integer duracionHoras;
+
+    private Integer idAula;
 }
