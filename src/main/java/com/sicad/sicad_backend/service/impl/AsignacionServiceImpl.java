@@ -68,12 +68,17 @@ public class AsignacionServiceImpl
         if (cicloAcademico == null) {
             return new GenericObjectResponse<>(404, "Ciclo academico no encontrada", null);
         }
+        Carga carga = cargaRepo.findById(request.getIdCarga()).orElse(null);
+        if(carga == null) {
+            return new GenericObjectResponse<>(404, "Carga no encontrada", null);
+        }
 
         Asignacion asignacion = new Asignacion();
         asignacion.setDocente(docente);
         asignacion.setCurso(curso);
         asignacion.setCicloAcademico(cicloAcademico);
         asignacion.setTipoAsignacion(request.getTipoAsignacion());
+        asignacion.setCarga(carga);
         asignacion.setEnabled(true);
         asignacion.setCreatedAt(LocalDate.now());
         asignacionRepo.save(asignacion);
@@ -98,6 +103,10 @@ public class AsignacionServiceImpl
         if (request.getIdCicloAcademico() != null) {
             cicloAcademicoRepo.findById(request.getIdCicloAcademico()).ifPresent(asignacion::setCicloAcademico);
         }
+        if(request.getIdCarga() != null) {
+            cargaRepo.findById(request.getIdCarga()).ifPresent(asignacion::setCarga);
+        }
+
 
         if (request.getTipoAsignacion() != null) {
             asignacion.setTipoAsignacion(request.getTipoAsignacion());

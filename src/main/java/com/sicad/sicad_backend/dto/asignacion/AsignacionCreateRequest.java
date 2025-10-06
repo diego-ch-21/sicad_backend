@@ -19,6 +19,7 @@ public class AsignacionCreateRequest {
     private Integer idCurso;
     @NotNull(message = "El idCicloAcademico es un campo obligatorio")
     private Integer idCicloAcademico;
-    @NotBlank(message = "El tipo de asignación es un campo obligatorio")
     private String tipoAsignacion;
+    @NotNull(message = "El idCarga es un campo obligatorio")
+    private Integer idCarga;
 }
