@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AsignacionResumenResponse {
+    private Integer idAsignacion;
     private CursoAsignacionResponse curso;
     private Boolean enabled;
 }

@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AsignacionDetalleResponse {
+    private Integer idAsignacion;
     private DocenteResumenResponse docente;
     private CursoDetalleResponse curso;
     private CicloAcademicoResumenResponse cicloAcademico;
