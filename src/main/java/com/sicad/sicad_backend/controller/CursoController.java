@@ -95,7 +95,7 @@ public class CursoController {
         GenericReponse<HorarioDetalleResponse>   response = serviceImpl.registrarVariosCursoHorario(id,request);
         return ResponseEntity.status(response.status()).body(response);
     }
-    @PostMapping("/horario/actualizar/{idCursoHorario}")
+    @PutMapping("/horario/actualizar/{idCursoHorario}")
     public ResponseEntity<GenericObjectResponse<HorarioDetalleResponse>>
     actualizarHorario(@PathVariable("idCursoHorario") Integer id,@Valid @RequestBody HorarioUpdateRequest request) {
         GenericObjectResponse<HorarioDetalleResponse>  response = serviceImpl.actualizarCursoHorario(id,request);
