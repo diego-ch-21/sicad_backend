@@ -348,7 +348,6 @@ public class AlgoritmoAsignacionService {
                 asignacion.setCurso(curso);
                 asignacion.setCarga(carga);
                 asignacion.setCicloAcademico(cicloAcademico);
-                asignacion.setTipoAsignacion("LECTIVO");
                 asignacion.setEnabled(true);
                 asignacion.setCreatedAt(LocalDate.now());
 

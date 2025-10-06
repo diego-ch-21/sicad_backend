@@ -17,7 +17,6 @@ public class AsignacionDetalleResponse {
     private CursoDetalleResponse curso;
     private CicloAcademicoResumenResponse cicloAcademico;
     private AlgoritmoResumenResponse algoritmo;
-    private String tipoAsignacion;
     private String createdAt;
     private Boolean enabled;
 }

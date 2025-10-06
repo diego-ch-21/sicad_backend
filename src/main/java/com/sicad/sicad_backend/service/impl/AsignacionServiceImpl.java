@@ -77,7 +77,6 @@ public class AsignacionServiceImpl
         asignacion.setDocente(docente);
         asignacion.setCurso(curso);
         asignacion.setCicloAcademico(cicloAcademico);
-        asignacion.setTipoAsignacion(request.getTipoAsignacion());
         asignacion.setCarga(carga);
         asignacion.setEnabled(true);
         asignacion.setCreatedAt(LocalDate.now());
@@ -107,10 +106,6 @@ public class AsignacionServiceImpl
             cargaRepo.findById(request.getIdCarga()).ifPresent(asignacion::setCarga);
         }
 
-
-        if (request.getTipoAsignacion() != null) {
-            asignacion.setTipoAsignacion(request.getTipoAsignacion());
-        }
 
         try {
             asignacionRepo.save(asignacion);
@@ -415,7 +410,6 @@ public class AsignacionServiceImpl
                 asignacion.setDocente(docenteAsignado);
                 asignacion.setCurso(curso);
                 asignacion.setCicloAcademico(cicloAcademico);
-                asignacion.setTipoAsignacion("LECTIVO");
                 asignacion.setEnabled(true);
                 asignacion.setCreatedAt(LocalDate.now());
 

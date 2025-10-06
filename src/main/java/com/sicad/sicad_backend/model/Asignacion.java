@@ -39,9 +39,6 @@ public class Asignacion {
             foreignKey = @ForeignKey(name = "FK_ASIGNACION_CARGA"))
     private Carga carga;
 
-    @Column(nullable = true, name = "tipo_asignacion")
-    private String tipoAsignacion;
-
     @Column(nullable = false, name = "created_at")
     private LocalDate createdAt;
 

@@ -12,5 +12,4 @@ public class AsignacionUpdateRequest {
     private Integer idCurso;
     private Integer idCicloAcademico;
     private Integer idCarga;
-    private String tipoAsignacion;
 }
