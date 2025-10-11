@@ -1,12 +1,10 @@
 package com.sicad.sicad_backend.service.impl;
 
-import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
+import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.categoria.CategoriaCreateRequest;
 import com.sicad.sicad_backend.dto.categoria.CategoriaDetalleResponse;
-import com.sicad.sicad_backend.dto.dedicacion.DedicacionDetalleResponse;
 import com.sicad.sicad_backend.model.Categoria;
-import com.sicad.sicad_backend.model.Dedicacion;
 import com.sicad.sicad_backend.model.Docente;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.ICategoriaRepo;
@@ -15,7 +13,6 @@ import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.ICategoriaService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -37,7 +34,7 @@ public class CategoriaServiceImpl
     }
 
 
-    public GenericReponse<CategoriaDetalleResponse> saveAll(List<CategoriaCreateRequest> requestList) {
+    public BaseListReponse<CategoriaDetalleResponse> saveAll(List<CategoriaCreateRequest> requestList) {
         List<Categoria> entities = requestList.stream()
                 .map(dto -> modelMapper.map(dto, Categoria.class))
                 .toList();
@@ -45,33 +42,33 @@ public class CategoriaServiceImpl
         List<CategoriaDetalleResponse> response = saved.stream()
                 .map(cat -> modelMapper.map(cat, CategoriaDetalleResponse.class))
                 .toList();
-        return new GenericReponse<>(201, "Categorías creadas", response);
+        return new BaseListReponse<>(201, "Categorías creadas", response);
     }
-    public GenericObjectResponse<CategoriaDetalleResponse> obtenerCategoria(Integer idDocente) {
+    public BaseObjectResponse<CategoriaDetalleResponse> obtenerCategoria(Integer idDocente) {
         Optional<Docente> docente = docenteRepo.findById(idDocente);
         Categoria categoria = docente.get().getCategoria();
         if(categoria ==null) {
-            return new GenericObjectResponse<>(404,"Categoria no encontrada",null);
+            return new BaseObjectResponse<>(404,"Categoria no encontrada",null);
         }
-        return new GenericObjectResponse<>(201,"categoria encontrada exitosamente",convertToDetalle(categoria));
+        return new BaseObjectResponse<>(201,"categoria encontrada exitosamente",convertToDetalle(categoria));
 
     }
-    public GenericObjectResponse<String> eliminarCategoria(Integer idCategoria) {
+    public BaseObjectResponse<String> eliminarCategoria(Integer idCategoria) {
         // Validación de parámetro
         if (idCategoria == null) {
-            return new GenericObjectResponse<>(400, "idCategoria no proporcionado", null);
+            return new BaseObjectResponse<>(400, "idCategoria no proporcionado", null);
         }
 
         // Validar existencia
         Categoria categoria = categoriaRepo.findById(idCategoria).orElse(null);
         if (categoria == null) {
-            return new GenericObjectResponse<>(404, "Categoria  no encontrado", null);
+            return new BaseObjectResponse<>(404, "Categoria  no encontrado", null);
         }
 
         // desabilitar
         categoria.setEnabled(false);
         categoriaRepo.save(categoria);
-        return new GenericObjectResponse<>(200, "se elimino la categoria exitosamente", null);
+        return new BaseObjectResponse<>(200, "se elimino la categoria exitosamente", null);
     }
 
     private CategoriaDetalleResponse convertToDetalle(Categoria obj) {

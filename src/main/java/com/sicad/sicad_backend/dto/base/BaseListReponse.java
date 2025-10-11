@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record GenericObjectResponse<T>(
+public record BaseListReponse<T>(
         int status,
         String message,
-        T data
+        List<T> data
 ) {
 }

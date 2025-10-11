@@ -4,9 +4,8 @@ import com.sicad.sicad_backend.dto.Especializacion.EspecializacionCreateRequest;
 import com.sicad.sicad_backend.dto.Especializacion.EspecializacionDetalleResponse;
 import com.sicad.sicad_backend.dto.Especializacion.EspecializacionResumenResponse;
 import com.sicad.sicad_backend.dto.Especializacion.EspecializacionUdpdateRequest;
-import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.dto.base.GenericReponse;
-import com.sicad.sicad_backend.dto.preferencia.PreferenciaResumenResponse;
+import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
+import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.model.Especializacion;
 import com.sicad.sicad_backend.service.impl.EspecializacionServiceImpl;
 import com.sicad.sicad_backend.service.interfaces.IEspecializacionService;
@@ -27,54 +26,54 @@ public class EspecializacionController {
     private final ModelMapper modelMapper;
 
     @GetMapping("/listar")
-    public ResponseEntity<GenericReponse<EspecializacionDetalleResponse>> listarEspecializacion(){
+    public ResponseEntity<BaseListReponse<EspecializacionDetalleResponse>> listarEspecializacion(){
         List<EspecializacionDetalleResponse> lista = service.findByEnabledTrue()
                 .stream()
                 .map(this::convertToDetalle)
                 .toList();
         return ResponseEntity.ok(
-                new GenericReponse<>(200,"listar especialistas",lista)
+                new BaseListReponse<>(200,"listar especialistas",lista)
         );
     }
     @GetMapping("/buscar/{idEspecializacion}")
-    public ResponseEntity<GenericObjectResponse<EspecializacionDetalleResponse>>
+    public ResponseEntity<BaseObjectResponse<EspecializacionDetalleResponse>>
         findById(@PathVariable("idEspecializacion") Integer id) throws Exception {
         Especializacion obj = service.findById(id);
         if(obj == null){
             return ResponseEntity.ok(
-                    new GenericObjectResponse<>(200, "Asignatura no encontrada", convertToDetalle(obj))
+                    new BaseObjectResponse<>(200, "Asignatura no encontrada", convertToDetalle(obj))
             );        }
         return ResponseEntity.ok(
-                new GenericObjectResponse<>(200, "Asignatura encontrada", convertToDetalle(obj))
+                new BaseObjectResponse<>(200, "Asignatura encontrada", convertToDetalle(obj))
         );
     }
     @PostMapping("/insertar")
-    public ResponseEntity<GenericObjectResponse<EspecializacionDetalleResponse>> registrar(@Valid @RequestBody EspecializacionCreateRequest dto) {
-        GenericObjectResponse<EspecializacionDetalleResponse> response = serviceImpl.registrarEspecializacion(dto);
+    public ResponseEntity<BaseObjectResponse<EspecializacionDetalleResponse>> registrar(@Valid @RequestBody EspecializacionCreateRequest dto) {
+        BaseObjectResponse<EspecializacionDetalleResponse> response = serviceImpl.registrarEspecializacion(dto);
         return ResponseEntity.status(response.status()).body(response);
     }
     @PostMapping("/insertar-all")
-    public ResponseEntity<GenericReponse<EspecializacionDetalleResponse>> registrarAll(@Valid @RequestBody List<EspecializacionCreateRequest> dto) {
-        GenericReponse<EspecializacionDetalleResponse> response = serviceImpl.registrarAllEspecializacion(dto);
+    public ResponseEntity<BaseListReponse<EspecializacionDetalleResponse>> registrarAll(@Valid @RequestBody List<EspecializacionCreateRequest> dto) {
+        BaseListReponse<EspecializacionDetalleResponse> response = serviceImpl.registrarAllEspecializacion(dto);
         return ResponseEntity.status(response.status()).body(response);
     }
     @PutMapping("/actualizar/{idEspecializacion}")
-    public ResponseEntity<GenericObjectResponse<EspecializacionDetalleResponse>>
+    public ResponseEntity<BaseObjectResponse<EspecializacionDetalleResponse>>
         actualizar(@PathVariable("idEspecializacion") Integer id, @Valid @RequestBody EspecializacionUdpdateRequest dto) {
-        GenericObjectResponse<EspecializacionDetalleResponse> response = serviceImpl.actualizarEspecialidad(id, dto);
+        BaseObjectResponse<EspecializacionDetalleResponse> response = serviceImpl.actualizarEspecialidad(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }
 
     @DeleteMapping("/eliminar/{idEspecializacion}")
-    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idEspecializacion") Integer id) {
-        GenericObjectResponse<String> response = serviceImpl.eliminarEspecializacion(id);
+    public ResponseEntity<BaseObjectResponse<String>> delete(@PathVariable("idEspecializacion") Integer id) {
+        BaseObjectResponse<String> response = serviceImpl.eliminarEspecializacion(id);
         return ResponseEntity.status(response.status()).body(response);
     }
 
     @GetMapping("/listar/{idDocente}")
-    public ResponseEntity<GenericObjectResponse<List<EspecializacionResumenResponse>>> findByDocenteAndCargaElectiva(
+    public ResponseEntity<BaseObjectResponse<List<EspecializacionResumenResponse>>> findByDocenteAndCargaElectiva(
             @PathVariable("idDocente") Integer idDocente) throws Exception {
-        GenericObjectResponse<List<EspecializacionResumenResponse>>  response = serviceImpl.listarEspecializacionDocente(idDocente);
+        BaseObjectResponse<List<EspecializacionResumenResponse>> response = serviceImpl.listarEspecializacionDocente(idDocente);
         return ResponseEntity.status(response.status()).body(response);
     }
     private EspecializacionDetalleResponse convertToDetalle(Especializacion obj){

@@ -1,14 +1,12 @@
 package com.sicad.sicad_backend.service.impl;
 
 import com.sicad.sicad_backend.algorithm.service.AlgoritmoAsignacionService;
-import com.sicad.sicad_backend.dto.Especializacion.EspecializacionResumenResponse;
-import com.sicad.sicad_backend.dto.algoritmo.AlgoritmoDetalleResponse;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionCreateRequest;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionDetalleResponse;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionResumenResponse;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionUpdateRequest;
-import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
+import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.carga.CargaDetalleResponse;
 import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
@@ -17,11 +15,8 @@ import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.IAsignacionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.juli.logging.Log;
 import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 
@@ -53,24 +48,24 @@ public class AsignacionServiceImpl
         return asignacionRepo;
     }
 
-    public GenericObjectResponse<AsignacionDetalleResponse> registrarAsignacion(AsignacionCreateRequest request) {
+    public BaseObjectResponse<AsignacionDetalleResponse> registrarAsignacion(AsignacionCreateRequest request) {
         Docente docente = docenteRepo.findById(request.getIdDocente()).orElse(null);
         if (docente == null) {
-            return new GenericObjectResponse<>(404, "Docente no encontrado", null);
+            return new BaseObjectResponse<>(404, "Docente no encontrado", null);
         }
 
         Curso curso = cursoRepo.findById(request.getIdCurso()).orElse(null);
         if (curso == null) {
-            return new GenericObjectResponse<>(404, "Curso no encontrado", null);
+            return new BaseObjectResponse<>(404, "Curso no encontrado", null);
         }
 
         CicloAcademico cicloAcademico = cicloAcademicoRepo.findById(request.getIdCicloAcademico()).orElse(null);
         if (cicloAcademico == null) {
-            return new GenericObjectResponse<>(404, "Ciclo academico no encontrada", null);
+            return new BaseObjectResponse<>(404, "Ciclo academico no encontrada", null);
         }
         Carga carga = cargaRepo.findById(request.getIdCarga()).orElse(null);
         if(carga == null) {
-            return new GenericObjectResponse<>(404, "Carga no encontrada", null);
+            return new BaseObjectResponse<>(404, "Carga no encontrada", null);
         }
 
         Asignacion asignacion = new Asignacion();
@@ -82,13 +77,13 @@ public class AsignacionServiceImpl
         asignacion.setCreatedAt(LocalDate.now());
         asignacionRepo.save(asignacion);
         AsignacionDetalleResponse dto = modelMapper.map(asignacion, AsignacionDetalleResponse.class);
-        return new GenericObjectResponse<>(201, "Asignación registrada exitosamente", dto);
+        return new BaseObjectResponse<>(201, "Asignación registrada exitosamente", dto);
     }
 
-    public GenericObjectResponse<AsignacionDetalleResponse> actualizarAsignacion(Integer id, AsignacionUpdateRequest request) {
+    public BaseObjectResponse<AsignacionDetalleResponse> actualizarAsignacion(Integer id, AsignacionUpdateRequest request) {
         Asignacion asignacion = asignacionRepo.findById(id).orElse(null);
         if (asignacion == null) {
-            return new GenericObjectResponse<>(404, "Asignación no encontrada", null);
+            return new BaseObjectResponse<>(404, "Asignación no encontrada", null);
         }
 
         if (request.getIdDocente() != null) {
@@ -110,9 +105,9 @@ public class AsignacionServiceImpl
         try {
             asignacionRepo.save(asignacion);
             AsignacionDetalleResponse dto = modelMapper.map(asignacion, AsignacionDetalleResponse.class);
-            return new GenericObjectResponse<>(200, "Asignación actualizada exitosamente", dto);
+            return new BaseObjectResponse<>(200, "Asignación actualizada exitosamente", dto);
         } catch (DataIntegrityViolationException e) {
-            return new GenericObjectResponse<>(400, "Conflicto de unicidad: ya existe una asignación para este docente y horario", null);
+            return new BaseObjectResponse<>(400, "Conflicto de unicidad: ya existe una asignación para este docente y horario", null);
         }
     }
 
@@ -123,16 +118,16 @@ public class AsignacionServiceImpl
      * MÉTODO PRINCIPAL ACTUALIZADO: Ejecuta algoritmo híbrido GA+PSO con nuevo modelo de restricciones
      */
     @Transactional
-    public GenericObjectResponse<CargaDetalleResponse> asignarConAlgoritmoGeneticoPSO(Integer idCicloAcademico) {
+    public BaseObjectResponse<CargaDetalleResponse> asignarConAlgoritmoGeneticoPSO(Integer idCicloAcademico) {
         try {
             // 1. Validaciones iniciales
             CicloAcademico cicloAcademico = cicloAcademicoRepo.findById(idCicloAcademico).orElse(null);
             if (cicloAcademico == null) {
-                return new GenericObjectResponse<>(404, "Ciclo académico no encontrado", null);
+                return new BaseObjectResponse<>(404, "Ciclo académico no encontrado", null);
             }
             Optional<Algoritmo> principalActualOpt = algoritmoRepo.findByPrincipalTrue();
             if (!principalActualOpt.isPresent()) {
-                return new GenericObjectResponse<>(400, "no exite un algoritmo principal seleccionado", null);
+                return new BaseObjectResponse<>(400, "no exite un algoritmo principal seleccionado", null);
             }
             Algoritmo algoritmoPrincipal = principalActualOpt.get();
 
@@ -143,11 +138,11 @@ public class AsignacionServiceImpl
             List<Curso> cursos = obtenerCursosPorCiclo(idCicloAcademico);
 
             if (docentes.isEmpty()) {
-                return new GenericObjectResponse<>(400, "No hay docentes disponibles para este ciclo academico", null);
+                return new BaseObjectResponse<>(400, "No hay docentes disponibles para este ciclo academico", null);
             }
 
             if (cursos.isEmpty()) {
-                return new GenericObjectResponse<>(400, "No hay cursos para el ciclo académico ", null);
+                return new BaseObjectResponse<>(400, "No hay cursos para el ciclo académico ", null);
             }
 
             // 3. Preparar datos para el algoritmo
@@ -177,7 +172,7 @@ public class AsignacionServiceImpl
 
             // 6. Validar y guardar resultados
             if (asignacionesOptimas.isEmpty()) {
-                return new GenericObjectResponse<>(400, "No se pudieron generar asignaciones válidas con el algoritmo actualizado", null);
+                return new BaseObjectResponse<>(400, "No se pudieron generar asignaciones válidas con el algoritmo actualizado", null);
             }
 
             // 7. Persistir las asignaciones
@@ -201,13 +196,13 @@ public class AsignacionServiceImpl
 
             Carga obj = cargaRepo.findById(idCicloAcademico).orElse(null);
             if(obj == null) {
-                return new GenericObjectResponse<>(400,"carga no encontrada",null);
+                return new BaseObjectResponse<>(400,"carga no encontrada",null);
             }
-            return new GenericObjectResponse(200,"Algoritmo hibrido realizado exitosamente", convertToDetalle(carga));
+            return new BaseObjectResponse(200,"Algoritmo hibrido realizado exitosamente", convertToDetalle(carga));
 
         } catch (Exception e) {
             System.out.println("=== Error en asignación con algoritmo híbrido actualizado ===");
-            return new GenericObjectResponse<>(500, "Error interno en algoritmo híbrido actualizado: " + e.getMessage(), null);
+            return new BaseObjectResponse<>(500, "Error interno en algoritmo híbrido actualizado: " + e.getMessage(), null);
         }
     }
     private CargaDetalleResponse convertToDetalle(Carga obj) {
@@ -536,45 +531,45 @@ public class AsignacionServiceImpl
 
         return puedeAsignar;
     }
-    public GenericReponse<AsignacionResumenResponse> obtenerAsignacionesPorDocenteCarga(
+    public BaseListReponse<AsignacionResumenResponse> obtenerAsignacionesPorDocenteCarga(
             Integer idDocente,
             Integer idCarga
     ){
         Boolean isDocente = docenteRepo.existsByIdDocente(idDocente);
         if(!isDocente) {
-            return new GenericReponse<>(200, "No se encontraron docente", null);
+            return new BaseListReponse<>(200, "No se encontraron docente", null);
         }
         Boolean isCarga = cargaRepo.existsByIdCarga(idCarga);
         if(!isCarga) {
-            return new GenericReponse<>(200, "No se encontraron carga", null);
+            return new BaseListReponse<>(200, "No se encontraron carga", null);
         }
         List<Asignacion> asignaciones = asignacionRepo.findByDocenteAndCargaEnabled(idDocente, idCarga);
         if(asignaciones.isEmpty()) {
-            return new GenericReponse<>(200, "No se encontraron asignaciones para este docente", null);
+            return new BaseListReponse<>(200, "No se encontraron asignaciones para este docente", null);
         }
         // Convertir a DTOs
         List<AsignacionResumenResponse> listaDTO = asignaciones.stream()
                 .map(this:: convertResumenToDTO)
                 .toList();
-        return new GenericReponse<>(200, "Asignaciones de docente obtenida correctamente", listaDTO);
+        return new BaseListReponse<>(200, "Asignaciones de docente obtenida correctamente", listaDTO);
 
     }
-    public GenericObjectResponse<String> eliminarAsignacion(Integer idAsignacion) {
+    public BaseObjectResponse<String> eliminarAsignacion(Integer idAsignacion) {
         // Validación de parámetro
         if (idAsignacion == null) {
-            return new GenericObjectResponse<>(400, "IdAsignacion no proporcionado", null);
+            return new BaseObjectResponse<>(400, "IdAsignacion no proporcionado", null);
         }
 
         // Validar existencia del curso
         Asignacion asignacion = asignacionRepo.findById(idAsignacion).orElse(null);
         if (asignacion == null) {
-            return new GenericObjectResponse<>(404, "Asignación  no encontrado", null);
+            return new BaseObjectResponse<>(404, "Asignación  no encontrado", null);
         }
 
         // desabilitar
         asignacion.setEnabled(false);
         asignacionRepo.save(asignacion);
-        return new GenericObjectResponse<>(200, "se elimino la asignación exitosamente", null);
+        return new BaseObjectResponse<>(200, "se elimino la asignación exitosamente", null);
     }
 
 

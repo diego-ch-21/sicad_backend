@@ -8,12 +8,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface IAulaRepo extends IGenericRepo<Aula, Integer> {
+
+
     List<Aula> findByEnabledTrue();
     @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END " +
             "FROM Aula a WHERE a.nombre = :nombre AND a.enabled = true")
     boolean existsNombre(@Param("nombre") String nombre);
 
-
+    @Query("SELECT a FROM Aula a WHERE a.idAula = :idAula AND a.enabled = true")
+    Optional<Aula> isAula(@Param("idAula") Integer idAula);
 }

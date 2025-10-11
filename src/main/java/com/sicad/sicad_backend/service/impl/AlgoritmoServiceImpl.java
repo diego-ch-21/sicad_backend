@@ -1,17 +1,22 @@
 package com.sicad.sicad_backend.service.impl;
 
+import com.sicad.sicad_backend.Enum.Modulo;
 import com.sicad.sicad_backend.dto.algoritmo.AlgoritmoCreateRequest;
 import com.sicad.sicad_backend.dto.algoritmo.AlgoritmoDetalleResponse;
 import com.sicad.sicad_backend.dto.algoritmo.AlgoritmoUpdateRequest;
-import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
+import com.sicad.sicad_backend.dto.base.BaseListReponse;
+import com.sicad.sicad_backend.dto.logistica.LogisticaCreateRequest;
+import com.sicad.sicad_backend.dto.logistica.LogisticaDetalleResponse;
 import com.sicad.sicad_backend.model.Algoritmo;
+import com.sicad.sicad_backend.model.Logistica;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.IAlgoritmoRepo;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.IAlgoritmoService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AlgoritmoServiceImpl
@@ -35,12 +41,29 @@ public class AlgoritmoServiceImpl
     }
 
     @Override
-    public List<Algoritmo> findByEnabledTrue() {
-        return algoritmoRepo.findByEnabledTrue();
+    public BaseListReponse<AlgoritmoDetalleResponse> listar() {
+        List<AlgoritmoDetalleResponse> lista = algoritmoRepo.findByEnabledTrue()
+                .stream()
+                .map(this::convAlgoritmoDetalle)
+                .toList();
+
+        return new BaseListReponse<>(200, Modulo.ALGORITMO.listado(), lista);
     }
 
-    public GenericObjectResponse<AlgoritmoDetalleResponse> registrarAlgoritmo(AlgoritmoCreateRequest request) {
-        // Construir entidad desde el request
+    @Override
+    public BaseObjectResponse<AlgoritmoDetalleResponse> buscar(Integer idAlgoritmo) {
+        Optional<Algoritmo> algoritmoOpt = algoritmoRepo.findByIdAndEnabledTrue(idAlgoritmo);
+
+        if (algoritmoOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.ALGORITMO.noEncontrado(), null);
+        }
+        Algoritmo algoritmo = algoritmoOpt.get();
+
+        return new BaseObjectResponse<>(200, Modulo.ALGORITMO.encontrado(), convAlgoritmoDetalle(algoritmo));
+    }
+
+    @Override
+    public BaseObjectResponse<AlgoritmoDetalleResponse> registrar(AlgoritmoCreateRequest request) {
         Algoritmo algoritmo = Algoritmo.builder()
                 .poblacion(request.getPoblacion())
                 .generacionGa(request.getGeneracionGa())
@@ -59,22 +82,40 @@ public class AlgoritmoServiceImpl
                 .createdAt(LocalDateTime.now())
                 .enabled(true)
                 .build();
-
-
         algoritmoRepo.save(algoritmo);
 
-        // Convertir a DTO
-        AlgoritmoDetalleResponse dto = modelMapper.map(algoritmo, AlgoritmoDetalleResponse.class);
-
-        return new GenericObjectResponse<>(201, "Algoritmo registrado exitosamente", dto);
+        return new BaseObjectResponse<>(201, Modulo.ALGORITMO.registrado(), convAlgoritmoDetalle(algoritmo));
     }
-    public GenericObjectResponse<AlgoritmoDetalleResponse> actualizarAlgoritmo(Integer id, AlgoritmoUpdateRequest request) {
-        Algoritmo algoritmo = algoritmoRepo.findById(id).orElse(null);
-        if (algoritmo == null) {
-            return new GenericObjectResponse<>(404, "Algoritmo no encontrado", null);
-        }
 
-        // Actualizar solo si no son null
+    @Override
+    public BaseListReponse<AlgoritmoDetalleResponse> registrarAll(List<AlgoritmoCreateRequest> requests) {
+        List<AlgoritmoDetalleResponse> registrados = new ArrayList<>();
+        int errorCount = 0;
+
+        for (AlgoritmoCreateRequest request : requests) {
+            try {
+                BaseObjectResponse<AlgoritmoDetalleResponse> response = registrar(request);
+                if (response.status() == 201 && response.data() != null) {
+                    registrados.add(response.data());
+                } else {
+                    errorCount++;
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                errorCount++;
+            }
+        }
+        return new BaseListReponse<>(201,Modulo.ALGORITMO.resumenAllRegistro(registrados.size(), errorCount),registrados);
+    }
+
+    @Override
+    public BaseObjectResponse<AlgoritmoDetalleResponse> actualizar(Integer idAlgoritmo, AlgoritmoUpdateRequest request) {
+        Optional<Algoritmo> optAlgoritmo = algoritmoRepo.findByIdAndEnabledTrue(idAlgoritmo);
+        if (optAlgoritmo.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.ALGORITMO.noEncontrado(), null);
+        }
+        Algoritmo algoritmo = optAlgoritmo.get();
+
         if (request.getPoblacion() != null) algoritmo.setPoblacion(request.getPoblacion());
         if (request.getGeneracionGa() != null) algoritmo.setGeneracionGa(request.getGeneracionGa());
         algoritmo.setProbCruzamientos(request.getProbCruzamientos());
@@ -88,90 +129,54 @@ public class AlgoritmoServiceImpl
         algoritmo.setCDos(request.getCDos());
         algoritmo.setVelocidadMaxima(request.getVelocidadMaxima());
         if (request.getCicloHibridos() != null) algoritmo.setCicloHibridos(request.getCicloHibridos());
-
         algoritmoRepo.save(algoritmo);
 
-        AlgoritmoDetalleResponse dto = modelMapper.map(algoritmo, AlgoritmoDetalleResponse.class);
-        return new GenericObjectResponse<>(200, "Algoritmo actualizado exitosamente", dto);
+        return new BaseObjectResponse<>(200, Modulo.ALGORITMO.actualizado(),  convAlgoritmoDetalle(algoritmo));
     }
 
-
-    public GenericReponse<AlgoritmoDetalleResponse> registrarAlgoritmosMultiples(List<AlgoritmoCreateRequest> requests) {
-        List<AlgoritmoDetalleResponse> registrados = new ArrayList<>();
-        int errorCount = 0;
-
-        for (AlgoritmoCreateRequest request : requests) {
-            try {
-                GenericObjectResponse<AlgoritmoDetalleResponse> response = registrarAlgoritmo(request);
-                if (response.status() == 201 && response.data() != null) {
-                    registrados.add(response.data());
-                } else {
-                    errorCount++;
-                }
-            } catch (Exception e) {
-                errorCount++;
-            }
-        }
-
-        String mensaje = String.format("Algoritmos registrados: %d. Fallidos: %d.", registrados.size(), errorCount);
-        return new GenericReponse<>(201, mensaje, registrados);
-    }
-    @Transactional
-    public GenericObjectResponse<AlgoritmoDetalleResponse> asignarPrincipal(Integer idAlgoritmo) {
-        // Paso 1: verificar existencia
-        Optional<Algoritmo> optAlgoritmo = algoritmoRepo.findById(idAlgoritmo);
-
+    @Override
+    public BaseObjectResponse<String> eliminar(Integer idAlgoritmo) {
+        Optional<Algoritmo> optAlgoritmo = algoritmoRepo.findByIdAndEnabledTrue(idAlgoritmo);
         if (optAlgoritmo.isEmpty()) {
-            return new GenericObjectResponse<>(404, "El algoritmo seleccionado no existe", null);
+            return new BaseObjectResponse<>(404, Modulo.ALGORITMO.noEncontrado(), null);
         }
-
         Algoritmo algoritmo = optAlgoritmo.get();
-
-
-        // Paso 2: buscar si ya existe un principal habilitado
-        Optional<Algoritmo> principalActualOpt = algoritmoRepo.findByPrincipalTrue();
-
-        if (principalActualOpt.isPresent()) {
-            Algoritmo principalActual = principalActualOpt.get();
-
-            // Paso 3: verificar si el mismo ya está marcado
-            if (principalActual.getIdAlgoritmo().equals(idAlgoritmo)) {
-                AlgoritmoDetalleResponse dto = modelMapper.map(algoritmo, AlgoritmoDetalleResponse.class);
-                return new GenericObjectResponse<>(200,
-                        "Este algoritmo ya está seleccionado como principal", dto);
-            }
-
-            // Paso 4: si hay un principal distinto → desmarcarlo
-            principalActual.setPrincipal(false);
-            algoritmoRepo.save(principalActual);
-        }
-
-        // Paso 5: marcar el nuevo como principal
-        algoritmo.setPrincipal(true);
-        algoritmoRepo.save(algoritmo);
-
-        AlgoritmoDetalleResponse dto = modelMapper.map(algoritmo, AlgoritmoDetalleResponse.class);
-        return new GenericObjectResponse<>(201,
-                "Algoritmo asignado como principal exitosamente", dto);
-    }
-
-    @Transactional
-    public GenericObjectResponse<String> eliminarAlgoritmo(Integer idAlgoritmo) {
-        if (idAlgoritmo == null) {
-            return new GenericObjectResponse<>(400, "idAlgoritmo no proporcionado", null);
-        }
-        Algoritmo algoritmo = algoritmoRepo.findById(idAlgoritmo).orElse(null);
-        if (algoritmo == null) {
-            return new GenericObjectResponse<>(404, "Algoritmo no encontrado", null);
-        }
         algoritmo.setEnabled(false);
         algoritmo.setPrincipal(false);
         algoritmoRepo.save(algoritmo);
 
-        return new GenericObjectResponse<>(200, "Algoritmo eliminado correctamente", null);
+        return new BaseObjectResponse<>(200, Modulo.ALGORITMO.eliminado(), null);
+    }
+    @Override
+    public BaseObjectResponse<AlgoritmoDetalleResponse> asignarPrincipal(Integer idAlgoritmo) {
+        Optional<Algoritmo> optAlgoritmo = algoritmoRepo.findByIdAndEnabledTrue(idAlgoritmo);
+        if (optAlgoritmo.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.ALGORITMO.noEncontrado(), null);
+        }
+        Algoritmo algoritmo = optAlgoritmo.get();
+        if(algoritmo.isPrincipal()){
+            return new BaseObjectResponse<>(200, Modulo.ALGORITMO.principalYaSeleccionado(), convAlgoritmoDetalle(algoritmo));
+        }
+        algoritmoRepo.resetPrincipal();
+        algoritmo.setPrincipal(true);
+        algoritmoRepo.save(algoritmo);
+
+        return new BaseObjectResponse<>(201, Modulo.ALGORITMO.encontrado(), convAlgoritmoDetalle(algoritmo));
     }
 
+    @Override
+    public BaseObjectResponse<AlgoritmoDetalleResponse> buscarPrincipal() {
+        Optional<Algoritmo> optAlgoritmo = algoritmoRepo.findByPrincipalTrue();
+        if (optAlgoritmo.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.ALGORITMO.noEncontrado(), null);
+        }
+        Algoritmo algoritmo = optAlgoritmo.get();
+        return new BaseObjectResponse<>(201, Modulo.ALGORITMO.principalSeleccionado(), convAlgoritmoDetalle(algoritmo));
+    }
 
+    private AlgoritmoDetalleResponse convAlgoritmoDetalle(Algoritmo obj) {
+        return modelMapper.map(obj, AlgoritmoDetalleResponse.class);
+    }
 
 
 }

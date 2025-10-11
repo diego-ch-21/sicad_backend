@@ -1,6 +1,8 @@
 package com.sicad.sicad_backend.service.impl;
 
-import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
+import com.sicad.sicad_backend.Enum.Modulo;
+import com.sicad.sicad_backend.dto.base.BaseListReponse;
+import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.director.DirectorCreateRequest;
 import com.sicad.sicad_backend.dto.director.DirectorDetalleResponse;
 import com.sicad.sicad_backend.dto.director.DirectorUpdateRequest;
@@ -14,17 +16,21 @@ import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.IDirectorService;
 import com.sicad.sicad_backend.utils.CodigoGeneratorUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import static com.sicad.sicad_backend.Enum.Message.CORREO_EN_USO;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-public class DirectorServiceImpl extends CRUDImpl<Director, Integer> implements IDirectorService {
+public class DirectorServiceImpl
+        extends CRUDImpl<Director, Integer>
+        implements IDirectorService {
 
     private final IUsuarioRepo userRepository;
     private final IDirectorRepo directorRepo;
@@ -39,30 +45,44 @@ public class DirectorServiceImpl extends CRUDImpl<Director, Integer> implements 
         return directorRepo;
     }
 
-    public GenericObjectResponse<DirectorDetalleResponse> registrarDirector(DirectorCreateRequest request) {
-        Integer idRol = 2;
-        // 1. Verificar si email ya existe
-        if (usuarioRepo.findByEmail(request.getEmail()).isPresent()) {
-            return new GenericObjectResponse<>(409, "El correo ya está en uso", null);
+    @Override
+    public BaseListReponse<DirectorDetalleResponse> listar() {
+        List<DirectorDetalleResponse> lista = directorRepo.findByEnabledTrue()
+                .stream()
+                .map(this::convDirectorDetalle)
+                .toList();
+
+        return new BaseListReponse<>(200, Modulo.DIRECTOR.listado(), lista);
+    }
+
+    @Override
+    public BaseObjectResponse<DirectorDetalleResponse> buscar(Integer idDirector) {
+        Optional<Director> directorOpt = directorRepo.findByIdAndEnabledTrue(idDirector);
+
+        if (directorOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404,Modulo.DIRECTOR.noEncontrado(), null);
         }
 
-        // Obtener rol
+        return new BaseObjectResponse<>(200, Modulo.DIRECTOR.encontrado(),convDirectorDetalle(directorOpt.get()));
+    }
+
+    @Override
+    public BaseObjectResponse<DirectorDetalleResponse> registrar(DirectorCreateRequest request) {
+        Integer idRol = 2;
+        if (usuarioRepo.findByEmail(request.getEmail()).isPresent()) {
+            return new BaseObjectResponse<>(409, CORREO_EN_USO.toString(), null);
+        }
         Optional<Rol> optionalRol = rolRepository.findById(idRol);
         if (!optionalRol.isPresent()) {
-            return new GenericObjectResponse<>(404, "Rol no encontrado", null);
+            return new BaseObjectResponse<>(404, Modulo.ROL.noEncontrado(), null);
         }
         Rol rolUsuario = optionalRol.get();
-
-        // Generar código único y verificar duplicado
         String codigo;
         do {
             codigo = CodigoGeneratorUtil.generarCodigoNumerico(8);
         } while (userRepository.existsByCodigo(codigo));
 
-        // Crear y guardar Docente
         LocalDate fecha = LocalDate.now();
-
-        // Crear y guardar usuario
         Usuario usuario = Usuario.builder()
                 .codigo(codigo)
                 .email(request.getEmail())
@@ -75,7 +95,6 @@ public class DirectorServiceImpl extends CRUDImpl<Director, Integer> implements 
                 .build();
         usuarioRepo.save(usuario);
 
-
         String codigoDirector;
         do {
             codigoDirector = CodigoGeneratorUtil.generarCodigoNumerico(6);
@@ -83,7 +102,7 @@ public class DirectorServiceImpl extends CRUDImpl<Director, Integer> implements 
 
         Optional<Escuela> escuelaObj= escuelaRepo.findById(request.getIdEscuela());
         if(!escuelaObj.isPresent()){
-            return new GenericObjectResponse<>(404, "Escuela no encontrada", null);
+            return new BaseObjectResponse<>(404, Modulo.ESCUELA.noEncontrado(), null);
         }
 
         Director director = Director.builder()
@@ -94,29 +113,53 @@ public class DirectorServiceImpl extends CRUDImpl<Director, Integer> implements 
                 .build();
         directorRepo.save(director);
 
-        // 5. Mapear y retornar DTO
-        DirectorDetalleResponse dto = modelMapper.map(director, DirectorDetalleResponse.class);
-        return new GenericObjectResponse<>(201, "Director registrado exitosamente", dto);
+        DirectorDetalleResponse response = convDirectorDetalle(director);
+
+        return new BaseObjectResponse<>(201, Modulo.DIRECTOR.registrado(), response);
     }
 
-    public GenericObjectResponse<DirectorDetalleResponse> actualizarDirector(Integer idDirector, DirectorUpdateRequest request) {
-        // 1. Buscar director existente
-        Director director = directorRepo.findById(idDirector).orElse(null);
-        if (director == null) {
-            return new GenericObjectResponse<>(404, "Director no encontrado", null);
+    /*
+    @Override
+    public BaseListReponse<DirectorDetalleResponse> registrarAll(List<DirectorCreateRequest> requests) {
+        List<DirectorDetalleResponse> registrados = new ArrayList<>();
+        int errorCount = 0;
+
+        for (DirectorCreateRequest request : requests) {
+            try {
+                BaseObjectResponse<DirectorDetalleResponse> response = registrar(request);
+                if (response.status() == 201 && response.data() != null) {
+                    registrados.add(response.data());
+                } else {
+                    errorCount++;
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                errorCount++;
+            }
         }
+        String mensaje = String.format("Cursos registrados: %d. Fallidos: %d.", registrados.size(), errorCount);
+        return new BaseListReponse<>(201, mensaje,registrados);
+    }
+
+     */
+
+    @Override
+    public BaseObjectResponse<DirectorDetalleResponse> actualizar(Integer idDirector, DirectorUpdateRequest request) {
+        Optional<Director> directorOpt = directorRepo.findByIdAndEnabledTrue(idDirector);
+        if (directorOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.ESCUELA.noEncontrado(), null);
+        }
+        Director director = directorOpt.get();
 
         Usuario usuario = director.getUsuario();
 
-        // 2. Validar si se intenta cambiar email y si ya está en uso
         if (request.getEmail() != null && !request.getEmail().equals(usuario.getEmail())) {
             if (usuarioRepo.findByEmail(request.getEmail()).isPresent()) {
-                return new GenericObjectResponse<>(409, "El correo ya está en uso", null);
+                return new BaseObjectResponse<>(409, CORREO_EN_USO.toString(), null);
             }
             usuario.setEmail(request.getEmail());
         }
 
-        // 3. Actualizar solo los datos presentes en Usuario
         if (request.getNombre() != null) {
             usuario.setNombre(request.getNombre());
         }
@@ -134,7 +177,7 @@ public class DirectorServiceImpl extends CRUDImpl<Director, Integer> implements 
         if(request.getIdEscuela() != null){
             Optional<Escuela> escuelaObj= escuelaRepo.findById(request.getIdEscuela());
             if(!escuelaObj.isPresent()){
-                return new GenericObjectResponse<>(404, "Escuela no encontrada", null);
+                return new BaseObjectResponse<>(404, Modulo.ESCUELA.noEncontrado(), null);
             } else {
                 director.setEscuela(escuelaObj.get());
             }
@@ -142,30 +185,22 @@ public class DirectorServiceImpl extends CRUDImpl<Director, Integer> implements 
         }
 
         directorRepo.save(director);
-
-        DirectorDetalleResponse dto = modelMapper.map(director, DirectorDetalleResponse.class);
-        return new GenericObjectResponse<>(200, "Director actualizado exitosamente", dto);
-    }
-    public GenericObjectResponse<String> eliminarDirector(Integer idDirector) {
-        // Validación de parámetro
-        if (idDirector == null) {
-            return new GenericObjectResponse<>(400, "idDirector no proporcionado", null);
-        }
-
-        // Validar existencia del curso
-        Director director = directorRepo.findById(idDirector).orElse(null);
-        if (director == null) {
-            return new GenericObjectResponse<>(404, "Director  no encontrado", null);
-        }
-
-        // desabilitar
-        director.setEnabled(false);
-        directorRepo.save(director);
-        return new GenericObjectResponse<>(200, "se elimino el director exitosamente", null);
+        DirectorDetalleResponse response = convDirectorDetalle(director);
+        return new BaseObjectResponse<>(200, Modulo.DIRECTOR.actualizado(), response);
     }
 
     @Override
-    public List<Director> findByEnabledTrue() {
-        return directorRepo.findByEnabledTrue();
+    public BaseObjectResponse<String> eliminar(Integer idDirector) {
+        Optional<Director> directorOpt = directorRepo.findByIdAndEnabledTrue(idDirector);
+        if (directorOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, "Director no encontrada", null);
+        }
+        Director director = directorOpt.get();
+        director.setEnabled(false);
+        directorRepo.save(director);
+        return new BaseObjectResponse<>(200, "se elimino el director exitosamente", null);
+    }
+    private DirectorDetalleResponse convDirectorDetalle(Director obj) {
+        return modelMapper.map(obj, DirectorDetalleResponse.class);
     }
 }

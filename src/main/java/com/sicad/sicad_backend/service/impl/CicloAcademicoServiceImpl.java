@@ -1,6 +1,6 @@
 package com.sicad.sicad_backend.service.impl;
 
-import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
+import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoCreateRequest;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoDetalleResponse;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoUpdateRequest;
@@ -17,7 +17,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.Optional;
 
 import static com.sicad.sicad_backend.utils.NumbersUtils.convertirARomano;
 
@@ -36,7 +35,7 @@ public class CicloAcademicoServiceImpl
         return cicloAcademicoRepo;
     }
 
-    public GenericObjectResponse<CicloAcademicoDetalleResponse> registrarCiclo(CicloAcademicoCreateRequest request) {
+    public BaseObjectResponse<CicloAcademicoDetalleResponse> registrarCiclo(CicloAcademicoCreateRequest request) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
         LocalDate fechaInicio;
@@ -47,11 +46,11 @@ public class CicloAcademicoServiceImpl
             fechaFin = LocalDate.parse(request.getFechaFin(), formatter);
 
             if (!fechaFin.isAfter(fechaInicio)) {
-                return new GenericObjectResponse<>(400, "La fecha fin debe ser posterior a la fecha inicio", null);
+                return new BaseObjectResponse<>(400, "La fecha fin debe ser posterior a la fecha inicio", null);
             }
 
         } catch (DateTimeParseException e) {
-            return new GenericObjectResponse<>(400, "Formato de fecha inválido (debe ser dd-MM-yyyy)", null);
+            return new BaseObjectResponse<>(400, "Formato de fecha inválido (debe ser dd-MM-yyyy)", null);
         }
 
         // Convertir periodo a romano
@@ -62,7 +61,7 @@ public class CicloAcademicoServiceImpl
         // Validar que el nombre no exista ya en la base de datos
         boolean existeNombre = cicloAcademicoRepo.existsByNombre(nombre);
         if (existeNombre) {
-            return new GenericObjectResponse<>(409, "Ya existe un ciclo académico con ese nombre", null);
+            return new BaseObjectResponse<>(409, "Ya existe un ciclo académico con ese nombre", null);
         }
 
         CicloAcademico ciclo = CicloAcademico.builder()
@@ -78,13 +77,13 @@ public class CicloAcademicoServiceImpl
         cicloAcademicoRepo.save(ciclo);
 
         CicloAcademicoDetalleResponse dto = modelMapper.map(ciclo, CicloAcademicoDetalleResponse.class);
-        return new GenericObjectResponse<>(201, "Ciclo académico registrado exitosamente", dto);
+        return new BaseObjectResponse<>(201, "Ciclo académico registrado exitosamente", dto);
     }
 
-    public GenericObjectResponse<CicloAcademicoDetalleResponse> actualizarCiclo(Integer id, CicloAcademicoUpdateRequest request) {
+    public BaseObjectResponse<CicloAcademicoDetalleResponse> actualizarCiclo(Integer id, CicloAcademicoUpdateRequest request) {
         CicloAcademico ciclo = cicloAcademicoRepo.findById(id).orElse(null);
         if (ciclo == null) {
-            return new GenericObjectResponse<>(404, "Ciclo académico no encontrado", null);
+            return new BaseObjectResponse<>(404, "Ciclo académico no encontrado", null);
         }
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
@@ -101,7 +100,7 @@ public class CicloAcademicoServiceImpl
             try {
                 ciclo.setFechaInicio(LocalDate.parse(request.getFechaInicio(), formatter));
             } catch (DateTimeParseException e) {
-                return new GenericObjectResponse<>(400, "Formato de fechaInicio inválido (debe ser dd-MM-yyyy)", null);
+                return new BaseObjectResponse<>(400, "Formato de fechaInicio inválido (debe ser dd-MM-yyyy)", null);
             }
         }
 
@@ -109,13 +108,13 @@ public class CicloAcademicoServiceImpl
             try {
                 ciclo.setFechaFin(LocalDate.parse(request.getFechaFin(), formatter));
             } catch (DateTimeParseException e) {
-                return new GenericObjectResponse<>(400, "Formato de fechaFin inválido (debe ser dd-MM-yyyy)", null);
+                return new BaseObjectResponse<>(400, "Formato de fechaFin inválido (debe ser dd-MM-yyyy)", null);
             }
         }
 
         if (ciclo.getFechaInicio() != null && ciclo.getFechaFin() != null &&
                 !ciclo.getFechaFin().isAfter(ciclo.getFechaInicio())) {
-            return new GenericObjectResponse<>(400, "La fecha fin debe ser posterior a la fecha inicio", null);
+            return new BaseObjectResponse<>(400, "La fecha fin debe ser posterior a la fecha inicio", null);
         }
 
         // Actualizar nombre si cambió año o periodo
@@ -129,24 +128,24 @@ public class CicloAcademicoServiceImpl
         cicloAcademicoRepo.save(ciclo);
 
         CicloAcademicoDetalleResponse dto = modelMapper.map(ciclo, CicloAcademicoDetalleResponse.class);
-        return new GenericObjectResponse<>(200, "Ciclo académico actualizado exitosamente", dto);
+        return new BaseObjectResponse<>(200, "Ciclo académico actualizado exitosamente", dto);
     }
-    public GenericObjectResponse<String> eliminarCicloAcademico(Integer idCicloAcademico) {
+    public BaseObjectResponse<String> eliminarCicloAcademico(Integer idCicloAcademico) {
         // Validación de parámetro
         if (idCicloAcademico == null) {
-            return new GenericObjectResponse<>(400, "idCicloAcademico no proporcionado", null);
+            return new BaseObjectResponse<>(400, "idCicloAcademico no proporcionado", null);
         }
 
         // Validar existencia del curso
         CicloAcademico cicloAcademico = cicloAcademicoRepo.findById(idCicloAcademico).orElse(null);
         if (cicloAcademico == null) {
-            return new GenericObjectResponse<>(404, "CicloAcademico  no encontrado", null);
+            return new BaseObjectResponse<>(404, "CicloAcademico  no encontrado", null);
         }
 
         // desabilitar
         cicloAcademico.setEnabled(false);
         cicloAcademicoRepo.save(cicloAcademico);
-        return new GenericObjectResponse<>(200, "se elimino el cicloAcademico exitosamente", null);
+        return new BaseObjectResponse<>(200, "se elimino el cicloAcademico exitosamente", null);
     }
 
     @Override

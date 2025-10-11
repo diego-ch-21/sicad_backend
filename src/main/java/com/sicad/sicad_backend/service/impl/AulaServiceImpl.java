@@ -3,13 +3,9 @@ package com.sicad.sicad_backend.service.impl;
 import com.sicad.sicad_backend.dto.Aula.AulaCreateRequest;
 import com.sicad.sicad_backend.dto.Aula.AulaDetalleResponse;
 import com.sicad.sicad_backend.dto.Aula.AulaUpdateRequest;
-import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.dto.base.GenericReponse;
-import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoDetalleResponse;
-import com.sicad.sicad_backend.dto.curso.CursoCreateRequest;
-import com.sicad.sicad_backend.dto.curso.CursoDetalleResponse;
+import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
+import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.model.Aula;
-import com.sicad.sicad_backend.model.CicloAcademico;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.IAulaRepo;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
@@ -40,10 +36,10 @@ public class AulaServiceImpl
         return aulaRepo.findByEnabledTrue();
     }
 
-    public GenericObjectResponse<AulaDetalleResponse> registrarAula(AulaCreateRequest request) {
+    public BaseObjectResponse<AulaDetalleResponse> registrarAula(AulaCreateRequest request) {
         boolean existe = aulaRepo.existsNombre(request.getNombre());
         if(existe){
-            return new GenericObjectResponse<>(
+            return new BaseObjectResponse<>(
                     404,
                     "el nombre "+request.getNombre()+" ya esta en uso",
                     null
@@ -60,7 +56,7 @@ public class AulaServiceImpl
                 if (request.getNumeroEquipos() != null) {
                     aula.setNumeroEquipos(request.getNumeroEquipos());
                 } else {
-                    return new GenericObjectResponse<>(404,"el campo de numero de equipos es necesaro para los aulas laboratorio",null);
+                    return new BaseObjectResponse<>(404,"el campo de numero de equipos es necesaro para los aulas laboratorio",null);
                 }
 
             }
@@ -73,19 +69,19 @@ public class AulaServiceImpl
         aula.setEnabled(true);
         aulaRepo.save(aula);
         AulaDetalleResponse response  = convertToResponseDTO(aula);
-        return new GenericObjectResponse<>(
+        return new BaseObjectResponse<>(
                 201,
                 "Aula registrada correctamente",
                 response
         );
     }
 
-    public GenericReponse<AulaDetalleResponse> registrarAulasMultiples(List<AulaCreateRequest> requests) {
+    public BaseListReponse<AulaDetalleResponse> registrarAulasMultiples(List<AulaCreateRequest> requests) {
         List<AulaDetalleResponse> registrados = new ArrayList<>();
         int errorCount = 0;
 
         for (AulaCreateRequest request : requests) {
-            GenericObjectResponse<AulaDetalleResponse> response = registrarAula(request);
+            BaseObjectResponse<AulaDetalleResponse> response = registrarAula(request);
             if (response.status() == 201 && response.data() != null) {
                 registrados.add(response.data());
             } else {
@@ -94,18 +90,18 @@ public class AulaServiceImpl
         }
 
         String mensaje = String.format("Aulas registrados: %d. Fallidos: %d.", registrados.size(), errorCount);
-        return new GenericReponse<>(201, mensaje,registrados);
+        return new BaseListReponse<>(201, mensaje,registrados);
     }
 
-    public GenericObjectResponse<AulaDetalleResponse> actualizarAula(Integer id, AulaUpdateRequest request) {
+    public BaseObjectResponse<AulaDetalleResponse> actualizarAula(Integer id, AulaUpdateRequest request) {
         Aula aulaExistente = aulaRepo.findById(id).orElse(null);
         if (aulaExistente == null) {
-            return new GenericObjectResponse<>(404, "Aula no encontrada", null);
+            return new BaseObjectResponse<>(404, "Aula no encontrada", null);
         }
         if(!(aulaExistente.getNombre().equals(request.getNombre()))){
             boolean existe = aulaRepo.existsNombre(request.getNombre());
             if(existe){
-                return new GenericObjectResponse<>(
+                return new BaseObjectResponse<>(
                         404,
                         "el nombre "+request.getNombre()+" ya esta en uso",
                         null
@@ -122,7 +118,7 @@ public class AulaServiceImpl
             // Validación: si es LABORATORIO, numeroEquipos es obligatorio
             if ("LABORATORIO".equals(tipoUpper)) {
                 if (request.getNumeroEquipos()== null) {
-                    return new GenericObjectResponse<>(400, "Si el tipo es LABORATORIO, debe proporcionar número de equipos", null);
+                    return new BaseObjectResponse<>(400, "Si el tipo es LABORATORIO, debe proporcionar número de equipos", null);
                 } else {
                     aulaExistente.setNumeroEquipos(request.getNumeroEquipos());
                 }
@@ -143,28 +139,28 @@ public class AulaServiceImpl
         Aula aulaActualizada = aulaRepo.save(aulaExistente);
         AulaDetalleResponse response  = convertToResponseDTO(aulaActualizada);
 
-        return new GenericObjectResponse<>(
+        return new BaseObjectResponse<>(
                 200,
                 "Aula actualizada correctamente",
                 response
         );
     }
-    public GenericObjectResponse<String> eliminarAula(Integer idAula) {
+    public BaseObjectResponse<String> eliminarAula(Integer idAula) {
         // Validación de parámetro
         if (idAula == null) {
-            return new GenericObjectResponse<>(400, "idAula no proporcionado", null);
+            return new BaseObjectResponse<>(400, "idAula no proporcionado", null);
         }
 
         // Validar existencia
         Aula aula = aulaRepo.findById(idAula).orElse(null);
         if (aula == null) {
-            return new GenericObjectResponse<>(404, "Aula  no encontrado", null);
+            return new BaseObjectResponse<>(404, "Aula  no encontrado", null);
         }
 
         // desabilitar
         aula.setEnabled(false);
         aulaRepo.save(aula);
-        return new GenericObjectResponse<>(200, "se elimino el aula exitosamente", null);
+        return new BaseObjectResponse<>(200, "se elimino el aula exitosamente", null);
     }
 
     private AulaDetalleResponse convertToResponseDTO(Aula obj) {

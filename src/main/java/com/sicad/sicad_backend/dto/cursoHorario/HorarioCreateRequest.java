@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 public class HorarioCreateRequest {
 
     @NotBlank(message = "El tipo de sesión es obligatorio")
+    @Pattern(regexp = "^(T|L|P|T-P)$", message = "Tipo de sesión inválido")
     private String tipoSesion;
 
     @NotBlank(message = "El día de la semana es obligatorio")

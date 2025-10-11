@@ -1,7 +1,7 @@
 package com.sicad.sicad_backend.service.impl;
 
-import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
+import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaCreateRequest;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaDetalleResponse;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaResumenResponse;
@@ -39,19 +39,19 @@ public class PreferenciaServiceImpl
         return preferenciaRepo;
     }
 
-    public GenericObjectResponse<PreferenciaDetalleResponse> registrarPreferencia(PreferenciaCreateRequest request){
+    public BaseObjectResponse<PreferenciaDetalleResponse> registrarPreferencia(PreferenciaCreateRequest request){
         //validar docente
         Docente docente = docenteRepo.findById(request.getIdDocente()).orElse(null);
         if(docente == null){
-            return new GenericObjectResponse<>(404, "Docente no encontrado", null);
+            return new BaseObjectResponse<>(404, "Docente no encontrado", null);
         }
         Asignatura asignatura = asignaturaRepo.findById(request.getIdAsignatura()).orElse(null);
         if(asignatura == null){
-            return new GenericObjectResponse<>(404, "Asignatura no encontrada", null);
+            return new BaseObjectResponse<>(404, "Asignatura no encontrada", null);
         }
         CicloAcademico cicloAcademico = cicloAcademicoRepo.findById(request.getIdCicloAcademico()).orElse(null);
         if (cicloAcademico == null) {
-            return new GenericObjectResponse<>(404, "Ciclo academico no encontrada", null);
+            return new BaseObjectResponse<>(404, "Ciclo academico no encontrada", null);
         }
 
 
@@ -64,15 +64,15 @@ public class PreferenciaServiceImpl
         preferenciaRepo.save(preferencia);
 
         PreferenciaDetalleResponse dto = modelMapper.map(preferencia, PreferenciaDetalleResponse.class);
-        return new GenericObjectResponse<>(201, "Preferencia registrada", dto);
+        return new BaseObjectResponse<>(201, "Preferencia registrada", dto);
     }
 
-    public GenericReponse<PreferenciaDetalleResponse> registrarVariosPreferencias(List<PreferenciaCreateRequest> requests){
+    public BaseListReponse<PreferenciaDetalleResponse> registrarVariosPreferencias(List<PreferenciaCreateRequest> requests){
         List<PreferenciaDetalleResponse> registrados = new ArrayList<>();
         int errorCount = 0;
 
         for(PreferenciaCreateRequest request: requests){
-            GenericObjectResponse<PreferenciaDetalleResponse>  response = registrarPreferencia(request);
+            BaseObjectResponse<PreferenciaDetalleResponse> response = registrarPreferencia(request);
             System.out.println("status: "+response.status());
             if(response.status() == 201 || response.data() != null){
                 registrados.add(response.data());
@@ -81,22 +81,22 @@ public class PreferenciaServiceImpl
             }
         }
         String mensaje = String.format("Preferencia registrados: %d. Fallidos: %d.", registrados.size(), errorCount);
-        return new GenericReponse<>(200, mensaje, registrados);
+        return new BaseListReponse<>(200, mensaje, registrados);
     }
 
 
 
-    public GenericObjectResponse<PreferenciaDetalleResponse> actualizarPreferencia(Integer id, PreferenciaUpdateRequest request) {
+    public BaseObjectResponse<PreferenciaDetalleResponse> actualizarPreferencia(Integer id, PreferenciaUpdateRequest request) {
         Preferencia preferencia = preferenciaRepo.findById(id).orElse(null);
         if (preferencia == null) {
-            return new GenericObjectResponse<>(404, "Preferencia no encontrada", null);
+            return new BaseObjectResponse<>(404, "Preferencia no encontrada", null);
         }
 
         // Validar y actualizar docente si viene en el request
         if (request.getIdDocente() != null) {
             Docente docente = docenteRepo.findById(request.getIdDocente()).orElse(null);
             if (docente == null) {
-                return new GenericObjectResponse<>(404, "Docente no encontrado", null);
+                return new BaseObjectResponse<>(404, "Docente no encontrado", null);
             }
             preferencia.setDocente(docente);
         }
@@ -105,7 +105,7 @@ public class PreferenciaServiceImpl
         if (request.getIdAsignatura() != null) {
             Asignatura asignatura = asignaturaRepo.findById(request.getIdAsignatura()).orElse(null);
             if (asignatura == null) {
-                return new GenericObjectResponse<>(404, "Asignatura no encontrada", null);
+                return new BaseObjectResponse<>(404, "Asignatura no encontrada", null);
             }
             preferencia.setAsignatura(asignatura);
         }
@@ -114,7 +114,7 @@ public class PreferenciaServiceImpl
         if (request.getIdCicloAcademico() != null) {
             CicloAcademico cicloAcademico = cicloAcademicoRepo.findById(request.getIdCicloAcademico()).orElse(null);
             if (cicloAcademico == null) {
-                return new GenericObjectResponse<>(404, "Ciclo academico no encontrada", null);
+                return new BaseObjectResponse<>(404, "Ciclo academico no encontrada", null);
             }
             preferencia.setCicloAcademico(cicloAcademico);
         }
@@ -122,18 +122,18 @@ public class PreferenciaServiceImpl
         preferenciaRepo.save(preferencia);
 
         PreferenciaDetalleResponse dto = modelMapper.map(preferencia, PreferenciaDetalleResponse.class);
-        return new GenericObjectResponse<>(200, "Preferencia actualizada exitosamente", dto);
+        return new BaseObjectResponse<>(200, "Preferencia actualizada exitosamente", dto);
     }
-    public GenericObjectResponse<List<PreferenciaResumenResponse>> listarPreferenciaDocente(Integer idDocente, Integer idCicloAcademico) {
+    public BaseObjectResponse<List<PreferenciaResumenResponse>> listarPreferenciaDocente(Integer idDocente, Integer idCicloAcademico) {
         System.out.println("idDocente: " + idDocente + " y id ciclo academico: " + idCicloAcademico);
         // Validar existencia de docente
         if (!docenteRepo.existsByIdDocente(idDocente)) {
-            return new GenericObjectResponse<>(400, "Docente no encontrado", null);
+            return new BaseObjectResponse<>(400, "Docente no encontrado", null);
         }
 
         // Validar existencia de carga electiva
         if (!cicloAcademicoRepo.existsByIdCicloAcademico(idCicloAcademico)) {
-            return new GenericObjectResponse<>(400, "Carga electiva no encontrada", null);
+            return new BaseObjectResponse<>(400, "Carga electiva no encontrada", null);
         }
 
         // Obtener preferencias filtradas
@@ -148,25 +148,25 @@ public class PreferenciaServiceImpl
                 ? "No hay preferencias registradas para este docente en este ciclo academico"
                 : "Lista obtenida correctamente";
 
-        return new GenericObjectResponse<>(200, mensaje, listaDTO);
+        return new BaseObjectResponse<>(200, mensaje, listaDTO);
     }
 
-    public GenericObjectResponse<String> eliminarPreferencia(Integer idPreferencia) {
+    public BaseObjectResponse<String> eliminarPreferencia(Integer idPreferencia) {
         // Validación de parámetro
         if (idPreferencia == null) {
-            return new GenericObjectResponse<>(400, "idPreferencia no proporcionado", null);
+            return new BaseObjectResponse<>(400, "idPreferencia no proporcionado", null);
         }
 
         // Validar existencia del curso
         Preferencia preferencia = preferenciaRepo.findById(idPreferencia).orElse(null);
         if (preferencia == null) {
-            return new GenericObjectResponse<>(404, "Preferencia  no encontrado", null);
+            return new BaseObjectResponse<>(404, "Preferencia  no encontrado", null);
         }
 
         // desabilitar
         preferencia.setEnabled(false);
         preferenciaRepo.save(preferencia);
-        return new GenericObjectResponse<>(200, "se elimino la preferencia exitosamente", null);
+        return new BaseObjectResponse<>(200, "se elimino la preferencia exitosamente", null);
     }
 
 

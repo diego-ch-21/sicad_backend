@@ -3,7 +3,7 @@ package com.sicad.sicad_backend.auth;
 import com.sicad.sicad_backend.auth.dto.AuthResponse;
 import com.sicad.sicad_backend.auth.dto.LoginRequest;
 import com.sicad.sicad_backend.auth.dto.RegisterRequest;
-import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
+import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/auth")
 public class AuthController {
-    private final AuthService authService;
+    private final IAuthService service;
     @Operation(
             summary = "login",
             description = "Valida las credenciales de un usuario y devuelve un token JWT junto con la información básica."
@@ -29,14 +29,14 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Credenciales incorrectas")
     })
     @PostMapping("login")
-    public ResponseEntity<GenericObjectResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
-        GenericObjectResponse<AuthResponse> response = authService.login(request);
+    public ResponseEntity<BaseObjectResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
+        BaseObjectResponse<AuthResponse> response = service.login(request);
         return ResponseEntity.status(response.status()).body(response);
     }
 
     @PostMapping(value = "register/admin")
-    public ResponseEntity<GenericObjectResponse<AuthResponse>> registerUserAdmin(@Valid @RequestBody RegisterRequest request) {
-        GenericObjectResponse<AuthResponse> response = authService.registerAdmin(request);
+    public ResponseEntity<BaseObjectResponse<AuthResponse>> registerUserAdmin(@Valid @RequestBody RegisterRequest request) {
+        BaseObjectResponse<AuthResponse> response = service.registerAdmin(request);
         return ResponseEntity.status(response.status()).body(response);
     }
 

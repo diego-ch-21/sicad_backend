@@ -1,7 +1,7 @@
 package com.sicad.sicad_backend.service.impl;
 
-import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
+import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioCreateRequest;
 import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioDetalleResponse;
 import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioUpdateRequest;
@@ -30,7 +30,7 @@ public class PlanDeEstudioServiceImpl extends CRUDImpl<PlanDeEstudio, Integer> i
         return planRepo;
     }
 
-    public GenericObjectResponse<PlanDeEstudioDetalleResponse> registrarPlan(PlanDeEstudioCreateRequest request) {
+    public BaseObjectResponse<PlanDeEstudioDetalleResponse> registrarPlan(PlanDeEstudioCreateRequest request) {
 
         // 2. Generar código único (suponiendo código numérico de 6 dígitos)
         Integer codigo;
@@ -48,13 +48,13 @@ public class PlanDeEstudioServiceImpl extends CRUDImpl<PlanDeEstudio, Integer> i
         planRepo.save(plan);
 
         PlanDeEstudioDetalleResponse dto = modelMapper.map(plan, PlanDeEstudioDetalleResponse.class);
-        return new GenericObjectResponse<>(201, "Plan de Estudio registrado exitosamente", dto);
+        return new BaseObjectResponse<>(201, "Plan de Estudio registrado exitosamente", dto);
     }
 
-    public GenericObjectResponse<PlanDeEstudioDetalleResponse> actualizarPlan(Integer idPlan, PlanDeEstudioUpdateRequest request) {
+    public BaseObjectResponse<PlanDeEstudioDetalleResponse> actualizarPlan(Integer idPlan, PlanDeEstudioUpdateRequest request) {
         PlanDeEstudio plan = planRepo.findById(idPlan).orElse(null);
         if (plan == null) {
-            return new GenericObjectResponse<>(404, "Plan de Estudio no encontrado", null);
+            return new BaseObjectResponse<>(404, "Plan de Estudio no encontrado", null);
         }
 
         // Actualizar nombre si viene
@@ -65,14 +65,14 @@ public class PlanDeEstudioServiceImpl extends CRUDImpl<PlanDeEstudio, Integer> i
         planRepo.save(plan);
 
         PlanDeEstudioDetalleResponse dto = modelMapper.map(plan, PlanDeEstudioDetalleResponse.class);
-        return new GenericObjectResponse<>(200, "Plan de Estudio actualizado exitosamente", dto);
+        return new BaseObjectResponse<>(200, "Plan de Estudio actualizado exitosamente", dto);
     }
-    public GenericReponse<PlanDeEstudioDetalleResponse> registrarPlanesMultiples(List<PlanDeEstudioCreateRequest> requests) {
+    public BaseListReponse<PlanDeEstudioDetalleResponse> registrarPlanesMultiples(List<PlanDeEstudioCreateRequest> requests) {
         List<PlanDeEstudioDetalleResponse> registrados = new ArrayList<>();
         int errorCount = 0;
 
         for (PlanDeEstudioCreateRequest request : requests) {
-            GenericObjectResponse<PlanDeEstudioDetalleResponse> response = registrarPlan(request);
+            BaseObjectResponse<PlanDeEstudioDetalleResponse> response = registrarPlan(request);
             if (response.status() == 201 && response.data() != null) {
                 registrados.add(response.data());
             } else {
@@ -81,24 +81,24 @@ public class PlanDeEstudioServiceImpl extends CRUDImpl<PlanDeEstudio, Integer> i
         }
 
         String mensaje = String.format("Planes registrados: %d. Fallidos: %d.", registrados.size(), errorCount);
-        return new GenericReponse<>(201, mensaje, registrados.isEmpty() ? null : registrados);
+        return new BaseListReponse<>(201, mensaje, registrados.isEmpty() ? null : registrados);
     }
-    public GenericObjectResponse<String> eliminarPlanDeEstudio(Integer idPlanDeEstudio) {
+    public BaseObjectResponse<String> eliminarPlanDeEstudio(Integer idPlanDeEstudio) {
         // Validación de parámetro
         if (idPlanDeEstudio == null) {
-            return new GenericObjectResponse<>(400, "idPlanDeEstudio no proporcionado", null);
+            return new BaseObjectResponse<>(400, "idPlanDeEstudio no proporcionado", null);
         }
 
         // Validar existencia del curso
         PlanDeEstudio planDeEstudio = planRepo.findById(idPlanDeEstudio).orElse(null);
         if (planDeEstudio == null) {
-            return new GenericObjectResponse<>(404, "Plan de estudio no encontrado", null);
+            return new BaseObjectResponse<>(404, "Plan de estudio no encontrado", null);
         }
 
         // desabilitar
         planDeEstudio.setEnabled(false);
         planRepo.save(planDeEstudio);
-        return new GenericObjectResponse<>(200, "se elimino el Plan de estudio exitosamente", null);
+        return new BaseObjectResponse<>(200, "se elimino el Plan de estudio exitosamente", null);
     }
 
     @Override

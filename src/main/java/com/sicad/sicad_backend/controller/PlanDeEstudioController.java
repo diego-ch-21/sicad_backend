@@ -1,7 +1,7 @@
 package com.sicad.sicad_backend.controller;
 
-import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
+import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioCreateRequest;
 import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioDetalleResponse;
 import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioUpdateRequest;
@@ -26,45 +26,45 @@ public class PlanDeEstudioController {
     private final ModelMapper modelMapper;
 
     @GetMapping("/listar")
-    public ResponseEntity<GenericReponse<PlanDeEstudioDetalleResponse>> findAll() throws Exception {
+    public ResponseEntity<BaseListReponse<PlanDeEstudioDetalleResponse>> findAll() throws Exception {
         List<PlanDeEstudioDetalleResponse> lista = service.findByEnabledTrue()
                 .stream()
                 .map(this::convertToResponseDTO)
                 .toList();
 
         return ResponseEntity.ok(
-                new GenericReponse<>(200, "Lista de Planes de Estudio", lista)
+                new BaseListReponse<>(200, "Lista de Planes de Estudio", lista)
         );
     }
 
     @GetMapping("/buscar/{idPlanDeEstudio}")
-    public ResponseEntity<GenericObjectResponse<PlanDeEstudioDetalleResponse>> findById(@PathVariable("idPlanDeEstudio") Integer id) throws Exception {
+    public ResponseEntity<BaseObjectResponse<PlanDeEstudioDetalleResponse>> findById(@PathVariable("idPlanDeEstudio") Integer id) throws Exception {
         PlanDeEstudio obj = service.findById(id);
         return ResponseEntity.ok(
-                new GenericObjectResponse<>(200, "Plan de Estudio encontrado", convertToResponseDTO(obj))
+                new BaseObjectResponse<>(200, "Plan de Estudio encontrado", convertToResponseDTO(obj))
         );
     }
 
     @PostMapping("/insertar")
-    public ResponseEntity<GenericObjectResponse<PlanDeEstudioDetalleResponse>> registrar(@Valid @RequestBody PlanDeEstudioCreateRequest request) {
-        GenericObjectResponse<PlanDeEstudioDetalleResponse> response = serviceImpl.registrarPlan(request);
+    public ResponseEntity<BaseObjectResponse<PlanDeEstudioDetalleResponse>> registrar(@Valid @RequestBody PlanDeEstudioCreateRequest request) {
+        BaseObjectResponse<PlanDeEstudioDetalleResponse> response = serviceImpl.registrarPlan(request);
         return ResponseEntity.status(response.status()).body(response);
     }
 
     @PostMapping("/insertar-all")
-    public ResponseEntity<GenericReponse<PlanDeEstudioDetalleResponse>> registrarAll(@Valid @RequestBody List<PlanDeEstudioCreateRequest> requestAll) {
-        GenericReponse<PlanDeEstudioDetalleResponse> response = serviceImpl.registrarPlanesMultiples(requestAll);
+    public ResponseEntity<BaseListReponse<PlanDeEstudioDetalleResponse>> registrarAll(@Valid @RequestBody List<PlanDeEstudioCreateRequest> requestAll) {
+        BaseListReponse<PlanDeEstudioDetalleResponse> response = serviceImpl.registrarPlanesMultiples(requestAll);
         return ResponseEntity.status(response.status()).body(response);
     }
 
     @PutMapping("/actualizar/{idPlanDeEstudio}")
-    public ResponseEntity<GenericObjectResponse<PlanDeEstudioDetalleResponse>> actualizar(@PathVariable("idPlanDeEstudio") Integer id, @Valid @RequestBody PlanDeEstudioUpdateRequest dto) {
-        GenericObjectResponse<PlanDeEstudioDetalleResponse> response = serviceImpl.actualizarPlan(id, dto);
+    public ResponseEntity<BaseObjectResponse<PlanDeEstudioDetalleResponse>> actualizar(@PathVariable("idPlanDeEstudio") Integer id, @Valid @RequestBody PlanDeEstudioUpdateRequest dto) {
+        BaseObjectResponse<PlanDeEstudioDetalleResponse> response = serviceImpl.actualizarPlan(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }
     @DeleteMapping("/eliminar/{idPlanEstudio}")
-    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idPlanEstudio") Integer id) {
-        GenericObjectResponse<String> response = serviceImpl.eliminarPlanDeEstudio(id);
+    public ResponseEntity<BaseObjectResponse<String>> delete(@PathVariable("idPlanEstudio") Integer id) {
+        BaseObjectResponse<String> response = serviceImpl.eliminarPlanDeEstudio(id);
         return ResponseEntity.status(response.status()).body(response);
     }
 

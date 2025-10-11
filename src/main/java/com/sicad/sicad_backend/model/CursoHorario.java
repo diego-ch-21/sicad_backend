@@ -30,8 +30,9 @@ public class CursoHorario {
             foreignKey = @ForeignKey(name = "FK_CURSO_HORARIO_CURSO"))
     private Curso curso;
 
-    @OneToOne
-    @JoinColumn(name = "id_aula", nullable = true)
+    @ManyToOne
+    @JoinColumn(name = "id_aula", nullable = true,
+            foreignKey = @ForeignKey(name = "FK_CURSO_HORARIO_AULA"))
     private Aula aula;
 
     @Column(nullable = false, name = "tipo_sesion")

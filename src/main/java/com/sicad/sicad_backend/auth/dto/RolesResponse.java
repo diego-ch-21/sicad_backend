@@ -19,6 +19,5 @@ public class RolesResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private DocenteUsuarioResponse docente;
     private DirectorUsuarioResponse director;
-    private JefeDepartamentoUsuarioResponse jefeDepatamento;
     private LogisticaUsuarioResponse logistica;
 }

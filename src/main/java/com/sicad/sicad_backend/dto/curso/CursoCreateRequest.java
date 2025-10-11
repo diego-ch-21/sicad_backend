@@ -1,8 +1,6 @@
 package com.sicad.sicad_backend.dto.curso;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sicad.sicad_backend.dto.cursoHorario.CursoHorarioCreateRequest;
-import jakarta.validation.constraints.NotBlank;
+import com.sicad.sicad_backend.dto.cursoHorario.HorarioCreateRequest;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,6 +27,6 @@ public class CursoCreateRequest {
 
     private String grupo=null;
 
-    private List<CursoHorarioCreateRequest> cursoHorario;
+    private List<HorarioCreateRequest> cursoHorario;
 
 }

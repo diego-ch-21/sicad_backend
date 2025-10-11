@@ -1,16 +1,13 @@
 package com.sicad.sicad_backend.controller;
 
-import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
+import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.director.DirectorCreateRequest;
-import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.director.DirectorDetalleResponse;
 import com.sicad.sicad_backend.dto.director.DirectorUpdateRequest;
-import com.sicad.sicad_backend.model.Director;
-import com.sicad.sicad_backend.service.impl.DirectorServiceImpl;
 import com.sicad.sicad_backend.service.interfaces.IDirectorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,56 +19,47 @@ import java.util.List;
 public class DirectorController {
 
     private final IDirectorService service;
-    private final DirectorServiceImpl serviceImpl;
-    private final ModelMapper modelMapper;
 
     @GetMapping("/listar")
-    public ResponseEntity<GenericReponse<DirectorDetalleResponse>> findAll() throws Exception {
-        List<DirectorDetalleResponse> lista = service.findByEnabledTrue()
-                .stream()
-                .map(this::convertToResponseDTO)
-                .toList();
-        return ResponseEntity.ok(
-                new GenericReponse<>(200, "Lista de Directores", lista)
-        );
+    public ResponseEntity<BaseListReponse<DirectorDetalleResponse>>
+            listar() throws Exception {
+        BaseListReponse<DirectorDetalleResponse> response = service.listar();
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/buscar/{idDirector}")
-    public ResponseEntity<GenericObjectResponse<DirectorDetalleResponse>> findById(@PathVariable("idDirector") Integer id) throws Exception {
-        Director obj = service.findById(id);
-        return ResponseEntity.ok(
-                new GenericObjectResponse<>(200, "Director encontrado",convertToResponseDTO(obj))
-        );
+    public ResponseEntity<BaseObjectResponse<DirectorDetalleResponse>>
+            buscar(@PathVariable("idDirector") Integer id) {
+        BaseObjectResponse<DirectorDetalleResponse> response = service.buscar(id);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/insertar")
-    public ResponseEntity<GenericObjectResponse<DirectorDetalleResponse>> registrarDocente(@Valid @RequestBody DirectorCreateRequest request) {
-        GenericObjectResponse<DirectorDetalleResponse> response = serviceImpl.registrarDirector(request);
+    public ResponseEntity<BaseObjectResponse<DirectorDetalleResponse>>
+            registrar(@Valid @RequestBody DirectorCreateRequest request) {
+        BaseObjectResponse<DirectorDetalleResponse> response = service.registrar(request);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+    @PostMapping("/insertar-all")
+    public ResponseEntity<BaseListReponse<DirectorDetalleResponse>>
+    registrarAll(@Valid @RequestBody List<DirectorCreateRequest> request) {
+        //BaseListReponse<DirectorDetalleResponse> response = service.registrarAll(request);
+        BaseListReponse<DirectorDetalleResponse> response =
+                new BaseListReponse<>(200, "funcionalidad no implementada", List.of());
         return ResponseEntity.status(response.status()).body(response);
     }
 
     @PutMapping("/actualizar/{idDirector}")
-    public ResponseEntity<GenericObjectResponse<DirectorDetalleResponse>>
-        update(@Valid @PathVariable("idDirector") Integer id, @Valid @RequestBody DirectorUpdateRequest dto) throws Exception {
-        GenericObjectResponse<DirectorDetalleResponse> response = serviceImpl.actualizarDirector(id, dto);
+    public ResponseEntity<BaseObjectResponse<DirectorDetalleResponse>>
+            actualizar(@PathVariable("idDirector") Integer id, @Valid @RequestBody DirectorUpdateRequest dto) {
+        BaseObjectResponse<DirectorDetalleResponse> response = service.actualizar(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }
 
     @DeleteMapping("/eliminar/{idDirector}")
-    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idDirector") Integer id) {
-        GenericObjectResponse<String> response = serviceImpl.eliminarDirector(id);
+    public ResponseEntity<BaseObjectResponse<String>>
+            eliminar(@PathVariable("idDirector") Integer id) {
+        BaseObjectResponse<String> response = service.eliminar(id);
         return ResponseEntity.status(response.status()).body(response);
-    }
-
-
-    private DirectorCreateRequest convertToDTO(Director obj) {
-        return modelMapper.map(obj, DirectorCreateRequest.class);
-    }
-    private DirectorDetalleResponse convertToResponseDTO(Director obj) {
-        return modelMapper.map(obj, DirectorDetalleResponse.class);
-    }
-
-    private Director convertToEntity(DirectorCreateRequest dto) {
-        return modelMapper.map(dto, Director.class);
     }
 }

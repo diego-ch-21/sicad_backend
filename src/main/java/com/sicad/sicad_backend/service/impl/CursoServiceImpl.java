@@ -1,7 +1,7 @@
 package com.sicad.sicad_backend.service.impl;
 
-import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
+import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.curso.*;
 import com.sicad.sicad_backend.dto.cursoHorario.*;
 import com.sicad.sicad_backend.model.*;
@@ -10,7 +10,6 @@ import com.sicad.sicad_backend.repository.interfaces.*;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.ICursoService;
 import com.sicad.sicad_backend.utils.CodigoGeneratorUtil;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -18,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -40,23 +40,23 @@ public class CursoServiceImpl
         return cursoRepo;
     }
 
-    public GenericReponse<CursoDetalleResponse> listarCursosConHorarios() {
+    public BaseListReponse<CursoDetalleResponse> listarCursosConHorarios() {
         List<Curso> cursos = cursoRepo.findAllWithHorarios();
         if(cursos.isEmpty()) {
-            return new GenericReponse<>(200, "No se encontraron cursos", null);
+            return new BaseListReponse<>(200, "No se encontraron cursos", null);
         }
 
         List<CursoDetalleResponse> responseList = cursos.stream()
                 .map(curso -> modelMapper.map(curso, CursoDetalleResponse.class))
                 .toList();
 
-        return new GenericReponse<>(200, "Lista de Cursos", responseList);
+        return new BaseListReponse<>(200, "Lista de Cursos", responseList);
     }
 
-    public GenericReponse<CursoDetalleResponse> listarCursosPorCicloAcademico(Integer idCicloAcademico) {
+    public BaseListReponse<CursoDetalleResponse> listarCursosPorCicloAcademico(Integer idCicloAcademico) {
         CicloAcademico cicloAcademico = cicloAcademicoRepo.findById(idCicloAcademico).orElse(null);
         if (cicloAcademico == null) {
-            return new GenericReponse<>(404, "Ciclo académico no encontrado", null);
+            return new BaseListReponse<>(404, "Ciclo académico no encontrado", null);
         }
         List<Curso> cursos = cursoRepo.buscarPorCicloAcademico(idCicloAcademico);
 
@@ -64,26 +64,26 @@ public class CursoServiceImpl
                 .map(curso -> modelMapper.map(curso, CursoDetalleResponse.class))
                 .toList();
 
-        return new GenericReponse<>(200, "Lista de Cursos por ciclo academico", responseList);
+        return new BaseListReponse<>(200, "Lista de Cursos por ciclo academico", responseList);
     }
 
-    public GenericObjectResponse<CursoDetalleResponse> registrarCurso(CursoCreateRequest request) {
+    public BaseObjectResponse<CursoDetalleResponse> registrarCurso(CursoCreateRequest request) {
         // Validaciones de entidades relacionadas (sin cambios)
         Asignatura asignatura = asignaturaRepo.findById(request.getIdAsignatura()).orElse(null);
         if (asignatura == null)
-            return new GenericObjectResponse<>(404, "Asignatura no encontrada", null);
+            return new BaseObjectResponse<>(404, "Asignatura no encontrada", null);
 
         PlanDeEstudio plan = planDeEstudioRepo.findById(request.getIdPlanDeEstudio()).orElse(null);
         if (plan == null)
-            return new GenericObjectResponse<>(404, "Plan de estudio no encontrado", null);
+            return new BaseObjectResponse<>(404, "Plan de estudio no encontrado", null);
 
         Escuela escuela = escuelaRepo.findById(request.getIdEscuela()).orElse(null);
         if (escuela == null)
-            return new GenericObjectResponse<>(404, "Escuela no encontrada", null);
+            return new BaseObjectResponse<>(404, "Escuela no encontrada", null);
 
         CicloAcademico ciclo = cicloAcademicoRepo.findById(request.getIdCicloAcademico()).orElse(null);
         if (ciclo == null)
-            return new GenericObjectResponse<>(404, "Ciclo académico no encontrado", null);
+            return new BaseObjectResponse<>(404, "Ciclo académico no encontrado", null);
 
         // Generar código único
         String codigoCurso;
@@ -106,7 +106,7 @@ public class CursoServiceImpl
         // Si no se proporcionan horarios
         if (request.getCursoHorario() == null || request.getCursoHorario().isEmpty()) {
             CursoDetalleResponse dto = modelMapper.map(curso, CursoDetalleResponse.class);
-            return new GenericObjectResponse<>(201, "Curso registrado sin horarios", dto);
+            return new BaseObjectResponse<>(201, "Curso registrado sin horarios", dto);
         }
 
         int registrados = 0;
@@ -117,7 +117,7 @@ public class CursoServiceImpl
             cursoResponse.setCursoHorario(new ArrayList<>());
         }
 
-        for (CursoHorarioCreateRequest horarioReq : request.getCursoHorario()) {
+        for (HorarioCreateRequest horarioReq : request.getCursoHorario()) {
             try {
                 int horaInicio = Integer.parseInt(horarioReq.getHoraInicio().split(":")[0]);
                 int horaFin = Integer.parseInt(horarioReq.getHoraFin().split(":")[0]);
@@ -130,6 +130,16 @@ public class CursoServiceImpl
                 Time horaInicioTime = Time.valueOf(String.format("%02d:00:00", horaInicio));
                 Time horaFinTime = Time.valueOf(String.format("%02d:00:00", horaFin));
 
+                Aula aula =null;
+                if(horarioReq.getIdAula() != null) {
+                    Optional<Aula> aulaObject = aulaRepo.isAula(horarioReq.getIdAula());
+                    if(!aulaObject.isPresent()){
+                        return new BaseObjectResponse<>(404, "Aula no encontrada", null);
+                    } else {
+                        aula = (Aula) aulaObject.get();
+                    }
+                }
+
                 CursoHorario horario = CursoHorario.builder()
                         .tipoSesion(horarioReq.getTipoSesion())
                         .diaSemana(horarioReq.getDiaSemana())
@@ -137,12 +147,13 @@ public class CursoServiceImpl
                         .horaFin(horaFinTime)
                         .duracionHoras(horarioReq.getDuracionHoras())
                         .curso(curso)
+                        .aula(aula)
                         .enabled(true)
                         .build();
 
                 cursoHorarioRepo.save(horario);
 
-                CursoHorarioDetalleResponse horarioDto = modelMapper.map(horario, CursoHorarioDetalleResponse.class);
+                HorarioDetalleResponse horarioDto = modelMapper.map(horario, HorarioDetalleResponse.class);
                 cursoResponse.getCursoHorario().add(horarioDto);
                 registrados++;
             } catch (Exception e) {
@@ -151,21 +162,21 @@ public class CursoServiceImpl
         }
 
         String mensaje = String.format("Curso registrado. Horarios registrados: %d, fallidos: %d", registrados, fallidos);
-        return new GenericObjectResponse<>(201, mensaje, cursoResponse);
+        return new BaseObjectResponse<>(201, mensaje, cursoResponse);
     }
 
-    public GenericObjectResponse<CursoDetalleResponse> actualizarCurso(Integer idCurso, CursoUpdateRequest request) {
+    public BaseObjectResponse<CursoDetalleResponse> actualizarCurso(Integer idCurso, CursoUpdateRequest request) {
         // Validar si el curso existe
         Curso curso = cursoRepo.findById(idCurso).orElse(null);
         if (curso == null) {
-            return new GenericObjectResponse<>(404, "Curso no encontrado", null);
+            return new BaseObjectResponse<>(404, "Curso no encontrado", null);
         }
 
         // Validaciones de entidades relacionadas si se envían en la request
         if (request.getIdAsignatura() != null) {
             Asignatura asignatura = asignaturaRepo.findById(request.getIdAsignatura()).orElse(null);
             if (asignatura == null) {
-                return new GenericObjectResponse<>(404, "Asignatura no encontrada", null);
+                return new BaseObjectResponse<>(404, "Asignatura no encontrada", null);
             }
             curso.setAsignatura(asignatura);
         }
@@ -173,7 +184,7 @@ public class CursoServiceImpl
         if (request.getIdPlanDeEstudio() != null) {
             PlanDeEstudio plan = planDeEstudioRepo.findById(request.getIdPlanDeEstudio()).orElse(null);
             if (plan == null) {
-                return new GenericObjectResponse<>(404, "Plan de estudio no encontrado", null);
+                return new BaseObjectResponse<>(404, "Plan de estudio no encontrado", null);
             }
             curso.setPlanDeEstudio(plan);
         }
@@ -181,7 +192,7 @@ public class CursoServiceImpl
         if (request.getIdEscuela() != null) {
             Escuela escuela = escuelaRepo.findById(request.getIdEscuela()).orElse(null);
             if (escuela == null) {
-                return new GenericObjectResponse<>(404, "Escuela no encontrada", null);
+                return new BaseObjectResponse<>(404, "Escuela no encontrada", null);
             }
             curso.setEscuela(escuela);
         }
@@ -189,7 +200,7 @@ public class CursoServiceImpl
         if (request.getIdCicloAcademico() != null) {
             CicloAcademico ciclo = cicloAcademicoRepo.findById(request.getIdCicloAcademico()).orElse(null);
             if (ciclo == null) {
-                return new GenericObjectResponse<>(404, "Ciclo académico no encontrado", null);
+                return new BaseObjectResponse<>(404, "Ciclo académico no encontrado", null);
             }
             curso.setCicloAcademico(ciclo);
         }
@@ -203,16 +214,16 @@ public class CursoServiceImpl
 
         // Mapear a DTO de respuesta
         CursoDetalleResponse dto = modelMapper.map(curso, CursoDetalleResponse.class);
-        return new GenericObjectResponse<>(200, "Curso actualizado exitosamente", dto);
+        return new BaseObjectResponse<>(200, "Curso actualizado exitosamente", dto);
     }
 
 
-    public GenericReponse<CursoDetalleResponse> registrarCursosMultiples(List<CursoCreateRequest> requests) {
+    public BaseListReponse<CursoDetalleResponse> registrarCursosMultiples(List<CursoCreateRequest> requests) {
         List<CursoDetalleResponse> registrados = new ArrayList<>();
         int errorCount = 0;
 
         for (CursoCreateRequest request : requests) {
-            GenericObjectResponse<CursoDetalleResponse> response = registrarCurso(request);
+            BaseObjectResponse<CursoDetalleResponse> response = registrarCurso(request);
             if (response.status() == 201 && response.data() != null) {
                 registrados.add(response.data());
             } else {
@@ -221,13 +232,33 @@ public class CursoServiceImpl
         }
 
         String mensaje = String.format("Cursos registrados: %d. Fallidos: %d.", registrados.size(), errorCount);
-        return new GenericReponse<>(201, mensaje,registrados);
+        return new BaseListReponse<>(201, mensaje,registrados);
     }
 
-    public GenericObjectResponse<HorarioDetalleResponse> registrarCursoHorario(Integer idCurso, HorarioCreateRequest request) {
+    public BaseObjectResponse<String> eliminarCurso(Integer idCurso) {
+        // Validación de parámetro
+        if (idCurso == null) {
+            return new BaseObjectResponse<>(400, "idCurso no proporcionado", null);
+        }
+
+        // Validar existencia del curso
         Curso curso = cursoRepo.findById(idCurso).orElse(null);
         if (curso == null) {
-            return new GenericObjectResponse<>(404, "Curso no encontrado", null);
+            return new BaseObjectResponse<>(404, "Curso  no encontrado", null);
+        }
+
+        // desabilitar
+        curso.setEnabled(false);
+        cursoRepo.save(curso);
+        return new BaseObjectResponse<>(200, "se elimino el curso exitosamente", null);
+    }
+
+    //-------------------------------------------------------------------------------------------------------------------------
+
+    public BaseObjectResponse<HorarioDetalleResponse> registrarCursoHorario(Integer idCurso, HorarioCreateRequest request) {
+        Curso curso = cursoRepo.findById(idCurso).orElse(null);
+        if (curso == null) {
+            return new BaseObjectResponse<>(404, "Curso no encontrado", null);
         }
 
         try {
@@ -235,12 +266,12 @@ public class CursoServiceImpl
             int horaFin = Integer.parseInt(request.getHoraFin().split(":")[0]);
 
             if (horaFin <= horaInicio) {
-                return new GenericObjectResponse<>(400, "La hora de fin debe ser posterior a la hora de inicio", null);
+                return new BaseObjectResponse<>(400, "La hora de fin debe ser posterior a la hora de inicio", null);
             }
 
             int duracionCalculada = horaFin - horaInicio;
             if (duracionCalculada != request.getDuracionHoras()) {
-                return new GenericObjectResponse<>(400,
+                return new BaseObjectResponse<>(400,
                         "La duración no coincide con la diferencia entre hora inicio y fin", null);
             }
 
@@ -251,7 +282,7 @@ public class CursoServiceImpl
             if(request.getIdAula() !=null){
                 aulaObj = aulaRepo.getById(request.getIdAula());
                 if(aulaObj == null) {
-                    return new GenericObjectResponse<>(400, "Aula no encontrada", null);
+                    return new BaseObjectResponse<>(400, "Aula no encontrada", null);
                 }
             }
 
@@ -269,23 +300,23 @@ public class CursoServiceImpl
             cursoHorarioRepo.save(horario);
 
             HorarioDetalleResponse dto = modelMapper.map(horario, HorarioDetalleResponse.class);
-            return new GenericObjectResponse<>(201, String.format("Horario del idCurso=(%d) registrado exitosamente", idCurso),dto);
+            return new BaseObjectResponse<>(201, String.format("Horario del idCurso=(%d) registrado exitosamente", idCurso),dto);
 
         } catch (Exception e) {
-            return new GenericObjectResponse<>(400, "Error al procesar las horas o guardar el horario", null);
+            return new BaseObjectResponse<>(400, "Error al procesar las horas o guardar el horario", null);
         }
     }
 
-    public GenericReponse<HorarioDetalleResponse> registrarVariosCursoHorario(Integer idCurso, List<HorarioCreateRequest> requests) {
+    public BaseListReponse<HorarioDetalleResponse> registrarVariosCursoHorario(Integer idCurso, List<HorarioCreateRequest> requests) {
         Curso curso = cursoRepo.findById(idCurso).orElse(null);
         if (curso == null) {
-            return new GenericReponse<>(404, "Curso no encontrado", null);
+            return new BaseListReponse<>(404, "Curso no encontrado", null);
         }
         List<HorarioDetalleResponse> horariosRegistrados = new ArrayList<>();
         int fallidos = 0;
 
         for (HorarioCreateRequest req : requests) {
-            GenericObjectResponse<HorarioDetalleResponse> response = registrarCursoHorario(idCurso, req);
+            BaseObjectResponse<HorarioDetalleResponse> response = registrarCursoHorario(idCurso, req);
             if (response.status() == 201 && response.data() != null) {
                 horariosRegistrados.add(response.data());
             } else {
@@ -294,51 +325,32 @@ public class CursoServiceImpl
         }
 
         String mensaje = String.format("Horarios para idCurso=(%d) registrados: %d, fallidos: %d", idCurso, horariosRegistrados.size(), fallidos);
-        return new GenericReponse<>(201, mensaje, horariosRegistrados);
+        return new BaseListReponse<>(201, mensaje, horariosRegistrados);
     }
 
-    public GenericObjectResponse<String> eliminarCurso(Integer idCurso) {
-        // Validación de parámetro
-        if (idCurso == null) {
-            return new GenericObjectResponse<>(400, "idCurso no proporcionado", null);
-        }
 
-        // Validar existencia del curso
-        Curso curso = cursoRepo.findById(idCurso).orElse(null);
-        if (curso == null) {
-            return new GenericObjectResponse<>(404, "Curso  no encontrado", null);
-        }
-
-        // desabilitar
-        curso.setEnabled(false);
-        for(CursoHorario i : curso.getCursoHorario()){
-            i.setEnabled(false);
-        }
-        cursoRepo.save(curso);
-        return new GenericObjectResponse<>(200, "se elimino el curso exitosamente", null);
-    }
-    public GenericObjectResponse<String> eliminarCursoHorario(Integer idCursoHorario) {
+    public BaseObjectResponse<String> eliminarCursoHorario(Integer idCursoHorario) {
         // Validación de parámetro
         if (idCursoHorario == null) {
-            return new GenericObjectResponse<>(400, "idCursoHorario no proporcionado", null);
+            return new BaseObjectResponse<>(400, "idCursoHorario no proporcionado", null);
         }
 
         // Validar existencia del curso
         CursoHorario cursoHorario = cursoHorarioRepo.findById(idCursoHorario).orElse(null);
         if (cursoHorario == null) {
-            return new GenericObjectResponse<>(404, "CursoHorario  no encontrado", null);
+            return new BaseObjectResponse<>(404, "CursoHorario  no encontrado", null);
         }
 
         // desabilitar
         cursoHorario.setEnabled(false);
         cursoHorarioRepo.save(cursoHorario);
-        return new GenericObjectResponse<>(200, "se elimino el CursoHorario exitosamente", null);
+        return new BaseObjectResponse<>(200, "se elimino el CursoHorario exitosamente", null);
     }
-    public GenericObjectResponse<HorarioDetalleResponse> actualizarCursoHorario(Integer idCursoHorario, HorarioUpdateRequest request) {
+    public BaseObjectResponse<HorarioDetalleResponse> actualizarCursoHorario(Integer idCursoHorario, HorarioUpdateRequest request) {
         // Validar existencia del horario
         CursoHorario horario = cursoHorarioRepo.findById(idCursoHorario).orElse(null);
         if (horario == null) {
-            return new GenericObjectResponse<>(404, "CursoHorario no encontrado", null);
+            return new BaseObjectResponse<>(404, "CursoHorario no encontrado", null);
         }
 
         try {
@@ -358,12 +370,12 @@ public class CursoServiceImpl
                 Time horaFinTime = Time.valueOf(request.getHoraFin());
 
                 if (horaFinTime.before(horaInicioTime)) {
-                    return new GenericObjectResponse<>(400, "La hora de fin debe ser posterior a la de inicio", null);
+                    return new BaseObjectResponse<>(400, "La hora de fin debe ser posterior a la de inicio", null);
                 }
 
                 int duracionCalculada = (horaFinTime.getHours() - horaInicioTime.getHours());
                 if (request.getDuracionHoras() != null && !request.getDuracionHoras().equals(duracionCalculada)) {
-                    return new GenericObjectResponse<>(400, "La duración no coincide con la diferencia entre hora inicio y fin", null);
+                    return new BaseObjectResponse<>(400, "La duración no coincide con la diferencia entre hora inicio y fin", null);
                 }
 
                 horario.setHoraInicio(horaInicioTime);
@@ -383,7 +395,7 @@ public class CursoServiceImpl
             if(request.getIdAula() !=null){
                 Aula aulaObj = aulaRepo.getById(request.getIdAula());
                 if(aulaObj == null) {
-                    return new GenericObjectResponse<>(400, "Aula no encontrada", null);
+                    return new BaseObjectResponse<>(400, "Aula no encontrada", null);
                 } else {
                     horario.setAula(aulaObj);
                 }
@@ -393,10 +405,10 @@ public class CursoServiceImpl
             cursoHorarioRepo.save(horario);
 
             HorarioDetalleResponse dto = modelMapper.map(horario, HorarioDetalleResponse.class);
-            return new GenericObjectResponse<>(200, "Horario actualizado exitosamente", dto);
+            return new BaseObjectResponse<>(200, "Horario actualizado exitosamente", dto);
 
         } catch (Exception e) {
-            return new GenericObjectResponse<>(400, "Error al procesar la actualización del horario", null);
+            return new BaseObjectResponse<>(400, "Error al procesar la actualización del horario", null);
         }
     }
 

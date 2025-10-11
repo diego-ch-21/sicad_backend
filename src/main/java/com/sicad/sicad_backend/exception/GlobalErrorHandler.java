@@ -1,7 +1,7 @@
 package com.sicad.sicad_backend.exception;
 
 import com.sicad.sicad_backend.dto.base.CustomErrorResponse;
-import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -20,13 +20,13 @@ public class GlobalErrorHandler extends ResponseEntityExceptionHandler {
 
     //global
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<GenericReponse<CustomErrorResponse>> handleDefaultException(Exception ex, WebRequest request) {
+    public ResponseEntity<BaseListReponse<CustomErrorResponse>> handleDefaultException(Exception ex, WebRequest request) {
         CustomErrorResponse cer = new CustomErrorResponse(
                 LocalDateTime.now(),
                 ex.getMessage(),
                 request.getDescription(false)
         );
-        return new ResponseEntity<>(new GenericReponse<>(
+        return new ResponseEntity<>(new BaseListReponse<>(
                 500,
                 "Error interno del servidor",
                 List.of(cer)
@@ -35,13 +35,13 @@ public class GlobalErrorHandler extends ResponseEntityExceptionHandler {
 
     //especifico
     @ExceptionHandler(ModelNotFoundException.class)
-    public ResponseEntity<GenericReponse<CustomErrorResponse>> handleModelNotFoundException(ModelNotFoundException ex, WebRequest request) {
+    public ResponseEntity<BaseListReponse<CustomErrorResponse>> handleModelNotFoundException(ModelNotFoundException ex, WebRequest request) {
         CustomErrorResponse cer = new CustomErrorResponse(
                 LocalDateTime.now(),
                 ex.getMessage(),
                 request.getDescription(false)
         );
-        return new ResponseEntity<>(new GenericReponse<>(
+        return new ResponseEntity<>(new BaseListReponse<>(
                 404,
                 "Recurso no encontrado",
                 List.of(cer)
@@ -87,7 +87,7 @@ public class GlobalErrorHandler extends ResponseEntityExceptionHandler {
                 .toList();
 
         return new ResponseEntity<>(
-                new GenericReponse<>(400, "Error de validación", errores),
+                new BaseListReponse<>(400, "Error de validación", errores),
                 HttpStatus.BAD_REQUEST
         );
     }

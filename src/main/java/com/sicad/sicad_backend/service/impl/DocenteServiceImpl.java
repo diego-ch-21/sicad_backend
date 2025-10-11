@@ -1,14 +1,9 @@
 package com.sicad.sicad_backend.service.impl;
 
-import com.sicad.sicad_backend.dto.Especializacion.EspecializacionDetalleResponse;
-import com.sicad.sicad_backend.dto.Especializacion.EspecializacionResumenResponse;
-import com.sicad.sicad_backend.dto.asignacion.AsignacionResumenResponse;
-import com.sicad.sicad_backend.dto.base.GenericReponse;
-import com.sicad.sicad_backend.dto.curso.CursoDetalleResponse;
+import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadResumenResponse;
 import com.sicad.sicad_backend.dto.docente.*;
-import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.dto.preferencia.PreferenciaDetalleResponse;
+import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaResumenResponse;
 import com.sicad.sicad_backend.jwt.JwtService;
 import com.sicad.sicad_backend.model.*;
@@ -19,15 +14,11 @@ import com.sicad.sicad_backend.service.interfaces.IDocenteService;
 import com.sicad.sicad_backend.utils.CodigoGeneratorUtil;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,25 +41,25 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         return docenteRepo;
     }
 
-    public GenericObjectResponse<DocenteDetalleResponse> registrarDocente(DocenteCreateRequest request) {
+    public BaseObjectResponse<DocenteDetalleResponse> registrarDocente(DocenteCreateRequest request) {
 
         // 1. Verificar si el email ya está registrado
         if (usuarioRepo.findByEmail(request.getEmail()).isPresent()) {
-            return new GenericObjectResponse<>(409, "El correo ya está en uso", null);
+            return new BaseObjectResponse<>(409, "El correo ya está en uso", null);
         }
 
         // 2. Buscar entidades relacionadas
         Rol rol = rolRepo.findById(3).orElse(null); // Suponiendo que 3 = DOCENTE
         if (rol == null)
-            return new GenericObjectResponse<>(404, "Rol Docente no encontrado", null);
+            return new BaseObjectResponse<>(404, "Rol Docente no encontrado", null);
 
         Dedicacion dedicacion = dedicacionRepo.findById(request.getIdDedicacion()).orElse(null);
         if (dedicacion == null)
-            return new GenericObjectResponse<>(404, "Dedicación no encontrada", null);
+            return new BaseObjectResponse<>(404, "Dedicación no encontrada", null);
 
         Categoria categoria = categoriaRepo.findById(request.getIdCategoria()).orElse(null);
         if (categoria == null)
-            return new GenericObjectResponse<>(404, "Categoría no encontrada", null);
+            return new BaseObjectResponse<>(404, "Categoría no encontrada", null);
 
         // 3. Generar código único
         String codigoUsuario;
@@ -111,30 +102,30 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         // 6. Mapear y retornar
         DocenteDetalleResponse docenteDTO = modelMapper.map(docente, DocenteDetalleResponse.class);
 
-        return new GenericObjectResponse<>(201, "Docente registrado exitosamente", docenteDTO);
+        return new BaseObjectResponse<>(201, "Docente registrado exitosamente", docenteDTO);
     }
-    public GenericObjectResponse<DocenteDetalleResponse> actualizarDocente(Integer idDocente, DocenteUpdateRequest request) {
+    public BaseObjectResponse<DocenteDetalleResponse> actualizarDocente(Integer idDocente, DocenteUpdateRequest request) {
 
         // 1. Verificar existencia del docente
         Docente docente = docenteRepo.findById(idDocente).orElse(null);
         if (docente == null) {
-            return new GenericObjectResponse<>(404, "Docente no encontrado", null);
+            return new BaseObjectResponse<>(404, "Docente no encontrado", null);
         }
 
         // 2. Validar email si ha cambiado
         if (!docente.getUsuario().getEmail().equals(request.getEmail()) &&
                 usuarioRepo.findByEmail(request.getEmail()).isPresent()) {
-            return new GenericObjectResponse<>(409, "El correo ya está en uso", null);
+            return new BaseObjectResponse<>(409, "El correo ya está en uso", null);
         }
 
         // 3. Buscar entidades relacionadas
         Dedicacion dedicacion = dedicacionRepo.findById(request.getIdDedicacion()).orElse(null);
         if (dedicacion == null)
-            return new GenericObjectResponse<>(404, "Dedicación no encontrada", null);
+            return new BaseObjectResponse<>(404, "Dedicación no encontrada", null);
 
         Categoria categoria = categoriaRepo.findById(request.getIdCategoria()).orElse(null);
         if (categoria == null)
-            return new GenericObjectResponse<>(404, "Categoría no encontrada", null);
+            return new BaseObjectResponse<>(404, "Categoría no encontrada", null);
 
         // 4. Actualizar datos del Usuario
         Usuario usuario = docente.getUsuario();
@@ -153,26 +144,26 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
 
         // 6. Mapear y retornar
         DocenteDetalleResponse docenteDTO = modelMapper.map(docente, DocenteDetalleResponse.class);
-        return new GenericObjectResponse<>(200, "Docente actualizado exitosamente", docenteDTO);
+        return new BaseObjectResponse<>(200, "Docente actualizado exitosamente", docenteDTO);
     }
     //service para obtener un docente por usuario
-    public GenericObjectResponse<DocenteDetalleResponse> obtenerDocentePorUsuario(Integer idUsuario) {
+    public BaseObjectResponse<DocenteDetalleResponse> obtenerDocentePorUsuario(Integer idUsuario) {
         Usuario usuario = usuarioRepo.findById(idUsuario)
                 .orElseThrow(() -> null);
         if(usuario == null) {
-            return new GenericObjectResponse<>(404, "Usuario no encontrado", null);
+            return new BaseObjectResponse<>(404, "Usuario no encontrado", null);
         }
         if(usuario.getRol().getIdRol() != 3) {
-            return new GenericObjectResponse<>(404, "El usuario no es un docente", null);
+            return new BaseObjectResponse<>(404, "El usuario no es un docente", null);
 
         }
         Docente docente = docenteRepo.findByUsuario(usuario)
                 .orElseThrow(() ->(null));
         if(docente == null) {
-            return new GenericObjectResponse<>(404, "Docente no encontrado", null);
+            return new BaseObjectResponse<>(404, "Docente no encontrado", null);
         }
         DocenteDetalleResponse docenteDTO = modelMapper.map(docente, DocenteDetalleResponse.class);
-        return new GenericObjectResponse<>(201, "Docente encontrado exitosamente", docenteDTO);
+        return new BaseObjectResponse<>(201, "Docente encontrado exitosamente", docenteDTO);
     }
     private DocenteDetalleResponse registrarDocenteInterno(DocenteCreateRequest request) {
 
@@ -227,7 +218,7 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
     }
 
 
-    public GenericReponse<DocenteDetalleResponse> registrarDocentes(List<DocenteCreateRequest> requestList) {
+    public BaseListReponse<DocenteDetalleResponse> registrarDocentes(List<DocenteCreateRequest> requestList) {
         List<DocenteDetalleResponse> registrados = requestList.stream()
                 .map(this::registrarDocenteInterno)
                 .filter(dto -> dto != null)
@@ -240,39 +231,39 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         String mensaje;
         if (exitosos == 0) {
             mensaje = "No se registró ningún docente. Todos los registros fallaron.";
-            return new GenericReponse<>(409, mensaje, null);
+            return new BaseListReponse<>(409, mensaje, null);
         } else if (fallidos == 0) {
             mensaje =  exitosos + "docentes registrados exitosamente.";
         } else {
             mensaje = exitosos + " docentes registrados exitosamente. " + fallidos + " registros fallaron (posible correo duplicado o datos inválidos).";
         }
 
-        return new GenericReponse<>(201, mensaje, registrados);
+        return new BaseListReponse<>(201, mensaje, registrados);
     }
 
-    public GenericReponse<DocenteEspecializacionResponse> listarDocentesConEspecializaciones() {
+    public BaseListReponse<DocenteEspecializacionResponse> listarDocentesConEspecializaciones() {
         List<Docente> docentes = docenteRepo.findAllWithDocentesEspecializacion(); // trae docentes + especializaciones
 
         if (docentes.isEmpty()) {
-            return new GenericReponse<>(200, "No se encontraron docentes", null);
+            return new BaseListReponse<>(200, "No se encontraron docentes", null);
         }
 
         // Convertir a DTOs
         List<DocenteEspecializacionResponse> listaDTO = docentes.stream()
                 .map(this::convertToDocenteEspecializacion)
                 .collect(Collectors.toList());
-        return new GenericReponse<>(200, "Lista de docentes con especializaciones", listaDTO);
+        return new BaseListReponse<>(200, "Lista de docentes con especializaciones", listaDTO);
     }
 
-    public GenericReponse<DocentePreferenciaResponse> listarDocentesConPreferencias(Integer idCicloAcademico) {
+    public BaseListReponse<DocentePreferenciaResponse> listarDocentesConPreferencias(Integer idCicloAcademico) {
         if (idCicloAcademico == null) {
-            return new GenericReponse<>(400, "idCicloAcademico no proporcionado", null);
+            return new BaseListReponse<>(400, "idCicloAcademico no proporcionado", null);
         }
 
         List<Docente> docentes = docenteRepo.findAllWithDocentesPreferencia(); // trae docentes + preferencias
 
         if(docentes.isEmpty()) {
-            return new GenericReponse<>(200, "No se encontraron docentes", null);
+            return new BaseListReponse<>(200, "No se encontraron docentes", null);
         }
 
         List<DocentePreferenciaResponse> responseList = docentes.stream()
@@ -293,17 +284,17 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
                 })
                 .toList();
 
-        return new GenericReponse<>(200, "Lista de docentes con preferencias", responseList);
+        return new BaseListReponse<>(200, "Lista de docentes con preferencias", responseList);
     }
 
-    public GenericReponse<DocenteDisponibilidadResponse> listarDocentesConDisponibilidad(Integer idCicloAcademico) {
+    public BaseListReponse<DocenteDisponibilidadResponse> listarDocentesConDisponibilidad(Integer idCicloAcademico) {
         if (idCicloAcademico == null) {
-            return new GenericReponse<>(400, "idCicloAcademico no proporcionado", null);
+            return new BaseListReponse<>(400, "idCicloAcademico no proporcionado", null);
         }
         List<Docente> docentes = docenteRepo.findAllWithDocentesDisponibilidad(); // trae docentes + disponibilidad
 
         if(docentes.isEmpty()) {
-            return new GenericReponse<>(200, "No se encontraron docentes", null);
+            return new BaseListReponse<>(200, "No se encontraron docentes", null);
         }
 
         List<DocenteDisponibilidadResponse> responseList = docentes.stream()
@@ -324,26 +315,26 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
                 })
                 .toList();
 
-        return new GenericReponse<>(200, "Lista de docentes con preferencias", responseList);
+        return new BaseListReponse<>(200, "Lista de docentes con preferencias", responseList);
     }
 
     //solo docentes que tiene asigancione
-    public GenericReponse<DocenteAsignacionResponse> listarDocentesCargaConAsignaciones(
+    public BaseListReponse<DocenteAsignacionResponse> listarDocentesCargaConAsignaciones(
             Integer idCarga) {
         if (idCarga == null) {
-            return new GenericReponse<>(400, "idCarga no proporcionado", null);
+            return new BaseListReponse<>(400, "idCarga no proporcionado", null);
         }
 
         Boolean isCarga = cargaRepo.existsByIdCarga(idCarga);
         if(!isCarga) {
-            return new GenericReponse<>(200, "No se encontraron carga", null);
+            return new BaseListReponse<>(200, "No se encontraron carga", null);
         }
 
         // Trae todos los docentes con sus asignaciones filtradas
         List<Docente> docentes = docenteRepo.findAllWithAsignacionesByCargaYCiclo(idCarga);
 
         if (docentes.isEmpty()) {
-            return new GenericReponse<>(200, "No se encontraron docentes", null);
+            return new BaseListReponse<>(200, "No se encontraron docentes", null);
         }
 
         // Mapear entidades a DTOs usando modelMapper
@@ -351,25 +342,25 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
                 .map(this::convertToAsignacionResponseDTO)
                 .toList();
 
-        return new GenericReponse<>(200, "Lista de docentes con asignaciones", lista);
+        return new BaseListReponse<>(200, "Lista de docentes con asignaciones", lista);
     }
 
-    public GenericObjectResponse<String> eliminarDocente(Integer idDocente) {
+    public BaseObjectResponse<String> eliminarDocente(Integer idDocente) {
         // Validación de parámetro
         if (idDocente == null) {
-            return new GenericObjectResponse<>(400, "idDocente no proporcionado", null);
+            return new BaseObjectResponse<>(400, "idDocente no proporcionado", null);
         }
 
         // Validar existencia
         Docente docente = docenteRepo.findById(idDocente).orElse(null);
         if (docente == null) {
-            return new GenericObjectResponse<>(404, "Docente  no encontrado", null);
+            return new BaseObjectResponse<>(404, "Docente  no encontrado", null);
         }
 
         // desabilitar
         docente.setEnabled(false);
         docenteRepo.save(docente);
-        return new GenericObjectResponse<>(200, "se elimino el docente exitosamente", null);
+        return new BaseObjectResponse<>(200, "se elimino el docente exitosamente", null);
     }
 
     private DocenteAsignacionResponse convertToAsignacionResponseDTO(Docente obj) {

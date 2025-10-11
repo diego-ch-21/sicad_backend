@@ -1,11 +1,9 @@
 package com.sicad.sicad_backend.controller;
 
-import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
+import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.categoria.CategoriaCreateRequest;
-import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.categoria.CategoriaDetalleResponse;
-import com.sicad.sicad_backend.dto.categoria.CategoriaResumenResponse;
-import com.sicad.sicad_backend.dto.dedicacion.DedicacionDetalleResponse;
 import com.sicad.sicad_backend.model.Categoria;
 import com.sicad.sicad_backend.service.impl.CategoriaServiceImpl;
 import com.sicad.sicad_backend.service.interfaces.ICategoriaService;
@@ -28,57 +26,57 @@ public class CategoriaController {
     private final CategoriaServiceImpl serviceImpl;
 
     @GetMapping("/listar")
-    public ResponseEntity<GenericReponse<CategoriaDetalleResponse>> findAll() throws Exception {
+    public ResponseEntity<BaseListReponse<CategoriaDetalleResponse>> findAll() throws Exception {
         List<CategoriaDetalleResponse> lista = service.findByEnabledTrue()
                 .stream()
                 .map(this::convertToDetalle)
                 .toList();
         return ResponseEntity.ok(
-                new GenericReponse<>(200, "Lista de Categorías", lista)
+                new BaseListReponse<>(200, "Lista de Categorías", lista)
         );
     }
 
     @GetMapping("/buscar/{idCategoria}")
-    public ResponseEntity<GenericObjectResponse<CategoriaDetalleResponse>> findById(@PathVariable("idCategoria") Integer id) throws Exception {
+    public ResponseEntity<BaseObjectResponse<CategoriaDetalleResponse>> findById(@PathVariable("idCategoria") Integer id) throws Exception {
         Categoria obj = service.findById(id);
         return ResponseEntity.ok(
-                new GenericObjectResponse<>(200, "Categoría encontrada", convertToDetalle(obj))
+                new BaseObjectResponse<>(200, "Categoría encontrada", convertToDetalle(obj))
         );
     }
 
     @PostMapping("/insertar")
-    public ResponseEntity<GenericReponse<CategoriaDetalleResponse>> save(@Valid @RequestBody CategoriaCreateRequest dto) throws Exception {
+    public ResponseEntity<BaseListReponse<CategoriaDetalleResponse>> save(@Valid @RequestBody CategoriaCreateRequest dto) throws Exception {
         Categoria obj = convertToEntity(dto);
         obj.setEnabled(true);
         service.save(obj);
         return new ResponseEntity<>(
-                new GenericReponse<>(201, "Categoría creada", List.of(convertToDetalle(obj))),
+                new BaseListReponse<>(201, "Categoría creada", List.of(convertToDetalle(obj))),
                 HttpStatus.CREATED
         );
     }
     @PostMapping("/insertar-all")
-    public ResponseEntity<GenericReponse<CategoriaDetalleResponse>> saveAll(@Valid @RequestBody List<CategoriaCreateRequest> lista) throws Exception {
-        GenericReponse<CategoriaDetalleResponse> response = serviceImpl.saveAll(lista);
+    public ResponseEntity<BaseListReponse<CategoriaDetalleResponse>> saveAll(@Valid @RequestBody List<CategoriaCreateRequest> lista) throws Exception {
+        BaseListReponse<CategoriaDetalleResponse> response = serviceImpl.saveAll(lista);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PutMapping("/actualizar/{idCategoria}")
-    public ResponseEntity<GenericReponse<CategoriaDetalleResponse>> update(@PathVariable("idCategoria") Integer id, @Valid @RequestBody CategoriaCreateRequest dto) throws Exception {
+    public ResponseEntity<BaseListReponse<CategoriaDetalleResponse>> update(@PathVariable("idCategoria") Integer id, @Valid @RequestBody CategoriaCreateRequest dto) throws Exception {
         Categoria obj = service.update(id, convertToEntity(dto));
         return ResponseEntity.ok(
-                new GenericReponse<>(200, "Categoría actualizada", List.of(convertToDetalle(obj)))
+                new BaseListReponse<>(200, "Categoría actualizada", List.of(convertToDetalle(obj)))
         );
     }
 
     @DeleteMapping("/eliminar/{idCategoria}")
-    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idCategoria") Integer id) {
-        GenericObjectResponse<String> response = serviceImpl.eliminarCategoria(id);
+    public ResponseEntity<BaseObjectResponse<String>> delete(@PathVariable("idCategoria") Integer id) {
+        BaseObjectResponse<String> response = serviceImpl.eliminarCategoria(id);
         return ResponseEntity.status(response.status()).body(response);
     }
 
     @GetMapping("/buscar/docente/{idDocente}")
-    public ResponseEntity<GenericObjectResponse<CategoriaDetalleResponse>> buscarCategoriaSegunDocente(@PathVariable("idDocente") Integer id) throws Exception {
-        GenericObjectResponse<CategoriaDetalleResponse> response = serviceImpl.obtenerCategoria(id);
+    public ResponseEntity<BaseObjectResponse<CategoriaDetalleResponse>> buscarCategoriaSegunDocente(@PathVariable("idDocente") Integer id) throws Exception {
+        BaseObjectResponse<CategoriaDetalleResponse> response = serviceImpl.obtenerCategoria(id);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 

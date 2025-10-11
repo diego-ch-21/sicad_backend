@@ -1,7 +1,8 @@
 package com.sicad.sicad_backend.service.impl;
 
-import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.Enum.Modulo;
+import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
+import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.escuela.EscuelaCreateRequest;
 import com.sicad.sicad_backend.dto.escuela.EscuelaDetalleResponse;
 import com.sicad.sicad_backend.dto.escuela.EscuelaUpdateRequest;
@@ -12,12 +13,15 @@ import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.IEscuelaService;
 import com.sicad.sicad_backend.utils.CodigoGeneratorUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EscuelaServiceImpl
@@ -32,79 +36,99 @@ public class EscuelaServiceImpl
         return escuelaRepo;
     }
 
-    public GenericObjectResponse<EscuelaDetalleResponse> registrarEscuela(EscuelaCreateRequest request) {
+    @Override
+    public BaseListReponse<EscuelaDetalleResponse> listar() {
+        List<EscuelaDetalleResponse> lista = escuelaRepo.findByEnabledTrue()
+                .stream()
+                .map(this::convEscuelaDetalle)
+                .toList();
 
-        // 2. Generar código único
+            return new BaseListReponse<>(200,Modulo.ESCUELA.listado(), lista);
+    }
+
+    @Override
+    public BaseObjectResponse<EscuelaDetalleResponse> buscar(Integer idEscuela) {
+        Optional<Escuela> escuelaOpt = escuelaRepo.findByIdAndEnabledTrue(idEscuela);
+
+        if (escuelaOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.ESCUELA.noEncontrado(), null);
+        }
+
+        EscuelaDetalleResponse response = convEscuelaDetalle(escuelaOpt.get());
+        return new BaseObjectResponse<>(200, Modulo.ESCUELA.encontrado(), response);
+    }
+
+    @Override
+    public BaseObjectResponse<EscuelaDetalleResponse> registrar(EscuelaCreateRequest request) {
+
         String codigo;
         do {
             codigo = CodigoGeneratorUtil.generarCodigoNumerico(6);
         } while (escuelaRepo.existsByCodigo(codigo));
 
-        // 3. Crear y guardar Escuela
         Escuela escuela = Escuela.builder()
                 .nombre(request.getNombre())
                 .codigo(codigo)
                 .enabled(true)
                 .build();
-
         escuelaRepo.save(escuela);
 
-        EscuelaDetalleResponse dto = modelMapper.map(escuela, EscuelaDetalleResponse.class);
-        return new GenericObjectResponse<>(201, "Escuela registrada exitosamente", dto);
+        EscuelaDetalleResponse response = convEscuelaDetalle(escuela);
+        return new BaseObjectResponse<>(201, Modulo.ESCUELA.registrado(), response);
     }
-    public GenericReponse<EscuelaDetalleResponse> registrarEscuelaMultiples(List<EscuelaCreateRequest> requests) {
+
+    @Override
+    public BaseListReponse<EscuelaDetalleResponse> registrarAll(List<EscuelaCreateRequest> requests) {
         List<EscuelaDetalleResponse> registrados = new ArrayList<>();
         int errorCount = 0;
 
         for (EscuelaCreateRequest request : requests) {
-            GenericObjectResponse<EscuelaDetalleResponse> response = registrarEscuela(request);
-            if (response.status() == 201 && response.data() != null) {
-                registrados.add(response.data());
-            } else {
+            try {
+                BaseObjectResponse<EscuelaDetalleResponse> response = registrar(request);
+                if (response.status() == 201 && response.data() != null) {
+                    registrados.add(response.data());
+                } else {
+                    errorCount++;
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
                 errorCount++;
             }
         }
-
-        String mensaje = String.format("Cursos registrados: %d. Fallidos: %d.", registrados.size(), errorCount);
-        return new GenericReponse<>(201, mensaje,registrados);
-    }
-
-    public GenericObjectResponse<EscuelaDetalleResponse> actualizarEscuela(Integer idEscuela, EscuelaUpdateRequest request) {
-        // 1. Buscar la escuela
-        Escuela escuela = escuelaRepo.findById(idEscuela).orElse(null);
-        if (escuela == null) {
-            return new GenericObjectResponse<>(404, "Escuela no encontrada", null);
-        }
-
-        // 2. Actualizar nombre si viene
-        if (request.getNombre() != null && !request.getNombre().isBlank()) {
-            escuela.setNombre(request.getNombre());
-        }
-
-
-        // 5. Guardar y retornar
-        escuelaRepo.save(escuela);
-        EscuelaDetalleResponse dto = modelMapper.map(escuela, EscuelaDetalleResponse.class);
-        return new GenericObjectResponse<>(200, "Escuela actualizada exitosamente", dto);
-    }
-    public GenericObjectResponse<String> eliminarEscuela(Integer idEscuela) {
-        // Validación de parámetro
-        if (idEscuela == null) {
-            return new GenericObjectResponse<>(400, "idEscuela no proporcionado", null);
-        }
-        // Validar existencia del curso
-        Escuela escuela = escuelaRepo.findById(idEscuela).orElse(null);
-        if (escuela == null) {
-            return new GenericObjectResponse<>(404, "Escuela  no encontrado", null);
-        }
-        // desabilitar
-        escuela.setEnabled(false);
-        escuelaRepo.save(escuela);
-        return new GenericObjectResponse<>(200, "se elimino el escuela exitosamente", null);
+        return new BaseListReponse<>(201,Modulo.ESCUELA.resumenAllRegistro(registrados.size(), errorCount),registrados);
     }
 
     @Override
-    public List<Escuela> findByEnabledTrue() {
-        return escuelaRepo.findByEnabledTrue();
+    public BaseObjectResponse<EscuelaDetalleResponse> actualizar(Integer idEscuela, EscuelaUpdateRequest request) {
+        Optional<Escuela> escuelaOpt = escuelaRepo.findByIdAndEnabledTrue(idEscuela);
+
+        if (escuelaOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.ESCUELA.noEncontrado(), null);
+        }
+        Escuela escuela = escuelaOpt.get();
+        if (request.getNombre() != null && !request.getNombre().isBlank()) {
+            escuela.setNombre(request.getNombre());
+        }
+        escuelaRepo.save(escuela);
+        EscuelaDetalleResponse response = convEscuelaDetalle(escuela);
+        return new BaseObjectResponse<>(200, Modulo.ESCUELA.actualizado(), response);
     }
+
+    @Override
+    public BaseObjectResponse<String> eliminar(Integer idEscuela) {
+        Optional<Escuela> escuelaOpt = escuelaRepo.findByIdAndEnabledTrue(idEscuela);
+
+        if (escuelaOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.ESCUELA.noEncontrado(), null);
+        }
+        Escuela escuela = escuelaOpt.get();
+        escuela.setEnabled(false);
+        escuelaRepo.save(escuela);
+        return new BaseObjectResponse<>(200, Modulo.ESCUELA.eliminado(), null);
+    }
+
+    private EscuelaDetalleResponse convEscuelaDetalle(Escuela obj) {
+        return modelMapper.map(obj, EscuelaDetalleResponse.class);
+    }
+
 }

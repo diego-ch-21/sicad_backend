@@ -3,15 +3,14 @@ package com.sicad.sicad_backend.controller;
 import com.sicad.sicad_backend.dto.asignatura.AsignaturaCreateRequest;
 import com.sicad.sicad_backend.dto.asignatura.AsignaturaDetalleResponse;
 import com.sicad.sicad_backend.dto.asignatura.AsignaturaUpdateRequest;
-import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
+import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.model.Asignatura;
 import com.sicad.sicad_backend.service.impl.AsignaturaServiceImpl;
 import com.sicad.sicad_backend.service.interfaces.IAsignaturaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,44 +25,44 @@ public class AsignaturaController {
     private final ModelMapper modelMapper;
 
     @GetMapping("/listar")
-    public ResponseEntity<GenericReponse<AsignaturaDetalleResponse>> findAll() throws Exception {
+    public ResponseEntity<BaseListReponse<AsignaturaDetalleResponse>> findAll() throws Exception {
         List<AsignaturaDetalleResponse> lista = service.findByEnabledTrue()
                 .stream()
                 .map(this::convertToDetalle)
                 .toList();
         return ResponseEntity.ok(
-                new GenericReponse<>(200, "Lista de asignaturas", lista)
+                new BaseListReponse<>(200, "Lista de asignaturas", lista)
         );
     }
 
     @GetMapping("/buscar/{idAsignatura}")
-    public ResponseEntity<GenericObjectResponse<AsignaturaDetalleResponse>> findById(@PathVariable("idAsignatura") Integer id) throws Exception {
+    public ResponseEntity<BaseObjectResponse<AsignaturaDetalleResponse>> findById(@PathVariable("idAsignatura") Integer id) throws Exception {
         Asignatura obj = service.findById(id);
         return ResponseEntity.ok(
-                new GenericObjectResponse<>(200, "Asignatura encontrada", convertToDetalle(obj))
+                new BaseObjectResponse<>(200, "Asignatura encontrada", convertToDetalle(obj))
         );
     }
 
     @PostMapping("/insertar")
-    public ResponseEntity<GenericObjectResponse<AsignaturaDetalleResponse>> registrar(@Valid @RequestBody AsignaturaCreateRequest dto) {
-        GenericObjectResponse<AsignaturaDetalleResponse> response = serviceImpl.registrarAsignatura(dto);
+    public ResponseEntity<BaseObjectResponse<AsignaturaDetalleResponse>> registrar(@Valid @RequestBody AsignaturaCreateRequest dto) {
+        BaseObjectResponse<AsignaturaDetalleResponse> response = serviceImpl.registrarAsignatura(dto);
         return ResponseEntity.status(response.status()).body(response);
     }
     @PostMapping("/insertar-all")
-    public ResponseEntity<GenericReponse<AsignaturaDetalleResponse>> registrarAll(@Valid @RequestBody List<AsignaturaCreateRequest> dto) {
-        GenericReponse<AsignaturaDetalleResponse> response = serviceImpl.registrarAsignaturasMultiples(dto);
+    public ResponseEntity<BaseListReponse<AsignaturaDetalleResponse>> registrarAll(@Valid @RequestBody List<AsignaturaCreateRequest> dto) {
+        BaseListReponse<AsignaturaDetalleResponse> response = serviceImpl.registrarAsignaturasMultiples(dto);
         return ResponseEntity.status(response.status()).body(response);
     }
 
     @PutMapping("/actualizar/{idAsignatura}")
-    public ResponseEntity<GenericObjectResponse<AsignaturaDetalleResponse>> actualizar(@PathVariable("idAsignatura") Integer id, @Valid @RequestBody AsignaturaUpdateRequest dto) {
-        GenericObjectResponse<AsignaturaDetalleResponse> response = serviceImpl.actualizarAsignatura(id, dto);
+    public ResponseEntity<BaseObjectResponse<AsignaturaDetalleResponse>> actualizar(@PathVariable("idAsignatura") Integer id, @Valid @RequestBody AsignaturaUpdateRequest dto) {
+        BaseObjectResponse<AsignaturaDetalleResponse> response = serviceImpl.actualizarAsignatura(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }
 
     @DeleteMapping("/eliminar/{idAsignatura}")
-    public ResponseEntity<GenericObjectResponse<String>> delete(@PathVariable("idAsignatura") Integer id) {
-        GenericObjectResponse<String> response = serviceImpl.eliminarAsignatura(id);
+    public ResponseEntity<BaseObjectResponse<String>> delete(@PathVariable("idAsignatura") Integer id) {
+        BaseObjectResponse<String> response = serviceImpl.eliminarAsignatura(id);
         return ResponseEntity.status(response.status()).body(response);
     }
 

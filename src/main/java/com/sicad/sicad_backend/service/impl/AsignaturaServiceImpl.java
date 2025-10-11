@@ -3,8 +3,8 @@ package com.sicad.sicad_backend.service.impl;
 import com.sicad.sicad_backend.dto.asignatura.AsignaturaCreateRequest;
 import com.sicad.sicad_backend.dto.asignatura.AsignaturaDetalleResponse;
 import com.sicad.sicad_backend.dto.asignatura.AsignaturaUpdateRequest;
-import com.sicad.sicad_backend.dto.base.GenericObjectResponse;
-import com.sicad.sicad_backend.dto.base.GenericReponse;
+import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
+import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.model.Asignatura;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.IAsignaturaRepo;
@@ -31,7 +31,7 @@ public class AsignaturaServiceImpl
     protected IGenericRepo<Asignatura, Integer> getRepo() {
         return asignaturaRepo;
     }
-    public GenericObjectResponse<AsignaturaDetalleResponse> registrarAsignatura(AsignaturaCreateRequest request) {
+    public BaseObjectResponse<AsignaturaDetalleResponse> registrarAsignatura(AsignaturaCreateRequest request) {
         // Generar código único
         String codigo;
         do {
@@ -48,13 +48,13 @@ public class AsignaturaServiceImpl
         asignaturaRepo.save(asignatura);
 
         AsignaturaDetalleResponse dto = modelMapper.map(asignatura, AsignaturaDetalleResponse.class);
-        return new GenericObjectResponse<>(201, "Asignatura registrada exitosamente", dto);
+        return new BaseObjectResponse<>(201, "Asignatura registrada exitosamente", dto);
     }
 
-    public GenericObjectResponse<AsignaturaDetalleResponse> actualizarAsignatura(Integer id, AsignaturaUpdateRequest request) {
+    public BaseObjectResponse<AsignaturaDetalleResponse> actualizarAsignatura(Integer id, AsignaturaUpdateRequest request) {
         Asignatura asignatura = asignaturaRepo.findById(id).orElse(null);
         if (asignatura == null) {
-            return new GenericObjectResponse<>(404, "Asignatura no encontrada", null);
+            return new BaseObjectResponse<>(404, "Asignatura no encontrada", null);
         }
 
         if (request.getNombre() != null && !request.getNombre().isBlank()) {
@@ -64,13 +64,13 @@ public class AsignaturaServiceImpl
         asignaturaRepo.save(asignatura);
 
         AsignaturaDetalleResponse dto = modelMapper.map(asignatura, AsignaturaDetalleResponse.class);
-        return new GenericObjectResponse<>(200, "Asignatura actualizada exitosamente", dto);
+        return new BaseObjectResponse<>(200, "Asignatura actualizada exitosamente", dto);
     }
-    public GenericReponse<AsignaturaDetalleResponse> registrarAsignaturasMultiples(List<AsignaturaCreateRequest> requests) {
+    public BaseListReponse<AsignaturaDetalleResponse> registrarAsignaturasMultiples(List<AsignaturaCreateRequest> requests) {
         List<AsignaturaDetalleResponse> registrados = new ArrayList<>();
         int errores = 0;
         for (AsignaturaCreateRequest request : requests) {
-            GenericObjectResponse<AsignaturaDetalleResponse> response = registrarAsignatura(request);
+            BaseObjectResponse<AsignaturaDetalleResponse> response = registrarAsignatura(request);
             if (response.status() == 201 && response.data() != null) {
                 registrados.add(response.data());
             } else {
@@ -79,21 +79,21 @@ public class AsignaturaServiceImpl
         }
 
         String mensaje = String.format("Asignaturas registradas: %d. Fallidos: %d.", registrados.size(), errores);
-        return new GenericReponse<>(201, mensaje, registrados.isEmpty() ? null : registrados);
+        return new BaseListReponse<>(201, mensaje, registrados.isEmpty() ? null : registrados);
     }
-    public GenericObjectResponse<String> eliminarAsignatura(Integer idAsignatura) {
+    public BaseObjectResponse<String> eliminarAsignatura(Integer idAsignatura) {
         if (idAsignatura == null) {
-            return new GenericObjectResponse<>(400, "idAsignatura no proporcionado", null);
+            return new BaseObjectResponse<>(400, "idAsignatura no proporcionado", null);
         }
 
         Asignatura asignatura = asignaturaRepo.findById(idAsignatura).orElse(null);
         if (asignatura == null) {
-            return new GenericObjectResponse<>(404, "Asignatura  no encontrado", null);
+            return new BaseObjectResponse<>(404, "Asignatura  no encontrado", null);
         }
 
         asignatura.setEnabled(false);
         asignaturaRepo.save(asignatura);
-        return new GenericObjectResponse<>(200, "se elimino la asignatura exitosamente", null);
+        return new BaseObjectResponse<>(200, "se elimino la asignatura exitosamente", null);
     }
 
     @Override
