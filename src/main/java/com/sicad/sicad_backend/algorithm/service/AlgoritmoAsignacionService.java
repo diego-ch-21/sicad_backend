@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -374,7 +373,7 @@ public class AlgoritmoAsignacionService {
         // 1. Verificar límite de horasMaxLectivas (RESTRICCIÓN DURA)
         int horasActuales = solucion.getHorasTotalesDocente(docente.getIdDocente());
         int horasCurso = curso.getCursoHorario().stream()
-                .mapToInt(CursoHorario::getDuracionHoras)
+                .mapToInt(Horario::getDuracionHoras)
                 .sum();
 
         // Usar horasMaxLectivas específicas del docente

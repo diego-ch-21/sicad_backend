@@ -21,5 +21,4 @@ public class DocenteUpdateRequest {
     private Integer idDedicacion;
     @NotNull(message = "El idCategoria es un campo obligatorio")
     private Integer idCategoria;
-    private Integer horasMaxLectivas;
 }

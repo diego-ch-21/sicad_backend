@@ -1,9 +1,12 @@
 package com.sicad.sicad_backend.service.impl;
 
+import com.sicad.sicad_backend.Enum.Modulo;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.disponibilidad.DisponibilidadResumenResponse;
 import com.sicad.sicad_backend.dto.docente.*;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
+import com.sicad.sicad_backend.dto.escuela.EscuelaCreateRequest;
+import com.sicad.sicad_backend.dto.escuela.EscuelaDetalleResponse;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaResumenResponse;
 import com.sicad.sicad_backend.jwt.JwtService;
 import com.sicad.sicad_backend.model.*;
@@ -13,17 +16,25 @@ import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.IDocenteService;
 import com.sicad.sicad_backend.utils.CodigoGeneratorUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.sicad.sicad_backend.Enum.Message.CORREO_EN_USO;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
-public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements IDocenteService {
+public class DocenteServiceImpl
+        extends CRUDImpl<Docente, Integer>
+        implements IDocenteService {
 
     private final IDocenteRepo docenteRepo;
     private final IUsuarioRepo usuarioRepo;
@@ -41,36 +52,81 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
         return docenteRepo;
     }
 
-    public BaseObjectResponse<DocenteDetalleResponse> registrarDocente(DocenteCreateRequest request) {
 
-        // 1. Verificar si el email ya está registrado
+    @Override
+    public BaseListReponse<DocenteDetalleResponse> listar() {
+        List<DocenteDetalleResponse> lista = docenteRepo.findByEnabledTrue()
+                .stream()
+                .map(this::convDocenteDetalle)
+                .toList();
+
+        return new BaseListReponse<>(200, Modulo.DOCENTE.listado(), lista);
+    }
+
+    @Override
+    public BaseObjectResponse<DocenteDetalleResponse> buscar(Integer idDocente) {
+        Optional<Docente> docenteOpt = docenteRepo.findByIdAndEnabledTrue(idDocente);
+
+        if (docenteOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.DOCENTE.noEncontrado(), null);
+        }
+        Docente docente = docenteOpt.get();
+        return new BaseObjectResponse<>(200, Modulo.DOCENTE.encontrado(), convDocenteDetalle(docente));
+    }
+
+    @Override
+    public BaseObjectResponse<DocenteDetalleResponse> buscarPorUsuario(Integer idUsuario) {
+        Optional<Usuario> usuarioOpt = usuarioRepo.findByIdAndEnabledTrue(idUsuario);
+        if(usuarioOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.USUARIO.noEncontrado(), null);
+        }
+        Usuario usuario = usuarioOpt.get();
+
+        if(usuario.getRol().getIdRol() != 3) {
+            return new BaseObjectResponse<>(404, "El usuario no es un docente", null);
+
+        }
+        Optional<Docente> docenteOpt = docenteRepo.findByIdUsuarioAndEnabledTrue(idUsuario);
+
+        if (docenteOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.DOCENTE.noPertenece(Modulo.USUARIO), null);
+        }
+        Docente docente = docenteOpt.get();
+
+        return new BaseObjectResponse<>(201, "Docente encontrado exitosamente", convDocenteDetalle(docente));
+    }
+
+    @Override
+    public BaseObjectResponse<DocenteDetalleResponse> registrar(DocenteCreateRequest request) {
+
         if (usuarioRepo.findByEmail(request.getEmail()).isPresent()) {
-            return new BaseObjectResponse<>(409, "El correo ya está en uso", null);
+            return new BaseObjectResponse<>(409, CORREO_EN_USO.toString(), null);
         }
 
-        // 2. Buscar entidades relacionadas
         Rol rol = rolRepo.findById(3).orElse(null); // Suponiendo que 3 = DOCENTE
-        if (rol == null)
-            return new BaseObjectResponse<>(404, "Rol Docente no encontrado", null);
+        if (rol == null){
+            return new BaseObjectResponse<>(404, Modulo.ROL.noEncontrado(), null);
 
-        Dedicacion dedicacion = dedicacionRepo.findById(request.getIdDedicacion()).orElse(null);
-        if (dedicacion == null)
-            return new BaseObjectResponse<>(404, "Dedicación no encontrada", null);
+        }
+        Optional<Dedicacion> dedicacionOpt = dedicacionRepo.findByIdAndEnabledTrue(request.getIdDedicacion());
+        if (dedicacionOpt.isEmpty()){
+            return new BaseObjectResponse<>(404, Modulo.DEDICACION.noEncontrado(), null);
+        }
 
-        Categoria categoria = categoriaRepo.findById(request.getIdCategoria()).orElse(null);
-        if (categoria == null)
-            return new BaseObjectResponse<>(404, "Categoría no encontrada", null);
+        Optional<Categoria> categoriaOpt= categoriaRepo.findByIdAndEnabledTrue(request.getIdCategoria());
+        if (categoriaOpt.isEmpty()){
+            return new BaseObjectResponse<>(404,Modulo.CATEGORIA.noEncontrado(), null);
 
-        // 3. Generar código único
+        }
+        LocalDate fecha = LocalDate.now();
+        String anioDosDigitos = String.valueOf(fecha.getYear()).substring(2);
+
         String codigoUsuario;
         do {
-            codigoUsuario = CodigoGeneratorUtil.generarCodigoNumerico(6);
+            codigoUsuario = anioDosDigitos+CodigoGeneratorUtil.generarCodigoNumerico(6);
         } while (usuarioRepo.existsByCodigo(codigoUsuario));
 
-        // 5. Crear y guardar Docente
-        LocalDate fecha = LocalDate.now();
 
-        // 4. Crear y guardar Usuario
         Usuario usuario = Usuario.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -86,293 +142,220 @@ public class DocenteServiceImpl extends CRUDImpl<Docente, Integer> implements ID
 
         String codigoDocente;
         do {
-            codigoDocente = CodigoGeneratorUtil.generarCodigoNumerico(6);
+            codigoDocente = anioDosDigitos+CodigoGeneratorUtil.generarCodigoNumerico(6);
         } while (docenteRepo.existsByCodigo(codigoDocente));
 
 
         Docente docente = Docente.builder()
                 .usuario(usuario)
-                .dedicacion(dedicacion)
-                .categoria(categoria)
+                .dedicacion(dedicacionOpt.get())
+                .categoria(categoriaOpt.get())
                 .codigo(codigoDocente)
                 .enabled(true)
                 .build();
         docenteRepo.save(docente);
 
-        // 6. Mapear y retornar
-        DocenteDetalleResponse docenteDTO = modelMapper.map(docente, DocenteDetalleResponse.class);
-
-        return new BaseObjectResponse<>(201, "Docente registrado exitosamente", docenteDTO);
-    }
-    public BaseObjectResponse<DocenteDetalleResponse> actualizarDocente(Integer idDocente, DocenteUpdateRequest request) {
-
-        // 1. Verificar existencia del docente
-        Docente docente = docenteRepo.findById(idDocente).orElse(null);
-        if (docente == null) {
-            return new BaseObjectResponse<>(404, "Docente no encontrado", null);
-        }
-
-        // 2. Validar email si ha cambiado
-        if (!docente.getUsuario().getEmail().equals(request.getEmail()) &&
-                usuarioRepo.findByEmail(request.getEmail()).isPresent()) {
-            return new BaseObjectResponse<>(409, "El correo ya está en uso", null);
-        }
-
-        // 3. Buscar entidades relacionadas
-        Dedicacion dedicacion = dedicacionRepo.findById(request.getIdDedicacion()).orElse(null);
-        if (dedicacion == null)
-            return new BaseObjectResponse<>(404, "Dedicación no encontrada", null);
-
-        Categoria categoria = categoriaRepo.findById(request.getIdCategoria()).orElse(null);
-        if (categoria == null)
-            return new BaseObjectResponse<>(404, "Categoría no encontrada", null);
-
-        // 4. Actualizar datos del Usuario
-        Usuario usuario = docente.getUsuario();
-        usuario.setEmail(request.getEmail());
-        usuario.setNombre(request.getNombre());
-        usuario.setApellido(request.getApellido());
-        if (request.getPassword() != null && !request.getPassword().isBlank()) {
-            usuario.setPassword(passwordEncoder.encode(request.getPassword()));
-        }
-        usuarioRepo.save(usuario);
-
-        // 5. Actualizar datos del Docente
-        docente.setDedicacion(dedicacion);
-        docente.setCategoria(categoria);
-        docenteRepo.save(docente);
-
-        // 6. Mapear y retornar
-        DocenteDetalleResponse docenteDTO = modelMapper.map(docente, DocenteDetalleResponse.class);
-        return new BaseObjectResponse<>(200, "Docente actualizado exitosamente", docenteDTO);
-    }
-    //service para obtener un docente por usuario
-    public BaseObjectResponse<DocenteDetalleResponse> obtenerDocentePorUsuario(Integer idUsuario) {
-        Usuario usuario = usuarioRepo.findById(idUsuario)
-                .orElseThrow(() -> null);
-        if(usuario == null) {
-            return new BaseObjectResponse<>(404, "Usuario no encontrado", null);
-        }
-        if(usuario.getRol().getIdRol() != 3) {
-            return new BaseObjectResponse<>(404, "El usuario no es un docente", null);
-
-        }
-        Docente docente = docenteRepo.findByUsuario(usuario)
-                .orElseThrow(() ->(null));
-        if(docente == null) {
-            return new BaseObjectResponse<>(404, "Docente no encontrado", null);
-        }
-        DocenteDetalleResponse docenteDTO = modelMapper.map(docente, DocenteDetalleResponse.class);
-        return new BaseObjectResponse<>(201, "Docente encontrado exitosamente", docenteDTO);
-    }
-    private DocenteDetalleResponse registrarDocenteInterno(DocenteCreateRequest request) {
-
-        // Validación: correo existente
-        if (usuarioRepo.findByEmail(request.getEmail()).isPresent()) {
-            return null; // ya existe
-        }
-
-        // Relacionados
-        Rol rol = rolRepo.findById(3).orElse(null);
-        Dedicacion dedicacion = dedicacionRepo.findById(request.getIdDedicacion()).orElse(null);
-        Categoria categoria = categoriaRepo.findById(request.getIdCategoria()).orElse(null);
-        if (rol == null || dedicacion == null || categoria == null) {
-            return null;
-        }
-
-        // Código único usuario
-        String codigoUsuario;
-        do {
-            codigoUsuario = CodigoGeneratorUtil.generarCodigoNumerico(6);
-        } while (usuarioRepo.existsByCodigo(codigoUsuario));
-
-        Usuario usuario = Usuario.builder()
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .codigo(codigoUsuario)
-                .nombre(request.getNombre())
-                .apellido(request.getApellido())
-                .enabled(true)
-                .cretedAt(LocalDate.now())
-                .rol(rol)
-                .build();
-        usuarioRepo.save(usuario);
-
-
-        // Código docente
-        String codigoDocente;
-        do {
-            codigoDocente = CodigoGeneratorUtil.generarCodigoNumerico(6);
-        } while (docenteRepo.existsByCodigo(codigoDocente));
-
-        Docente docente = Docente.builder()
-                .usuario(usuario)
-                .dedicacion(dedicacion)
-                .categoria(categoria)
-                .codigo(codigoDocente)
-                .enabled(true)
-                .build();
-        docenteRepo.save(docente);
-
-        return modelMapper.map(docente, DocenteDetalleResponse.class);
-    }
-
-
-    public BaseListReponse<DocenteDetalleResponse> registrarDocentes(List<DocenteCreateRequest> requestList) {
-        List<DocenteDetalleResponse> registrados = requestList.stream()
-                .map(this::registrarDocenteInterno)
-                .filter(dto -> dto != null)
-                .toList();
-
-        int total = requestList.size();
-        int exitosos = registrados.size();
-        int fallidos = total - exitosos;
-
-        String mensaje;
-        if (exitosos == 0) {
-            mensaje = "No se registró ningún docente. Todos los registros fallaron.";
-            return new BaseListReponse<>(409, mensaje, null);
-        } else if (fallidos == 0) {
-            mensaje =  exitosos + "docentes registrados exitosamente.";
-        } else {
-            mensaje = exitosos + " docentes registrados exitosamente. " + fallidos + " registros fallaron (posible correo duplicado o datos inválidos).";
-        }
-
-        return new BaseListReponse<>(201, mensaje, registrados);
-    }
-
-    public BaseListReponse<DocenteEspecializacionResponse> listarDocentesConEspecializaciones() {
-        List<Docente> docentes = docenteRepo.findAllWithDocentesEspecializacion(); // trae docentes + especializaciones
-
-        if (docentes.isEmpty()) {
-            return new BaseListReponse<>(200, "No se encontraron docentes", null);
-        }
-
-        // Convertir a DTOs
-        List<DocenteEspecializacionResponse> listaDTO = docentes.stream()
-                .map(this::convertToDocenteEspecializacion)
-                .collect(Collectors.toList());
-        return new BaseListReponse<>(200, "Lista de docentes con especializaciones", listaDTO);
-    }
-
-    public BaseListReponse<DocentePreferenciaResponse> listarDocentesConPreferencias(Integer idCicloAcademico) {
-        if (idCicloAcademico == null) {
-            return new BaseListReponse<>(400, "idCicloAcademico no proporcionado", null);
-        }
-
-        List<Docente> docentes = docenteRepo.findAllWithDocentesPreferencia(); // trae docentes + preferencias
-
-        if(docentes.isEmpty()) {
-            return new BaseListReponse<>(200, "No se encontraron docentes", null);
-        }
-
-        List<DocentePreferenciaResponse> responseList = docentes.stream()
-                .map(docente -> {
-                    // Mapear entidad Docente a DTO
-                    DocentePreferenciaResponse dto = modelMapper.map(docente, DocentePreferenciaResponse.class);
-
-                    // Filtrar preferencias por idCargaElectiva
-                    List<PreferenciaResumenResponse> preferenciasFiltradas = docente.getPreferencias().stream()
-                            .filter(pref -> pref.getCicloAcademico() != null &&
-                                    pref.getCicloAcademico().getIdCicloAcademico().equals(idCicloAcademico))
-                            .map(pref -> modelMapper.map(pref, PreferenciaResumenResponse.class))
-                            .toList();
-
-                    dto.setPreferencias(preferenciasFiltradas);
-
-                    return dto;
-                })
-                .toList();
-
-        return new BaseListReponse<>(200, "Lista de docentes con preferencias", responseList);
-    }
-
-    public BaseListReponse<DocenteDisponibilidadResponse> listarDocentesConDisponibilidad(Integer idCicloAcademico) {
-        if (idCicloAcademico == null) {
-            return new BaseListReponse<>(400, "idCicloAcademico no proporcionado", null);
-        }
-        List<Docente> docentes = docenteRepo.findAllWithDocentesDisponibilidad(); // trae docentes + disponibilidad
-
-        if(docentes.isEmpty()) {
-            return new BaseListReponse<>(200, "No se encontraron docentes", null);
-        }
-
-        List<DocenteDisponibilidadResponse> responseList = docentes.stream()
-                .map(docente -> {
-                    // Mapear entidad Docente a DTO
-                    DocenteDisponibilidadResponse dto = modelMapper.map(docente, DocenteDisponibilidadResponse.class);
-
-                    // Filtrar preferencias por idCargaElectiva
-                    List<DisponibilidadResumenResponse> disponibilidadFiltradas = docente.getDisponibilidad().stream()
-                            .filter(dis -> dis.getCicloAcademico() != null &&
-                                    dis.getCicloAcademico().getIdCicloAcademico().equals(idCicloAcademico))
-                            .map(dis -> modelMapper.map(dis, DisponibilidadResumenResponse.class))
-                            .toList();
-
-                    dto.setDisponibilidad(disponibilidadFiltradas);
-
-                    return dto;
-                })
-                .toList();
-
-        return new BaseListReponse<>(200, "Lista de docentes con preferencias", responseList);
-    }
-
-    //solo docentes que tiene asigancione
-    public BaseListReponse<DocenteAsignacionResponse> listarDocentesCargaConAsignaciones(
-            Integer idCarga) {
-        if (idCarga == null) {
-            return new BaseListReponse<>(400, "idCarga no proporcionado", null);
-        }
-
-        Boolean isCarga = cargaRepo.existsByIdCarga(idCarga);
-        if(!isCarga) {
-            return new BaseListReponse<>(200, "No se encontraron carga", null);
-        }
-
-        // Trae todos los docentes con sus asignaciones filtradas
-        List<Docente> docentes = docenteRepo.findAllWithAsignacionesByCargaYCiclo(idCarga);
-
-        if (docentes.isEmpty()) {
-            return new BaseListReponse<>(200, "No se encontraron docentes", null);
-        }
-
-        // Mapear entidades a DTOs usando modelMapper
-        List<DocenteAsignacionResponse> lista = docentes.stream()
-                .map(this::convertToAsignacionResponseDTO)
-                .toList();
-
-        return new BaseListReponse<>(200, "Lista de docentes con asignaciones", lista);
-    }
-
-    public BaseObjectResponse<String> eliminarDocente(Integer idDocente) {
-        // Validación de parámetro
-        if (idDocente == null) {
-            return new BaseObjectResponse<>(400, "idDocente no proporcionado", null);
-        }
-
-        // Validar existencia
-        Docente docente = docenteRepo.findById(idDocente).orElse(null);
-        if (docente == null) {
-            return new BaseObjectResponse<>(404, "Docente  no encontrado", null);
-        }
-
-        // desabilitar
-        docente.setEnabled(false);
-        docenteRepo.save(docente);
-        return new BaseObjectResponse<>(200, "se elimino el docente exitosamente", null);
-    }
-
-    private DocenteAsignacionResponse convertToAsignacionResponseDTO(Docente obj) {
-        return modelMapper.map(obj, DocenteAsignacionResponse.class);
-    }
-    private DocenteEspecializacionResponse convertToDocenteEspecializacion(Docente obj){
-        return modelMapper.map(obj, DocenteEspecializacionResponse.class);
+        return new BaseObjectResponse<>(201, Modulo.DOCENTE.registrado(), convDocenteDetalle(docente));
     }
 
     @Override
-    public List<Docente> findByEnabledTrue() {
-        return docenteRepo.findByEnabledTrue();
+    public BaseListReponse<DocenteDetalleResponse> registrarAll(List<DocenteCreateRequest> requests) {
+        List<DocenteDetalleResponse> registrados = new ArrayList<>();
+        int errorCount = 0;
 
+        for (DocenteCreateRequest request : requests) {
+            try {
+                BaseObjectResponse<DocenteDetalleResponse> response = registrar(request);
+                if (response.status() == 201 && response.data() != null) {
+                    registrados.add(response.data());
+                } else {
+                    errorCount++;
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                errorCount++;
+            }
+        }
+        return new BaseListReponse<>(201,Modulo.DOCENTE.resumenAllRegistro(registrados.size(), errorCount),registrados);
     }
+
+    @Override
+    public BaseObjectResponse<DocenteDetalleResponse> actualizar(Integer idDocente, DocenteUpdateRequest request) {
+
+        Optional<Docente> docenteOpt = docenteRepo.findByIdAndEnabledTrue(idDocente);
+
+        if (docenteOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.DOCENTE.noEncontrado(), null);
+        }
+        Docente docente = docenteOpt.get();
+
+        // Validar email si viene en el request
+        if (request.getEmail() != null && usuarioRepo.findByEmail(request.getEmail()).isPresent()) {
+            return new BaseObjectResponse<>(409, CORREO_EN_USO.toString(), null);
+        }
+
+        // Obtener el usuario vinculado
+        Usuario usuario = docente.getUsuario();
+
+        // Actualizar campos SOLO si vienen
+        if (request.getEmail() != null) usuario.setEmail(request.getEmail());
+        if (request.getNombre() != null) usuario.setNombre(request.getNombre());
+        if (request.getApellido() != null) usuario.setApellido(request.getApellido());
+        if (request.getPassword() != null) usuario.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        usuarioRepo.save(usuario);
+
+        // Validar y actualizar dedicación solo si viene
+        if (request.getIdDedicacion() != null) {
+            Optional<Dedicacion> dedicacionOpt = dedicacionRepo.findByIdAndEnabledTrue(request.getIdDedicacion());
+            if (dedicacionOpt.isEmpty()) {
+                return new BaseObjectResponse<>(404, Modulo.DEDICACION.noEncontrado(), null);
+            }
+            docente.setDedicacion(dedicacionOpt.get());
+        }
+
+        // Validar y actualizar categoría solo si viene
+        if (request.getIdCategoria() != null) {
+            Optional<Categoria> categoriaOpt = categoriaRepo.findByIdAndEnabledTrue(request.getIdCategoria());
+            if (categoriaOpt.isEmpty()) {
+                return new BaseObjectResponse<>(404, Modulo.CATEGORIA.noEncontrado(), null);
+            }
+            docente.setCategoria(categoriaOpt.get());
+        }
+
+        docenteRepo.save(docente);
+
+        return new BaseObjectResponse<>(200, Modulo.DOCENTE.actualizado(), convDocenteDetalle(docente));
+    }
+
+    @Override
+    public BaseObjectResponse<String> eliminar(Integer idDocente) {
+        Optional<Docente> docenteOpt = docenteRepo.findByIdAndEnabledTrue(idDocente);
+
+        if (docenteOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.DOCENTE.noEncontrado(), null);
+        }
+        Docente docente = docenteOpt.get();
+        docente.setEnabled(false);
+        docenteRepo.save(docente);
+        return new BaseObjectResponse<>(200, Modulo.DOCENTE.eliminado(), null);
+    }
+    @Override
+    public BaseListReponse<DocenteEspecializacionResponse> listarDocentesConEspecializaciones() {
+        List<Docente> docentes = docenteRepo.findByEnabledTrue();
+
+        List<DocenteEspecializacionResponse> response = docentes.stream()
+                .map(docente -> {
+                    // Filtrar solo especializaciones habilitadas
+                    List<Especializacion> especializacionesFiltradas = docente.getEspecializaciones()
+                            .stream()
+                            .filter(Especializacion::getEnabled) // o .getEnabled() si es Boolean
+                            .toList();
+
+                    // Reemplazar la lista original con la filtrada
+                    docente.setEspecializaciones(especializacionesFiltradas);
+
+                    return convDocenteEspecializacion(docente);
+                })
+                .toList();
+
+        return new BaseListReponse<>(200, Modulo.DOCENTE.listado(), response);
+    }
+
+    @Override
+    public BaseListReponse<DocentePreferenciaResponse> listarDocentesConPreferencias(Integer idCicloAcademico) {
+        Optional<CicloAcademico> cicloAcademicoOpt =  cicloAcademicoRepo.findByIdAndEnabledTrue(idCicloAcademico);
+        if(cicloAcademicoOpt.isEmpty()) {
+            return new BaseListReponse<>(404, Modulo.CICLO_ACADEMICO.noEncontrado(), null);
+        }
+
+        List<Docente> docentes = docenteRepo.findByEnabledTrue();
+
+        List<DocentePreferenciaResponse> response = docentes.stream()
+                .map(docente -> {
+
+                    List<Preferencia> preferenciaFiltradas = docente.getPreferencias()
+                            .stream()
+                            .filter(pref -> pref.getEnabled() &&
+                                    pref.getCicloAcademico().getIdCicloAcademico().equals(idCicloAcademico))  // <-- nuevo filtro
+                            .toList();
+
+                    docente.setPreferencias(preferenciaFiltradas);
+
+                    return convDocentePreferencia(docente);
+                })
+                .toList();
+
+        return new BaseListReponse<>(200,  Modulo.DOCENTE.listado(), response);
+    }
+
+    @Override
+    public BaseListReponse<DocenteDisponibilidadResponse> listarDocentesConDisponibilidad(Integer idCicloAcademico) {
+        Optional<CicloAcademico> cicloAcademicoOpt =  cicloAcademicoRepo.findByIdAndEnabledTrue(idCicloAcademico);
+        if(cicloAcademicoOpt.isEmpty()) {
+            return new BaseListReponse<>(404, Modulo.CICLO_ACADEMICO.noEncontrado(), null);
+        }
+        List<Docente> docentes = docenteRepo.findByEnabledTrue();
+        List<DocenteDisponibilidadResponse> response = docentes.stream()
+                .map(docente -> {
+
+                    List<Disponibilidad> disponibilidadFiltradas = docente.getDisponibilidad()
+                            .stream()
+                            .filter(dis -> dis.getEnabled() &&
+                                    dis.getCicloAcademico().getIdCicloAcademico().equals(idCicloAcademico))  // <-- nuevo filtro
+                            .toList();
+
+                    docente.setDisponibilidad(disponibilidadFiltradas);
+
+                    return convDocenteDisponibilidad(docente);
+                })
+                .toList();
+
+        return new BaseListReponse<>(200,  Modulo.DOCENTE.listado(), response);
+    }
+
+    @Override
+    public BaseListReponse<DocenteAsignacionResponse> listarDocentesCargaConAsignaciones(Integer idCarga) {
+        Optional<Carga> cargaOpt =  cargaRepo.findByIdAndEnabledTrue(idCarga);
+        if(cargaOpt.isEmpty()) {
+            return new BaseListReponse<>(404, Modulo.CARGA.noEncontrado(), null);
+        }
+        List<Docente> docentes = docenteRepo.findByEnabledTrue();
+        List<DocenteAsignacionResponse> response = docentes.stream()
+                .map(docente -> {
+
+                    List<Asignacion> asignacionFiltrado = docente.getAsignaciones()
+                            .stream()
+                            .filter(asi -> asi.getEnabled() &&
+                                    asi.getCarga().getIdCarga().equals(idCarga))  // <-- nuevo filtro
+                            .toList();
+
+                    docente.setAsignaciones(asignacionFiltrado);
+
+                    return convDocenteAsignacion(docente);
+                })
+                .toList();
+
+        return new BaseListReponse<>(200, Modulo.DOCENTE.listado(), response);
+    }
+
+
+
+    private DocenteDetalleResponse convDocenteDetalle(Docente obj) {
+        return modelMapper.map(obj, DocenteDetalleResponse.class);
+    }
+    private DocenteAsignacionResponse convDocenteAsignacion(Docente obj) {
+        return modelMapper.map(obj, DocenteAsignacionResponse.class);
+    }
+    private DocenteEspecializacionResponse convDocenteEspecializacion(Docente obj){
+        return modelMapper.map(obj, DocenteEspecializacionResponse.class);
+    }
+    private DocentePreferenciaResponse convDocentePreferencia(Docente obj){
+        return modelMapper.map(obj, DocentePreferenciaResponse.class);
+    }
+    private DocenteDisponibilidadResponse convDocenteDisponibilidad(Docente obj){
+        return modelMapper.map(obj, DocenteDisponibilidadResponse.class);
+    }
+
+
 }

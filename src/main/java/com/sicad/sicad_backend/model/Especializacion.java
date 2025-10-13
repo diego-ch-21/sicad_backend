@@ -35,5 +35,5 @@ public class Especializacion {
     private Docente docente;
 
     @Column(nullable = false, name = "enabled")
-    private boolean enabled;
+    private Boolean enabled;
 }

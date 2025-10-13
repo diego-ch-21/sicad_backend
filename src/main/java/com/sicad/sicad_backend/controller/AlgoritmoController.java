@@ -69,7 +69,7 @@ public class AlgoritmoController{
 
     @GetMapping("/principal/buscar")
     public ResponseEntity<BaseObjectResponse<AlgoritmoDetalleResponse>>
-            buscarPrincipal(@PathVariable("idAlgoritmo") Integer id) {
+            buscarPrincipal() {
         BaseObjectResponse<AlgoritmoDetalleResponse> response = service.buscarPrincipal();
         return ResponseEntity.ok(response);
     }

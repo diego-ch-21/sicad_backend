@@ -26,14 +26,14 @@ public class EscuelaController {
     public ResponseEntity<BaseListReponse<EscuelaDetalleResponse>>
             listar() throws Exception {
         BaseListReponse<EscuelaDetalleResponse> response = service.listar();
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(response.status()).body(response);
     }
 
     @GetMapping("/buscar/{idEscuela}")
     public ResponseEntity<BaseObjectResponse<EscuelaDetalleResponse>>
             buscar(@PathVariable("idEscuela") Integer id) {
         BaseObjectResponse<EscuelaDetalleResponse> response = service.buscar(id);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(response.status()).body(response);
     }
 
     @PostMapping("/insertar")

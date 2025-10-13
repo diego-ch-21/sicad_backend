@@ -1,20 +1,17 @@
 package com.sicad.sicad_backend.controller;
 
 
+import com.sicad.sicad_backend.dto.asignacion.AsignacionCreateRequest;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionDetalleResponse;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionResumenResponse;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionUpdateRequest;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.carga.CargaDetalleResponse;
-import com.sicad.sicad_backend.model.Asignacion;
-import com.sicad.sicad_backend.dto.asignacion.AsignacionCreateRequest;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
-import com.sicad.sicad_backend.service.impl.AsignacionServiceImpl;
 import com.sicad.sicad_backend.service.interfaces.IAsignacionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,51 +24,53 @@ import java.util.List;
 @Slf4j
 public class AsignacionController {
     private final IAsignacionService service;
-    private final AsignacionServiceImpl serviceImpl;
-    private final ModelMapper modelMapper;
-
-    @GetMapping("/listar")
-    public ResponseEntity<BaseListReponse<AsignacionDetalleResponse>> findAll() throws Exception {
-        List<AsignacionDetalleResponse> lista = service.findAll()
-                .stream()
-                .map(this::convertToDTO)
-                .toList();
-
-        return ResponseEntity.ok(
-                new BaseListReponse<>(200, "Lista de Asignacions", lista)
-        );
-    }
 
     @GetMapping("/buscar/{idAsignacion}")
-    public ResponseEntity<BaseObjectResponse<AsignacionDetalleResponse>>  findById(@PathVariable("idAsignacion") Integer id) throws Exception {
-        Asignacion obj = service.findById(id);
-        return ResponseEntity.ok(
-                new BaseObjectResponse<>(200, "Asignacion encontrada", convertToDTO(obj))
-        );
+    public ResponseEntity<BaseObjectResponse<AsignacionDetalleResponse>>
+    buscar(@PathVariable("idAsignacion") Integer id) {
+        BaseObjectResponse<AsignacionDetalleResponse> response = service.buscar(id);
+        return ResponseEntity.status(response.status()).body(response);
     }
 
     @PostMapping("/insertar")
-    public ResponseEntity<BaseObjectResponse<AsignacionDetalleResponse>> save(@Valid @RequestBody AsignacionCreateRequest request){
-        BaseObjectResponse<AsignacionDetalleResponse> response = serviceImpl.registrarAsignacion(request);
+    public ResponseEntity<BaseObjectResponse<AsignacionDetalleResponse>>
+    registrar(@Valid @RequestBody AsignacionCreateRequest request) {
+        BaseObjectResponse<AsignacionDetalleResponse> response = service.registrar(request);
         return ResponseEntity.status(response.status()).body(response);
-
     }
 
+    @PostMapping("/insertar-all")
+    public ResponseEntity<BaseListReponse<AsignacionDetalleResponse>>
+    registrarAll(@Valid @RequestBody List<AsignacionCreateRequest> request) {
+        BaseListReponse<AsignacionDetalleResponse> response = service.registrarAll(request);
+        return ResponseEntity.status(response.status()).body(response);
+    }
     @PutMapping("/actualizar/{idAsignacion}")
-    public ResponseEntity<BaseObjectResponse<AsignacionDetalleResponse>> update(@Valid @PathVariable("idAsignacion") Integer id, @RequestBody AsignacionUpdateRequest request){
-        BaseObjectResponse<AsignacionDetalleResponse> response = serviceImpl.actualizarAsignacion(id, request);
+    public ResponseEntity<BaseObjectResponse<AsignacionDetalleResponse>>
+    actualizar(@PathVariable("idAsignacion") Integer id, @Valid @RequestBody AsignacionUpdateRequest dto) {
+        BaseObjectResponse<AsignacionDetalleResponse> response = service.actualizar(id, dto);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+    @DeleteMapping("/eliminar/{idAsignacion}")
+    public ResponseEntity<BaseObjectResponse<String>>
+    eliminar(@PathVariable("idAsignacion") Integer id) {
+        BaseObjectResponse<String> response = service.eliminar(id);
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    // NUEVO ENDPOINT PARA EL ALGORITMO HÍBRIDO GA + PSO
+    @GetMapping("/listar/{idDocente}/{idCarga}")
+    public ResponseEntity<BaseListReponse<AsignacionResumenResponse>> listarPorDocenteCarga(
+            @PathVariable("idDocente") Integer idDocente,
+            @PathVariable("idCarga") Integer idCarga) {
+        BaseListReponse<AsignacionResumenResponse> response = service.listarPorDocenteCarga(idDocente, idCarga);
+        return ResponseEntity.status(response.status()).body(response);
+    }
     @PostMapping("/algoritmo/{idCicloAcademico}")
-    public ResponseEntity<BaseObjectResponse<CargaDetalleResponse>> asignarConAlgoritmoHibrido(
+    public ResponseEntity<BaseObjectResponse<CargaDetalleResponse>> asignarConAlgoritmoGeneticoPSO(
             @PathVariable("idCicloAcademico") Integer idCicloAcademico) {
 
         try {
-
-            BaseObjectResponse<CargaDetalleResponse> response =
-                    serviceImpl.asignarConAlgoritmoGeneticoPSO(idCicloAcademico);
+            BaseObjectResponse<CargaDetalleResponse> response = service.asignarConAlgoritmoGeneticoPSO(idCicloAcademico);
             return ResponseEntity.status(response.status()).body(response);
 
         } catch (IllegalArgumentException e) {
@@ -86,23 +85,5 @@ public class AsignacionController {
                     .body(new BaseObjectResponse<>(500,
                             "Error interno del servidor en algoritmo híbrido: " + e.getMessage(), null));
         }
-    }
-
-    @GetMapping("/listar/{idDocente}/{idCarga}")
-    public ResponseEntity<BaseListReponse<AsignacionResumenResponse>> findByDocenteAndCargaElectiva(
-            @PathVariable("idDocente") Integer idDocente,
-            @PathVariable("idCarga") Integer idCarga) throws Exception {
-        BaseListReponse<AsignacionResumenResponse> response = serviceImpl.obtenerAsignacionesPorDocenteCarga(idDocente, idCarga);
-        return ResponseEntity.status(response.status()).body(response);
-    }
-
-    @DeleteMapping("/eliminar/{idAsignacion}")
-    public ResponseEntity<BaseObjectResponse<String>> delete(@PathVariable("idAsignacion") Integer id) {
-        BaseObjectResponse<String> response = serviceImpl.eliminarAsignacion(id);
-        return ResponseEntity.status(response.status()).body(response);
-    }
-
-    private AsignacionDetalleResponse convertToDTO(Asignacion obj) {
-        return modelMapper.map(obj, AsignacionDetalleResponse.class);
     }
 }

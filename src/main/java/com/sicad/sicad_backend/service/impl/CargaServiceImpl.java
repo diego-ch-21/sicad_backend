@@ -1,21 +1,30 @@
 package com.sicad.sicad_backend.service.impl;
 
+import com.sicad.sicad_backend.Enum.Modulo;
+import com.sicad.sicad_backend.dto.algoritmo.AlgoritmoDetalleResponse;
+import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.carga.CargaDetalleResponse;
+import com.sicad.sicad_backend.dto.docente.DocenteAsignacionResponse;
+import com.sicad.sicad_backend.model.Algoritmo;
 import com.sicad.sicad_backend.model.Carga;
+import com.sicad.sicad_backend.model.CicloAcademico;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.ICargaRepo;
 import com.sicad.sicad_backend.repository.interfaces.ICicloAcademicoRepo;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.ICargaService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CargaServiceImpl
@@ -32,86 +41,100 @@ public class CargaServiceImpl
     }
 
     @Override
-    public List<Carga> findByEnabledTrue() {
-        return cargaRepo.findByEnabledTrue();
+    public BaseListReponse<CargaDetalleResponse> listarPorCicloAcademico(Integer idCicloAcademico) {
+
+        Optional<CicloAcademico> cicloOpt = cicloAcademicoRepo.findByIdAndEnabledTrue(idCicloAcademico);
+        if (cicloOpt.isEmpty()) {
+            return new BaseListReponse<>(404, Modulo.CICLO_ACADEMICO.noEncontrado(), null);
+        }
+        List<CargaDetalleResponse> lista = cargaRepo.findByIdCicloAcademicoAndEnabledTrue(idCicloAcademico)
+                .stream()
+                .map(this::convCargaDetalle)
+                .toList();
+
+        return new BaseListReponse<>(200, Modulo.CARGA.listado(), lista);
     }
 
     @Override
-    public List<Carga> findByEnabledTrueAndCicloAcademico_Id(Integer idCicloAcademico) {
-        return cargaRepo.findByEnabledTrueAndCicloAcademico_IdCicloAcademico(idCicloAcademico);
-    }
-
-    public BaseObjectResponse<CargaDetalleResponse> obtenerCargaDefecto(Integer idCicloAcademico){
-        Optional<Carga> cargaObejct = cargaRepo.findPrincipalByCicloAcademicoAndEnabledTrue(idCicloAcademico);
-        if(!cargaObejct.isPresent()){
-            return new BaseObjectResponse<>(200, "carga no encontrada", null);
-        }
-        return new BaseObjectResponse<>(200, "Carga encontrada correctamente", convertToDetalle(cargaObejct.get()));
-    }
-
-    public BaseObjectResponse<CargaDetalleResponse> insertarCargaDefecto(Integer idCicloAcademico, Integer idCarga) {
-        // Validar si el ciclo académico existe
-        boolean cicloExiste = cicloAcademicoRepo.existsById(idCicloAcademico);
-        if (!cicloExiste) {
-            return new BaseObjectResponse<>(404, "Ciclo académico no encontrado", null);
-        }
-
-        // Validar si la carga existe
-        Optional<Carga> cargaOpt = cargaRepo.findById(idCarga);
+    public BaseObjectResponse<CargaDetalleResponse> buscar(Integer idCarga) {
+        Optional<Carga> cargaOpt = cargaRepo.findByIdAndEnabledTrue(idCarga);
         if (cargaOpt.isEmpty()) {
-            return new BaseObjectResponse<>(404, "Carga no encontrada", null);
+            return new BaseObjectResponse<>(404, Modulo.CARGA.noEncontrado(), null);
         }
+        Carga carga = cargaOpt.get();
 
-        Carga cargaPrincipal = cargaOpt.get();
-
-        // Verificar que pertenezca al ciclo académico dado
-        if (!Objects.equals(cargaPrincipal.getCicloAcademico().getIdCicloAcademico(), idCicloAcademico)) {
-            return new BaseObjectResponse<>(400, "La carga no pertenece al ciclo académico indicado", null);
-        }
-
-        // Obtener todas las cargas activas del ciclo y desmarcarlas
-        List<Carga> cargas = cargaRepo.findByEnabledTrueAndCicloAcademico_IdCicloAcademico(idCicloAcademico);
-        for (Carga c : cargas) {
-            c.setPrincipal(false);
-            cargaRepo.save(c);
-        }
-
-        // Marcar como principal la carga seleccionada
-        cargaPrincipal.setPrincipal(true);
-        cargaRepo.save(cargaPrincipal);
-
-        // Retornar respuesta correcta
-        return new BaseObjectResponse<>(
-                200,
-                "Carga principal actualizada correctamente",
-                convertToDetalle(cargaPrincipal)
-        );
+        return new BaseObjectResponse<>(200, Modulo.CARGA.encontrado(), convCargaDetalle(carga));
     }
 
-
-
-
-    public BaseObjectResponse<String> eliminarCarga(Integer idCarga) {
-        // Validación de parámetro
-        if (idCarga == null) {
-            return new BaseObjectResponse<>(400, "idCarga no proporcionado", null);
+    @Override
+    public BaseObjectResponse<String> eliminar(Integer idCarga) {
+        Optional<Carga> cargaOpt = cargaRepo.findByIdAndEnabledTrue(idCarga);
+        if (cargaOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.CARGA.noEncontrado(), null);
         }
-
-        // Validar existencia del curso
-        Carga carga = cargaRepo.findById(idCarga).orElse(null);
-        if (carga == null) {
-            return new BaseObjectResponse<>(404, "Carga  no encontrado", null);
-        }
-
-        // desabilitar
+        Carga carga = cargaOpt.get();
         carga.setEnabled(false);
         carga.setPrincipal(false);
         cargaRepo.save(carga);
-        return new BaseObjectResponse<>(200, "se elimino la carga exitosamente", null);
+
+        return new BaseObjectResponse<>(200, Modulo.CARGA.eliminado(), null);
     }
 
-    private CargaDetalleResponse convertToDetalle(Carga obj) {
+    @Override
+    public BaseObjectResponse<CargaDetalleResponse> asignarPrincipal(Integer idCicloAcademico,Integer idCarga) {
+        //verificar carga
+        Optional<Carga> cargaOpt = cargaRepo.findByIdAndEnabledTrue(idCarga);
+        if (cargaOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.CARGA.noEncontrado(), null);
+        }
+        Carga cargaNew = cargaOpt.get();
+        //verificar ciclo academico
+        Optional<CicloAcademico> cicloAcademicoOpt = cicloAcademicoRepo.findByIdAndEnabledTrue(idCicloAcademico);
+        if (cicloAcademicoOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.CICLO_ACADEMICO.noEncontrado(), null);
+        }
+
+        if(!idCicloAcademico.equals(cargaNew.getCicloAcademico().getIdCicloAcademico())){
+            return new BaseObjectResponse<>(404, Modulo.CARGA.noPertenece(Modulo.CICLO_ACADEMICO), null);
+        }
+
+        if(cargaNew.getPrincipal()){
+            return new BaseObjectResponse<>(200, Modulo.CARGA.principalYaSeleccionado(), convCargaDetalle(cargaNew));
+        }
+
+        Optional<Carga> cargaPrincipalAnterior = cargaRepo.findPrincipalByCicloAcademicoAndEnabledTrue(idCicloAcademico);
+        if(!cargaPrincipalAnterior.isEmpty()){
+            Carga cargaPrincipal = cargaPrincipalAnterior.get();
+            cargaPrincipal.setPrincipal(false);
+            cargaRepo.save(cargaPrincipal);
+        }
+
+        cargaNew.setPrincipal(true);
+        cargaRepo.save(cargaNew);
+
+        return new BaseObjectResponse<>(201, Modulo.CARGA.principalSeleccionado(), convCargaDetalle(cargaNew));
+    }
+
+    @Override
+    public BaseObjectResponse<CargaDetalleResponse> buscarPrincipal(Integer idCicloAcademico) {
+        Optional<Carga> optCarga = cargaRepo.findPrincipalByCicloAcademicoAndEnabledTrue(idCicloAcademico);
+        if (optCarga.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.CARGA.noEncontrado(), null);
+        }
+        Carga carga = optCarga.get();
+        return new BaseObjectResponse<>(201, Modulo.CARGA.encontrado(),convCargaDetalle(carga));
+    }
+
+    public void exportarCargaElectiva(Integer idCarga) {
+
+
+    }
+    public void exportarCargaElectivaDocente(Integer docentem,Integer idCarga){
+
+    }
+
+
+    private CargaDetalleResponse convCargaDetalle(Carga obj) {
         return modelMapper.map(obj, CargaDetalleResponse.class);
     }
-
 }

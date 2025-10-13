@@ -35,5 +35,5 @@ public class Preferencia {
     private CicloAcademico cicloAcademico;
 
     @Column(nullable = false, name = "enabled")
-    private boolean enabled;
+    private Boolean enabled;
 }

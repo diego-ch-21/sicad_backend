@@ -1,10 +1,14 @@
 package com.sicad.sicad_backend.service.impl;
 
+import com.sicad.sicad_backend.Enum.Modulo;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
+import com.sicad.sicad_backend.dto.escuela.EscuelaCreateRequest;
+import com.sicad.sicad_backend.dto.escuela.EscuelaDetalleResponse;
 import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioCreateRequest;
 import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioDetalleResponse;
 import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioUpdateRequest;
+import com.sicad.sicad_backend.model.Escuela;
 import com.sicad.sicad_backend.model.PlanDeEstudio;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.IPlanDeEstudioRepo;
@@ -12,15 +16,20 @@ import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.IPlanDeEstudioService;
 import com.sicad.sicad_backend.utils.CodigoGeneratorUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-public class PlanDeEstudioServiceImpl extends CRUDImpl<PlanDeEstudio, Integer> implements IPlanDeEstudioService {
+public class PlanDeEstudioServiceImpl
+        extends CRUDImpl<PlanDeEstudio, Integer>
+        implements IPlanDeEstudioService {
 
     private final IPlanDeEstudioRepo planRepo;
     private final ModelMapper modelMapper;
@@ -30,15 +39,34 @@ public class PlanDeEstudioServiceImpl extends CRUDImpl<PlanDeEstudio, Integer> i
         return planRepo;
     }
 
-    public BaseObjectResponse<PlanDeEstudioDetalleResponse> registrarPlan(PlanDeEstudioCreateRequest request) {
 
-        // 2. Generar código único (suponiendo código numérico de 6 dígitos)
+    @Override
+    public BaseListReponse<PlanDeEstudioDetalleResponse> listar() {
+        List<PlanDeEstudioDetalleResponse> lista = planRepo.findByEnabledTrue()
+                .stream()
+                .map(this::convPlanDeEstudioDetalle)
+                .toList();
+
+        return new BaseListReponse<>(200, Modulo.PLAN_DE_ESTUDIO.listado(), lista);
+    }
+
+    @Override
+    public BaseObjectResponse<PlanDeEstudioDetalleResponse> buscar(Integer idPlanDeEstudio) {
+        Optional<PlanDeEstudio> planOpt = planRepo.findByIdAndEnabledTrue(idPlanDeEstudio);
+
+        if (planOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.PLAN_DE_ESTUDIO.noEncontrado(), null);
+        }
+
+        return new BaseObjectResponse<>(200, Modulo.PLAN_DE_ESTUDIO.encontrado(), convPlanDeEstudioDetalle(planOpt.get()));    }
+
+    @Override
+    public BaseObjectResponse<PlanDeEstudioDetalleResponse> registrar(PlanDeEstudioCreateRequest request) {
         Integer codigo;
         do {
             codigo = Integer.parseInt(CodigoGeneratorUtil.generarCodigoNumerico(6));
         } while (planRepo.existsByCodigo(codigo));
 
-        // 3. Crear PlanDeEstudio
         PlanDeEstudio plan = PlanDeEstudio.builder()
                 .codigo(codigo)
                 .nombre(request.getNombre())
@@ -46,63 +74,63 @@ public class PlanDeEstudioServiceImpl extends CRUDImpl<PlanDeEstudio, Integer> i
                 .build();
 
         planRepo.save(plan);
+        return new BaseObjectResponse<>(201, Modulo.PLAN_DE_ESTUDIO.registrado(), convPlanDeEstudioDetalle(plan));
 
-        PlanDeEstudioDetalleResponse dto = modelMapper.map(plan, PlanDeEstudioDetalleResponse.class);
-        return new BaseObjectResponse<>(201, "Plan de Estudio registrado exitosamente", dto);
     }
 
-    public BaseObjectResponse<PlanDeEstudioDetalleResponse> actualizarPlan(Integer idPlan, PlanDeEstudioUpdateRequest request) {
-        PlanDeEstudio plan = planRepo.findById(idPlan).orElse(null);
-        if (plan == null) {
-            return new BaseObjectResponse<>(404, "Plan de Estudio no encontrado", null);
-        }
+    @Override
+    public BaseListReponse<PlanDeEstudioDetalleResponse> registrarAll(List<PlanDeEstudioCreateRequest> requests) {
+        List<PlanDeEstudioDetalleResponse> registrados = new ArrayList<>();
+        int errorCount = 0;
 
-        // Actualizar nombre si viene
+        for (PlanDeEstudioCreateRequest request : requests) {
+            try {
+                BaseObjectResponse<PlanDeEstudioDetalleResponse> response = registrar(request);
+                if (response.status() == 201 && response.data() != null) {
+                    registrados.add(response.data());
+                } else {
+                    errorCount++;
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                errorCount++;
+            }
+        }
+        return new BaseListReponse<>(201,Modulo.PLAN_DE_ESTUDIO.resumenAllRegistro(registrados.size(), errorCount),registrados);
+    }
+
+    @Override
+    public BaseObjectResponse<PlanDeEstudioDetalleResponse> actualizar(Integer idPlanDeEstudio, PlanDeEstudioUpdateRequest request) {
+        Optional<PlanDeEstudio> planOpt = planRepo.findByIdAndEnabledTrue(idPlanDeEstudio);
+
+        if (planOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.PLAN_DE_ESTUDIO.noEncontrado(), null);
+        }
+        PlanDeEstudio plan = planOpt.get();
+
         if (request.getNombre() != null && !request.getNombre().isBlank()) {
             plan.setNombre(request.getNombre());
         }
 
         planRepo.save(plan);
-
-        PlanDeEstudioDetalleResponse dto = modelMapper.map(plan, PlanDeEstudioDetalleResponse.class);
-        return new BaseObjectResponse<>(200, "Plan de Estudio actualizado exitosamente", dto);
-    }
-    public BaseListReponse<PlanDeEstudioDetalleResponse> registrarPlanesMultiples(List<PlanDeEstudioCreateRequest> requests) {
-        List<PlanDeEstudioDetalleResponse> registrados = new ArrayList<>();
-        int errorCount = 0;
-
-        for (PlanDeEstudioCreateRequest request : requests) {
-            BaseObjectResponse<PlanDeEstudioDetalleResponse> response = registrarPlan(request);
-            if (response.status() == 201 && response.data() != null) {
-                registrados.add(response.data());
-            } else {
-                errorCount++;
-            }
-        }
-
-        String mensaje = String.format("Planes registrados: %d. Fallidos: %d.", registrados.size(), errorCount);
-        return new BaseListReponse<>(201, mensaje, registrados.isEmpty() ? null : registrados);
-    }
-    public BaseObjectResponse<String> eliminarPlanDeEstudio(Integer idPlanDeEstudio) {
-        // Validación de parámetro
-        if (idPlanDeEstudio == null) {
-            return new BaseObjectResponse<>(400, "idPlanDeEstudio no proporcionado", null);
-        }
-
-        // Validar existencia del curso
-        PlanDeEstudio planDeEstudio = planRepo.findById(idPlanDeEstudio).orElse(null);
-        if (planDeEstudio == null) {
-            return new BaseObjectResponse<>(404, "Plan de estudio no encontrado", null);
-        }
-
-        // desabilitar
-        planDeEstudio.setEnabled(false);
-        planRepo.save(planDeEstudio);
-        return new BaseObjectResponse<>(200, "se elimino el Plan de estudio exitosamente", null);
+        return new BaseObjectResponse<>(200, Modulo.PLAN_DE_ESTUDIO.actualizado(), convPlanDeEstudioDetalle(plan));
     }
 
     @Override
-    public List<PlanDeEstudio> findByEnabledTrue() {
-        return planRepo.findByEnabledTrue();
+    public BaseObjectResponse<String> eliminar(Integer idPlanDeEstudio) {
+        Optional<PlanDeEstudio> planOpt = planRepo.findByIdAndEnabledTrue(idPlanDeEstudio);
+
+        if (planOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.PLAN_DE_ESTUDIO.noEncontrado(), null);
+        }
+        PlanDeEstudio plan = planOpt.get();
+        plan.setEnabled(false);
+        planRepo.save(plan);
+        return new BaseObjectResponse<>(200, Modulo.PLAN_DE_ESTUDIO.eliminado(), null);
     }
+
+    private PlanDeEstudioDetalleResponse convPlanDeEstudioDetalle(PlanDeEstudio obj) {
+        return modelMapper.map(obj, PlanDeEstudioDetalleResponse.class);
+    }
+
 }

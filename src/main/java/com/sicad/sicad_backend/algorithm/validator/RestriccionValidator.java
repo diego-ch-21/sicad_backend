@@ -135,7 +135,7 @@ public class RestriccionValidator {
             }
 
             // Verificar cada horario del curso contra disponibilidad
-            for (CursoHorario horario : curso.getCursoHorario()) {
+            for (Horario horario : curso.getCursoHorario()) {
                 boolean tieneDisponibilidad = disponibilidades.stream()
                         .anyMatch(disp -> verificarSolapamientoHorario(disp, horario));
 
@@ -150,7 +150,7 @@ public class RestriccionValidator {
         return penalizacion;
     }
 
-    private boolean verificarSolapamientoHorario(Disponibilidad disponibilidad, CursoHorario horario) {
+    private boolean verificarSolapamientoHorario(Disponibilidad disponibilidad, Horario horario) {
         return disponibilidad.getDiaSemana().equalsIgnoreCase(horario.getDiaSemana()) &&
                 !disponibilidad.getHoraInicio().after(horario.getHoraInicio()) &&
                 !disponibilidad.getHoraFin().before(horario.getHoraFin());
@@ -164,7 +164,7 @@ public class RestriccionValidator {
 
         for (Integer idDocente : solucion.getDocentesUtilizados()) {
             List<Integer> cursosDocente = solucion.getCursosDeDocente(idDocente);
-            List<CursoHorario> todosLosHorarios = new ArrayList<>();
+            List<Horario> todosLosHorarios = new ArrayList<>();
 
             // Recopilar todos los horarios del docente
             for (Integer idCurso : cursosDocente) {
@@ -228,7 +228,7 @@ public class RestriccionValidator {
         return penalizacion;
     }
 
-    private boolean hayConflictoHorario(CursoHorario horario1, CursoHorario horario2) {
+    private boolean hayConflictoHorario(Horario horario1, Horario horario2) {
         if (!horario1.getDiaSemana().equalsIgnoreCase(horario2.getDiaSemana())) {
             return false;
         }
@@ -495,8 +495,8 @@ public class RestriccionValidator {
 
         if (curso1 == null || curso2 == null) return false;
 
-        for (CursoHorario horario1 : curso1.getCursoHorario()) {
-            for (CursoHorario horario2 : curso2.getCursoHorario()) {
+        for (Horario horario1 : curso1.getCursoHorario()) {
+            for (Horario horario2 : curso2.getCursoHorario()) {
                 if (hayConflictoHorario(horario1, horario2)) {
                     return true;
                 }
@@ -509,7 +509,7 @@ public class RestriccionValidator {
     private int obtenerHorasCurso(Integer idCurso) {
         Curso curso = obtenerCursoPorId(idCurso);
         return curso != null ? curso.getCursoHorario().stream()
-                .mapToInt(CursoHorario::getDuracionHoras)
+                .mapToInt(Horario::getDuracionHoras)
                 .sum() : 0;
     }
 

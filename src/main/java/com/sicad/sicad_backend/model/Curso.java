@@ -47,7 +47,7 @@ public class Curso {
     private String grupo;
 
     @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<CursoHorario> cursoHorario = new ArrayList<>();
+    private List<Horario> cursoHorario = new ArrayList<>();
 
     @Column(nullable = false, name = "enabled")
     private Boolean enabled;

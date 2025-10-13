@@ -3,13 +3,11 @@ package com.sicad.sicad_backend.controller;
 
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.docente.*;
-import com.sicad.sicad_backend.model.Docente;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
-import com.sicad.sicad_backend.service.impl.DocenteServiceImpl;
+import com.sicad.sicad_backend.service.report.pdf.PdfGeneratorServiceImpl;
 import com.sicad.sicad_backend.service.interfaces.IDocenteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,89 +18,82 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DocenteController {
     private final IDocenteService service;
-    private final DocenteServiceImpl serviceImpl;
-    private final ModelMapper modelMapper;
+    private final PdfGeneratorServiceImpl pdfService;
 
     @GetMapping("/listar")
-    public ResponseEntity<BaseListReponse<DocenteDetalleResponse>> findAll() throws Exception {
-        List<DocenteDetalleResponse> lista = service.findByEnabledTrue()
-                .stream()
-                .map(this::convertToResponseDTO)
-                .toList();
+    public ResponseEntity<BaseListReponse<DocenteDetalleResponse>>
+            listar() {
+        BaseListReponse<DocenteDetalleResponse> response = service.listar();
+        return ResponseEntity.status(response.status()).body(response);
+    }
 
-        return ResponseEntity.ok(
-                new BaseListReponse<>(200, "Lista de Docentes", lista)
-        );
-    }
     @GetMapping("/buscar/{idDocente}")
-    public ResponseEntity<BaseObjectResponse<DocenteDetalleResponse>>  findById(@PathVariable("idDocente") Integer id) throws Exception {
-        Docente obj = service.findById(id);
-        return ResponseEntity.ok(
-                new BaseObjectResponse<>(200, "Docente encontrada", convertToResponseDTO(obj))
-        );
+    public ResponseEntity<BaseObjectResponse<DocenteDetalleResponse>>
+            buscar(@PathVariable("idDocente") Integer id) {
+        BaseObjectResponse<DocenteDetalleResponse> response = service.buscar(id);
+        return ResponseEntity.status(response.status()).body(response);
     }
+
     @GetMapping("/usuario/buscar/{idUsuario}")
-    public ResponseEntity<BaseObjectResponse<DocenteDetalleResponse>>  findByIdUsuario(@PathVariable("idUsuario") Integer id) throws Exception {
-        BaseObjectResponse<DocenteDetalleResponse> response = serviceImpl.obtenerDocentePorUsuario(id);
+    public ResponseEntity<BaseObjectResponse<DocenteDetalleResponse>>
+            buscarPorUsuario(@PathVariable("idUsuario") Integer id) {
+        BaseObjectResponse<DocenteDetalleResponse> response = service.buscarPorUsuario(id);
         return ResponseEntity.status(response.status()).body(response);
     }
     @PostMapping("/insertar")
-    public ResponseEntity<BaseObjectResponse<DocenteDetalleResponse>> registrarDocente(@Valid @RequestBody DocenteCreateRequest request) {
-        BaseObjectResponse<DocenteDetalleResponse> response = serviceImpl.registrarDocente(request);
+    public ResponseEntity<BaseObjectResponse<DocenteDetalleResponse>>
+            registrar(@Valid @RequestBody DocenteCreateRequest request) {
+        BaseObjectResponse<DocenteDetalleResponse> response = service.registrar(request);
         return ResponseEntity.status(response.status()).body(response);
     }
+
     @PostMapping("/insertar-all")
-    public ResponseEntity<BaseListReponse<DocenteDetalleResponse>> registrarDocentes(@Valid @RequestBody List<DocenteCreateRequest> requestAll) {
-        BaseListReponse<DocenteDetalleResponse> response = serviceImpl.registrarDocentes(requestAll);
+    public ResponseEntity<BaseListReponse<DocenteDetalleResponse>>
+            registrarAll(@Valid @RequestBody List<DocenteCreateRequest> request) {
+        BaseListReponse<DocenteDetalleResponse> response = service.registrarAll(request);
         return ResponseEntity.status(response.status()).body(response);
     }
-
-
     @PutMapping("/actualizar/{idDocente}")
-    public ResponseEntity<BaseObjectResponse<DocenteDetalleResponse>> update(@Valid @PathVariable("id") Integer id, @Valid @RequestBody DocenteUpdateRequest dto) throws Exception {
-        BaseObjectResponse<DocenteDetalleResponse> response = serviceImpl.actualizarDocente(id, dto);
+    public ResponseEntity<BaseObjectResponse<DocenteDetalleResponse>>
+            actualizar(@PathVariable("idDocente") Integer id, @Valid @RequestBody DocenteUpdateRequest dto) {
+        BaseObjectResponse<DocenteDetalleResponse> response = service.actualizar(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }
-
     @DeleteMapping("/eliminar/{idDocente}")
     public ResponseEntity<BaseObjectResponse<String>>
-            delete(@PathVariable("idDocente") Integer id) {
-        BaseObjectResponse<String> response = serviceImpl.eliminarDocente(id);
+            eliminar(@PathVariable("idDocente") Integer id) {
+        BaseObjectResponse<String> response = service.eliminar(id);
         return ResponseEntity.status(response.status()).body(response);
     }
 
     @GetMapping("/listar/especializaciones")
-    public ResponseEntity<BaseListReponse<DocenteEspecializacionResponse>> docenteEspecializacion() throws Exception {
-        BaseListReponse<DocenteEspecializacionResponse> response = serviceImpl.listarDocentesConEspecializaciones();
+    public ResponseEntity<BaseListReponse<DocenteEspecializacionResponse>>
+            docenteEspecializacion(){
+        BaseListReponse<DocenteEspecializacionResponse> response = service.listarDocentesConEspecializaciones();
         return  ResponseEntity.status(response.status()).body(response);
     }
 
     @GetMapping("/preferencias/{idCicloAcademico}")
     public ResponseEntity<BaseListReponse<DocentePreferenciaResponse>>
-        docentesPreferencias(@PathVariable("idCicloAcademico") Integer id) throws Exception {
-        BaseListReponse<DocentePreferenciaResponse> response = serviceImpl.listarDocentesConPreferencias(id);
+            docentesPreferencias(@PathVariable("idCicloAcademico") Integer id){
+        BaseListReponse<DocentePreferenciaResponse> response = service.listarDocentesConPreferencias(id);
         return ResponseEntity.status(response.status()).body(response);
     }
     @GetMapping("/disponibilidades/{idCicloAcademico}")
     public ResponseEntity<BaseListReponse<DocenteDisponibilidadResponse>>
-        docentesDisponibilidad(@PathVariable("idCicloAcademico") Integer id) throws Exception {
-        BaseListReponse<DocenteDisponibilidadResponse> response = serviceImpl.listarDocentesConDisponibilidad(id);
+            docentesDisponibilidad(@PathVariable("idCicloAcademico") Integer id){
+        BaseListReponse<DocenteDisponibilidadResponse> response = service.listarDocentesConDisponibilidad(id);
         return ResponseEntity.status(response.status()).body(response);
     }
 
     @GetMapping("/asignaciones/{idCarga}")
     public ResponseEntity<BaseListReponse<DocenteAsignacionResponse>>
-        docentesAsignacionesCicloAcademicoAndCarga(
+    docentesAsignacionesCicloAcademicoAndCarga(
             @PathVariable("idCarga") Integer idCarga) throws Exception {
-        BaseListReponse<DocenteAsignacionResponse> response = serviceImpl.listarDocentesCargaConAsignaciones(idCarga);
+        BaseListReponse<DocenteAsignacionResponse> response = service.listarDocentesCargaConAsignaciones(idCarga);
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    private DocenteDetalleResponse convertToResponseDTO(Docente obj) {
-        return modelMapper.map(obj, DocenteDetalleResponse.class);
-    }
 
-    private Docente convertToEntity(DocenteCreateRequest dto) {
-        return modelMapper.map(dto, Docente.class);
-    }
+
 }

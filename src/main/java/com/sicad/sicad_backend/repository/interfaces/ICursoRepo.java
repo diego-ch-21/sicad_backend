@@ -2,6 +2,7 @@ package com.sicad.sicad_backend.repository.interfaces;
 
 import com.sicad.sicad_backend.model.Asignatura;
 import com.sicad.sicad_backend.model.Curso;
+import com.sicad.sicad_backend.model.Escuela;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.Modifying;
@@ -9,11 +10,22 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ICursoRepo extends IGenericRepo<Curso, Integer> {
 
     // Verifica si ya existe un curso con el código proporcionado (para evitar duplicados).
     boolean existsByCodigo(String codigo);
+
+
+    @Query("SELECT e FROM Curso e WHERE e.enabled = true")
+    List<Curso> findByEnabledTrue();
+
+    @Query("SELECT e FROM Curso e WHERE e.idCurso = :id AND e.enabled = true")
+    Optional<Curso> findByIdAndEnabledTrue(@Param("id") Integer idCurso);
+
+    @Query("SELECT c FROM Curso c WHERE c.enabled = true AND c.cicloAcademico.idCicloAcademico = :id")
+    List<Curso> findByEnabledTrueAndCicloAcademico(@Param("id") Integer idCicloAcademico);
 
     /**
      * Busca cursos habilitados de un ciclo académico específico (enabled = true).
@@ -45,12 +57,6 @@ public interface ICursoRepo extends IGenericRepo<Curso, Integer> {
             @Param("idCicloAcademico") Integer idCicloAcademico);
 
 
-    /**
-     * Recupera todos los cursos junto con su relación cursoHorario usando LEFT JOIN FETCH.
-     * El DISTINCT se usa para evitar duplicados cuando un curso tiene varios horarios.
-     */
-    @Query("SELECT DISTINCT c FROM Curso c LEFT JOIN FETCH c.cursoHorario")
-    List<Curso> findAllWithHorarios();
 
     /**
      * Elimina todos los cursos asociados a un ciclo académico específico.
@@ -63,8 +69,5 @@ public interface ICursoRepo extends IGenericRepo<Curso, Integer> {
     @Query("DELETE FROM Curso c WHERE c.cicloAcademico.idCicloAcademico = :idCicloAcademico")
     int eliminarPorCicloAcademico(@Param("idCicloAcademico") Integer idCicloAcademico);
 
-    /**
-     * Obtiene todos los cursos habilitados (enabled = true).
-     */
-    List<Curso> findByEnabledTrue();
+
 }

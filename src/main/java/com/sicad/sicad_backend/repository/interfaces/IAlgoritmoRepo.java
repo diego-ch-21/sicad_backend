@@ -17,10 +17,6 @@ public interface IAlgoritmoRepo extends IGenericRepo<Algoritmo, Integer> {
     @Query("UPDATE Algoritmo e SET e.principal = false")
     void resetPrincipal();
 
-    @Modifying
-    @Query("UPDATE Algoritmo e SET e.principal = true WHERE e.id = :id")
-    void setPrincipal(@Param("id") Integer id);
-
     @Query("SELECT e FROM Algoritmo e WHERE e.enabled = true")
     List<Algoritmo> findByEnabledTrue();
 

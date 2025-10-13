@@ -60,7 +60,6 @@ public class EscuelaServiceImpl
 
     @Override
     public BaseObjectResponse<EscuelaDetalleResponse> registrar(EscuelaCreateRequest request) {
-
         String codigo;
         do {
             codigo = CodigoGeneratorUtil.generarCodigoNumerico(6);
@@ -73,8 +72,7 @@ public class EscuelaServiceImpl
                 .build();
         escuelaRepo.save(escuela);
 
-        EscuelaDetalleResponse response = convEscuelaDetalle(escuela);
-        return new BaseObjectResponse<>(201, Modulo.ESCUELA.registrado(), response);
+        return new BaseObjectResponse<>(201, Modulo.ESCUELA.registrado(), convEscuelaDetalle(escuela));
     }
 
     @Override
@@ -101,7 +99,6 @@ public class EscuelaServiceImpl
     @Override
     public BaseObjectResponse<EscuelaDetalleResponse> actualizar(Integer idEscuela, EscuelaUpdateRequest request) {
         Optional<Escuela> escuelaOpt = escuelaRepo.findByIdAndEnabledTrue(idEscuela);
-
         if (escuelaOpt.isEmpty()) {
             return new BaseObjectResponse<>(404, Modulo.ESCUELA.noEncontrado(), null);
         }

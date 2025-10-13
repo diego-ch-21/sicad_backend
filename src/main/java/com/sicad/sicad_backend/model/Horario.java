@@ -1,11 +1,6 @@
 package com.sicad.sicad_backend.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 import java.sql.Time;
@@ -17,13 +12,13 @@ import java.sql.Time;
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name="curso_horario")
-public class CursoHorario {
+public class Horario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     @Column(name = "id_curso_horario")
-    private Integer idCursoHorario;
+    private Integer idHorario;
 
     @ManyToOne
     @JoinColumn(name = "id_curso", nullable = false,

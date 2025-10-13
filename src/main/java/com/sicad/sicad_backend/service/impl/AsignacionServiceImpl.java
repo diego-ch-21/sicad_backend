@@ -1,5 +1,6 @@
 package com.sicad.sicad_backend.service.impl;
 
+import com.sicad.sicad_backend.Enum.Modulo;
 import com.sicad.sicad_backend.algorithm.service.AlgoritmoAsignacionService;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionCreateRequest;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionDetalleResponse;
@@ -8,22 +9,23 @@ import com.sicad.sicad_backend.dto.asignacion.AsignacionUpdateRequest;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.carga.CargaDetalleResponse;
+import com.sicad.sicad_backend.dto.escuela.EscuelaDetalleResponse;
 import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.*;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.IAsignacionService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AsignacionServiceImpl
@@ -48,76 +50,8 @@ public class AsignacionServiceImpl
         return asignacionRepo;
     }
 
-    public BaseObjectResponse<AsignacionDetalleResponse> registrarAsignacion(AsignacionCreateRequest request) {
-        Docente docente = docenteRepo.findById(request.getIdDocente()).orElse(null);
-        if (docente == null) {
-            return new BaseObjectResponse<>(404, "Docente no encontrado", null);
-        }
 
-        Curso curso = cursoRepo.findById(request.getIdCurso()).orElse(null);
-        if (curso == null) {
-            return new BaseObjectResponse<>(404, "Curso no encontrado", null);
-        }
-
-        CicloAcademico cicloAcademico = cicloAcademicoRepo.findById(request.getIdCicloAcademico()).orElse(null);
-        if (cicloAcademico == null) {
-            return new BaseObjectResponse<>(404, "Ciclo academico no encontrada", null);
-        }
-        Carga carga = cargaRepo.findById(request.getIdCarga()).orElse(null);
-        if(carga == null) {
-            return new BaseObjectResponse<>(404, "Carga no encontrada", null);
-        }
-
-        Asignacion asignacion = new Asignacion();
-        asignacion.setDocente(docente);
-        asignacion.setCurso(curso);
-        asignacion.setCicloAcademico(cicloAcademico);
-        asignacion.setCarga(carga);
-        asignacion.setEnabled(true);
-        asignacion.setCreatedAt(LocalDate.now());
-        asignacionRepo.save(asignacion);
-        AsignacionDetalleResponse dto = modelMapper.map(asignacion, AsignacionDetalleResponse.class);
-        return new BaseObjectResponse<>(201, "Asignación registrada exitosamente", dto);
-    }
-
-    public BaseObjectResponse<AsignacionDetalleResponse> actualizarAsignacion(Integer id, AsignacionUpdateRequest request) {
-        Asignacion asignacion = asignacionRepo.findById(id).orElse(null);
-        if (asignacion == null) {
-            return new BaseObjectResponse<>(404, "Asignación no encontrada", null);
-        }
-
-        if (request.getIdDocente() != null) {
-            docenteRepo.findById(request.getIdDocente()).ifPresent(asignacion::setDocente);
-        }
-
-        if (request.getIdCurso() != null) {
-            cursoRepo.findById(request.getIdCurso()).ifPresent(asignacion::setCurso);
-        }
-
-        if (request.getIdCicloAcademico() != null) {
-            cicloAcademicoRepo.findById(request.getIdCicloAcademico()).ifPresent(asignacion::setCicloAcademico);
-        }
-        if(request.getIdCarga() != null) {
-            cargaRepo.findById(request.getIdCarga()).ifPresent(asignacion::setCarga);
-        }
-
-
-        try {
-            asignacionRepo.save(asignacion);
-            AsignacionDetalleResponse dto = modelMapper.map(asignacion, AsignacionDetalleResponse.class);
-            return new BaseObjectResponse<>(200, "Asignación actualizada exitosamente", dto);
-        } catch (DataIntegrityViolationException e) {
-            return new BaseObjectResponse<>(400, "Conflicto de unicidad: ya existe una asignación para este docente y horario", null);
-        }
-    }
-
-
-    //------------------------------------------------------------------------------------------------------
-
-    /**
-     * MÉTODO PRINCIPAL ACTUALIZADO: Ejecuta algoritmo híbrido GA+PSO con nuevo modelo de restricciones
-     */
-    @Transactional
+    @Override
     public BaseObjectResponse<CargaDetalleResponse> asignarConAlgoritmoGeneticoPSO(Integer idCicloAcademico) {
         try {
             // 1. Validaciones iniciales
@@ -178,35 +112,19 @@ public class AsignacionServiceImpl
             // 7. Persistir las asignaciones
             List<Asignacion> asignacionesGuardadas = asignacionRepo.saveAll(asignacionesOptimas);
 
-            /*
-            System.out.println("=== Asignaciones guardadas exitosamente ===");
 
-            // 8. Convertir a DTOs
-            List<AsignacionDetalleResponse> response = asignacionesGuardadas.stream()
-                    .map(asignacion -> modelMapper.map(asignacion, AsignacionDetalleResponse.class))
-                    .collect(Collectors.toList());
-
-            // 9. Generar resumen de resultados actualizado
-
-
-            return new GenericObjectResponse<>(201, resumen, response);
-
-             */
             generarResumenAlgoritmoActualizado(asignacionesGuardadas, docentes, cursos,carga);
 
             Carga obj = cargaRepo.findById(idCicloAcademico).orElse(null);
             if(obj == null) {
                 return new BaseObjectResponse<>(400,"carga no encontrada",null);
             }
-            return new BaseObjectResponse(200,"Algoritmo hibrido realizado exitosamente", convertToDetalle(carga));
+            return new BaseObjectResponse(200,"Algoritmo hibrido realizado exitosamente", convCargaDetalle(carga));
 
         } catch (Exception e) {
             System.out.println("=== Error en asignación con algoritmo híbrido actualizado ===");
             return new BaseObjectResponse<>(500, "Error interno en algoritmo híbrido actualizado: " + e.getMessage(), null);
         }
-    }
-    private CargaDetalleResponse convertToDetalle(Carga obj) {
-        return modelMapper.map(obj, CargaDetalleResponse.class);
     }
 
     /**
@@ -272,7 +190,7 @@ public class AsignacionServiceImpl
         for (Asignacion asignacion : asignaciones) {
             Integer idDocente = asignacion.getDocente().getIdDocente();
             int horas = asignacion.getCurso().getCursoHorario().stream()
-                    .mapToInt(CursoHorario::getDuracionHoras)
+                    .mapToInt(Horario::getDuracionHoras)
                     .sum();
             horasPorDocente.merge(idDocente, horas, Integer::sum);
         }
@@ -347,7 +265,6 @@ public class AsignacionServiceImpl
                         .equals(asignacion.getCurso().getAsignatura().getIdAsignatura()));
     }
 
-    //---------------------------------------------------------------------------------------
 
     // Métodos auxiliares para el algoritmo
     private List<Docente> obtenerDocentesDisponibles(Integer idCicloAcademico) {
@@ -361,227 +278,146 @@ public class AsignacionServiceImpl
     private List<Curso> obtenerCursosPorCiclo(Integer idCicloAcademico) {
         return cursoRepo.buscarPorPeriodoAcademico(idCicloAcademico);
     }
-    /*
-    private List<Asignacion> ejecutarAlgoritmoHibrido(List<Docente> docentes, List<Curso> cursos, CicloAcademico cicloAcademico) {
-        // Usar el nuevo servicio de algoritmo híbrido actualizado
-        try {
-            // Preparar datos para el algoritmo
-            Map<Integer, List<Disponibilidad>> disponibilidadPorDocente = prepararDisponibilidad(docentes, cicloAcademico.getIdCicloAcademico());
-            Map<Integer, List<Preferencia>> preferenciasPorDocente = prepararPreferencias(docentes, cicloAcademico.getIdCicloAcademico());
 
-            // Ejecutar algoritmo híbrido actualizado
-            return algoritmoService.ejecutarAlgoritmoHibrido(
-                    docentes, cursos, cicloAcademico, disponibilidadPorDocente, preferenciasPorDocente);
-
-        } catch (Exception e) {
-            System.out.println("=== Error en algoritmo híbrido actualizado, usando algoritmo simplificado ===");
-
-            // Fallback: algoritmo simplificado si falla el actualizado
-            return ejecutarAlgoritmoSimplificado(docentes, cursos, cicloAcademico);
-        }
-    }
-
-     */
-
-    /**
-     * ACTUALIZADO: Algoritmo simplificado como fallback con nuevo modelo
-     */
-    private List<Asignacion> ejecutarAlgoritmoSimplificado(List<Docente> docentes, List<Curso> cursos, CicloAcademico cicloAcademico) {
-        System.out.println("=== Ejecutando algoritmo simplificado actualizado como fallback ===");
-        System.out.println("RESTRICCIONES: Solo disponibilidad + horasMaxLectivas");
-
-        List<Asignacion> asignaciones = new ArrayList<>();
-        Map<Integer, Integer> asignacionesTemporales = new HashMap<>();
-
-        // Versión básica: asignación por disponibilidad y límites de horasMaxLectivas
-        for (Curso curso : cursos) {
-            Docente docenteAsignado = encontrarMejorDocenteParaCursoActualizado(
-                    curso, docentes, cicloAcademico, asignacionesTemporales);
-
-            if (docenteAsignado != null) {
-                asignacionesTemporales.put(curso.getIdCurso(), docenteAsignado.getIdDocente());
-
-                Asignacion asignacion = new Asignacion();
-                asignacion.setDocente(docenteAsignado);
-                asignacion.setCurso(curso);
-                asignacion.setCicloAcademico(cicloAcademico);
-                asignacion.setEnabled(true);
-                asignacion.setCreatedAt(LocalDate.now());
-
-                asignaciones.add(asignacion);
-                System.out.println("Asignado curso " + curso.getCodigo() +
-                        " al docente " + docenteAsignado.getCodigo() + " (algoritmo simplificado)");
-            }
-        }
-
-        return asignaciones;
-    }
-
-    /**
-     * ACTUALIZADO: Busca el mejor docente para un curso con nuevo modelo de restricciones
-     */
-    private Docente encontrarMejorDocenteParaCursoActualizado(Curso curso, List<Docente> docentes,
-                                                              CicloAcademico cicloAcademico,
-                                                              Map<Integer, Integer> asignacionesTemporales) {
-        // 1. Buscar docentes con preferencia por la asignatura del curso (RESTRICCIÓN BLANDA)
-        List<Preferencia> preferencias = preferenciaRepo.findByCicloAcademico_IdCicloAcademico(cicloAcademico.getIdCicloAcademico());
-
-        List<Docente> docentesConPreferencia = preferencias.stream()
-                .filter(pref -> pref.getAsignatura().getIdAsignatura().equals(curso.getAsignatura().getIdAsignatura()))
-                .map(Preferencia::getDocente)
-                .filter(docente -> docentes.contains(docente))
-                .collect(Collectors.toList());
-
-        // 2. Priorizar docentes con preferencia, pero no es obligatorio
-        if (!docentesConPreferencia.isEmpty()) {
-            for (Docente docente : docentesConPreferencia) {
-                if (verificarDisponibilidadHoraria(docente, curso, cicloAcademico) &&
-                        puedeTomarCursoActualizado(docente, curso, asignacionesTemporales)) {
-                    System.out.println("Docente " + docente.getCodigo() +
-                            " asignado por preferencia a curso " + curso.getCodigo());
-                    return docente;
-                }
-            }
-        }
-
-        // 3. Si no hay preferencias válidas, buscar cualquier docente disponible
-        for (Docente docente : docentes) {
-            if (verificarDisponibilidadHoraria(docente, curso, cicloAcademico) &&
-                    puedeTomarCursoActualizado(docente, curso, asignacionesTemporales)) {
-                System.out.println("Docente " + docente.getCodigo() +
-                        " asignado sin preferencia a curso " + curso.getCodigo());
-                return docente;
-            }
-        }
-        System.out.println("=== No se encontró docente disponible para curso " + curso.getCodigo() + " ===");
-        return null;
-    }
-
-    /**
-     * Verifica disponibilidad horaria (RESTRICCIÓN DURA - OBLIGATORIA)
-     */
-    private boolean verificarDisponibilidadHoraria(Docente docente, Curso curso, CicloAcademico cicloAcademico) {
-        List<Disponibilidad> disponibilidades = disponibilidadRepo.buscarPorDocenteYCicloAcademico(
-                docente.getIdDocente(), cicloAcademico.getIdCicloAcademico());
-
-        if (disponibilidades.isEmpty()) {
-            System.out.println("=== Docente " + docente.getCodigo() + " no tiene disponibilidad registrada ===");
-            return false;
-        }
-
-        // Verificar si el docente está disponible en todos los horarios del curso
-        for (CursoHorario horario : curso.getCursoHorario()) {
-            boolean tieneDisponibilidad = disponibilidades.stream()
-                    .anyMatch(disp ->
-                            disp.getDiaSemana().equalsIgnoreCase(horario.getDiaSemana()) &&
-                                    !disp.getHoraInicio().after(horario.getHoraInicio()) &&
-                                    !disp.getHoraFin().before(horario.getHoraFin())
-                    );
-
-            if (!tieneDisponibilidad) {
-                System.out.println("=== Docente " + docente.getCodigo() +
-                        " no disponible para horario " + horario.getDiaSemana() +
-                        " " + horario.getHoraInicio() + "-" + horario.getHoraFin());
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * ACTUALIZADO: Solo considera horasMaxLectivas como restricción dura
-     */
-    private boolean puedeTomarCursoActualizado(Docente docente, Curso curso, Map<Integer, Integer> asignacionesTemporales) {
-        // Calcular horas actuales del docente en asignaciones temporales
-        int horasActuales = 0;
-        for (Map.Entry<Integer, Integer> entry : asignacionesTemporales.entrySet()) {
-            if (entry.getValue().equals(docente.getIdDocente())) {
-                // Buscar el curso y sumar sus horas
-                Curso cursoAsignado = obtenerCursosPorCiclo(curso.getCicloAcademico().getIdCicloAcademico())
-                        .stream()
-                        .filter(c -> c.getIdCurso().equals(entry.getKey()))
-                        .findFirst().orElse(null);
-
-                if (cursoAsignado != null) {
-                    horasActuales += cursoAsignado.getCursoHorario().stream()
-                            .mapToInt(CursoHorario::getDuracionHoras)
-                            .sum();
-                }
-            }
-        }
-
-        // Sumar horas del curso que se quiere asignar
-        int horasCurso = curso.getCursoHorario().stream()
-                .mapToInt(CursoHorario::getDuracionHoras)
-                .sum();
-
-        // Verificar SOLO límite de horasMaxLectivas (ÚNICA RESTRICCIÓN DE HORAS)
-        int horasMaximas = docente.getDedicacion().getHorasMaxLectivas() != null ?
-                docente.getDedicacion().getHorasMaxLectivas() : 12;
-
-        boolean puedeAsignar = horasActuales + horasCurso <= horasMaximas;
-
-        if (!puedeAsignar) {
-            System.out.println("=== Docente " + docente.getCodigo() +
-                    " no puede tomar curso " + curso.getCodigo() +
-                    " - Horas actuales: " + horasActuales + ", Curso horas: " + horasCurso +
-                    ", Límite horasMaxLectivas: " + horasMaximas);
-        }
-
-        return puedeAsignar;
-    }
-    public BaseListReponse<AsignacionResumenResponse> obtenerAsignacionesPorDocenteCarga(
-            Integer idDocente,
-            Integer idCarga
-    ){
-        Boolean isDocente = docenteRepo.existsByIdDocente(idDocente);
-        if(!isDocente) {
-            return new BaseListReponse<>(200, "No se encontraron docente", null);
-        }
-        Boolean isCarga = cargaRepo.existsByIdCarga(idCarga);
-        if(!isCarga) {
-            return new BaseListReponse<>(200, "No se encontraron carga", null);
-        }
-        List<Asignacion> asignaciones = asignacionRepo.findByDocenteAndCargaEnabled(idDocente, idCarga);
-        if(asignaciones.isEmpty()) {
-            return new BaseListReponse<>(200, "No se encontraron asignaciones para este docente", null);
-        }
-        // Convertir a DTOs
-        List<AsignacionResumenResponse> listaDTO = asignaciones.stream()
-                .map(this:: convertResumenToDTO)
-                .toList();
-        return new BaseListReponse<>(200, "Asignaciones de docente obtenida correctamente", listaDTO);
-
-    }
-    public BaseObjectResponse<String> eliminarAsignacion(Integer idAsignacion) {
-        // Validación de parámetro
-        if (idAsignacion == null) {
-            return new BaseObjectResponse<>(400, "IdAsignacion no proporcionado", null);
-        }
-
-        // Validar existencia del curso
-        Asignacion asignacion = asignacionRepo.findById(idAsignacion).orElse(null);
-        if (asignacion == null) {
-            return new BaseObjectResponse<>(404, "Asignación  no encontrado", null);
-        }
-
-        // desabilitar
-        asignacion.setEnabled(false);
-        asignacionRepo.save(asignacion);
-        return new BaseObjectResponse<>(200, "se elimino la asignación exitosamente", null);
-    }
-
+    //---------------------------------------------------------------------------------------
 
     @Override
-    public List<Asignacion> findByEnabledTrue() {
-        return asignacionRepo.findByEnabledTrue();
+    public BaseObjectResponse<AsignacionDetalleResponse> buscar(Integer idAsignacion) {
+        Optional<Asignacion> asignacionOpt = asignacionRepo.findByIdAndEnabledTrue(idAsignacion);
+
+        if (asignacionOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.ASIGNACION.noEncontrado(), null);
+        }
+
+        return new BaseObjectResponse<>(200, Modulo.ASIGNACION.encontrado(), convAsignacionDetalle(asignacionOpt.get()));
     }
-    private AsignacionDetalleResponse convertToDTO(Asignacion obj) {
+
+    @Override
+    public BaseObjectResponse<AsignacionDetalleResponse> registrar(AsignacionCreateRequest request) {
+        Optional<Docente> docenteOpt = docenteRepo.findByIdAndEnabledTrue(request.getIdDocente());
+        if (docenteOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.DOCENTE.noEncontrado(), null);
+        }
+        Optional<Curso> cursoOpt = cursoRepo.findByIdAndEnabledTrue(request.getIdCurso());
+        if (cursoOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.DOCENTE.noEncontrado(), null);
+        }
+        Optional<CicloAcademico> cicloAcademicoOpt = cicloAcademicoRepo.findByIdAndEnabledTrue(request.getIdCicloAcademico());
+        if (cicloAcademicoOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.DOCENTE.noEncontrado(), null);
+        }
+        Optional<Carga> cargaOpt = cargaRepo.findByIdAndEnabledTrue(request.getIdCarga());
+        if (cargaOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.CARGA.noEncontrado(), null);
+        }
+
+        Asignacion asignacion = Asignacion.builder()
+                .docente(docenteOpt.get())
+                .curso(cursoOpt.get())
+                .cicloAcademico(cicloAcademicoOpt.get())
+                .carga(cargaOpt.get())
+                .enabled(true)
+                .createdAt(LocalDate.now())
+                .build();
+
+        asignacionRepo.save(asignacion);
+        return new BaseObjectResponse<>(201, Modulo.ASIGNACION.registrado(), convAsignacionDetalle(asignacion));
+    }
+
+    @Override
+    public BaseListReponse<AsignacionDetalleResponse> registrarAll(List<AsignacionCreateRequest> requests) {
+        List<AsignacionDetalleResponse> registrados = new ArrayList<>();
+        int errorCount = 0;
+
+        for (AsignacionCreateRequest request : requests) {
+            try {
+                BaseObjectResponse<AsignacionDetalleResponse> response = registrar(request);
+                if (response.status() == 201 && response.data() != null) {
+                    registrados.add(response.data());
+                } else {
+                    errorCount++;
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                errorCount++;
+            }
+        }
+        return new BaseListReponse<>(201,Modulo.ASIGNACION.resumenAllRegistro(registrados.size(), errorCount),registrados);
+    }
+
+    @Override
+    public BaseObjectResponse<AsignacionDetalleResponse> actualizar(Integer idAsignacion, AsignacionUpdateRequest request) {
+        Optional<Asignacion> asignacionOpt = asignacionRepo.findByIdAndEnabledTrue(idAsignacion);
+        if (asignacionOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.ASIGNACION.noEncontrado(), null);
+        }
+        Asignacion asignacion = asignacionOpt.get();
+        if(request.getIdDocente() != null) {
+            Optional<Docente> docenteOpt = docenteRepo.findByIdAndEnabledTrue(request.getIdDocente());
+            if (docenteOpt.isEmpty()) {
+                return new BaseObjectResponse<>(404, Modulo.DOCENTE.noEncontrado(), null);
+            } else {
+                asignacion.setDocente(docenteOpt.get());
+            }
+        }
+        if(request.getIdCurso() != null) {
+            Optional<Curso> cursoOpt = cursoRepo.findByIdAndEnabledTrue(request.getIdCurso());
+            if (cursoOpt.isEmpty()) {
+                return new BaseObjectResponse<>(404, Modulo.DOCENTE.noEncontrado(), null);
+            } else {
+                asignacion.setCurso(cursoOpt.get());
+            }
+        }
+        if(request.getIdCicloAcademico() != null) {
+            Optional<CicloAcademico> cicloAcademicoOpt = cicloAcademicoRepo.findByIdAndEnabledTrue(request.getIdCicloAcademico());
+            if (cicloAcademicoOpt.isEmpty()) {
+                return new BaseObjectResponse<>(404, Modulo.DOCENTE.noEncontrado(), null);
+            } else {
+                asignacion.setCicloAcademico(cicloAcademicoOpt.get());
+            }
+        }
+        if(request.getIdCarga() != null) {
+            Optional<Carga> cargaOpt = cargaRepo.findByIdAndEnabledTrue(request.getIdCarga());
+            if (cargaOpt.isEmpty()) {
+                return new BaseObjectResponse<>(404, Modulo.CARGA.noEncontrado(), null);
+            } else {
+                asignacion.setCarga(cargaOpt.get());
+            }
+        }
+        return new BaseObjectResponse<>(201, Modulo.ASIGNACION.actualizado(), convAsignacionDetalle(asignacion));
+
+    }
+
+    @Override
+    public BaseObjectResponse<String> eliminar(Integer idAsignacion) {
+        Optional<Asignacion> asignacionOpt = asignacionRepo.findByIdAndEnabledTrue(idAsignacion);
+        if (asignacionOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.ASIGNACION.noEncontrado(), null);
+        }
+        Asignacion asignacion = asignacionOpt.get();
+        asignacion.setEnabled(false);
+        asignacionRepo.save(asignacion);
+        return new BaseObjectResponse<>(200, Modulo.ASIGNACION.eliminado(), null);
+    }
+
+    @Override
+    public BaseListReponse<AsignacionResumenResponse> listarPorDocenteCarga(Integer idDocente, Integer idCarga) {
+        List<AsignacionResumenResponse> response =asignacionRepo.findByDocenteAndCargaEnabled(idDocente,idCarga)
+                .stream()
+                .map(this::convAsignacionResumen)
+                .toList();
+
+        return new BaseListReponse<>(200,Modulo.ASIGNACION.listado(), response);
+
+    }
+    private AsignacionResumenResponse convAsignacionResumen(Asignacion obj) {
+        return modelMapper.map(obj, AsignacionResumenResponse.class);
+    }
+    private AsignacionDetalleResponse convAsignacionDetalle(Asignacion obj) {
         return modelMapper.map(obj, AsignacionDetalleResponse.class);
     }
-    private AsignacionResumenResponse convertResumenToDTO(Asignacion obj) {
-        return modelMapper.map(obj, AsignacionResumenResponse.class);
+    private CargaDetalleResponse convCargaDetalle(Carga obj) {
+        return modelMapper.map(obj, CargaDetalleResponse.class);
     }
 
 }

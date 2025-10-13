@@ -154,14 +154,20 @@ public class AlgoritmoServiceImpl
             return new BaseObjectResponse<>(404, Modulo.ALGORITMO.noEncontrado(), null);
         }
         Algoritmo algoritmo = optAlgoritmo.get();
-        if(algoritmo.isPrincipal()){
+        if(algoritmo.getPrincipal()){
             return new BaseObjectResponse<>(200, Modulo.ALGORITMO.principalYaSeleccionado(), convAlgoritmoDetalle(algoritmo));
         }
-        algoritmoRepo.resetPrincipal();
+        Optional<Algoritmo> optAlgoritmoPrincipal = algoritmoRepo.findByPrincipalTrue();
+        if(!optAlgoritmoPrincipal.isEmpty()){
+            Algoritmo algoritmoPrincipal =optAlgoritmoPrincipal.get();
+            algoritmoPrincipal.setPrincipal(false);
+            algoritmoRepo.save(algoritmoPrincipal);
+        }
+
         algoritmo.setPrincipal(true);
         algoritmoRepo.save(algoritmo);
 
-        return new BaseObjectResponse<>(201, Modulo.ALGORITMO.encontrado(), convAlgoritmoDetalle(algoritmo));
+        return new BaseObjectResponse<>(201, Modulo.ALGORITMO.principalSeleccionado(), convAlgoritmoDetalle(algoritmo));
     }
 
     @Override
@@ -171,7 +177,7 @@ public class AlgoritmoServiceImpl
             return new BaseObjectResponse<>(404, Modulo.ALGORITMO.noEncontrado(), null);
         }
         Algoritmo algoritmo = optAlgoritmo.get();
-        return new BaseObjectResponse<>(201, Modulo.ALGORITMO.principalSeleccionado(), convAlgoritmoDetalle(algoritmo));
+        return new BaseObjectResponse<>(201, Modulo.ALGORITMO.encontrado(), convAlgoritmoDetalle(algoritmo));
     }
 
     private AlgoritmoDetalleResponse convAlgoritmoDetalle(Algoritmo obj) {

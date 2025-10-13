@@ -13,8 +13,10 @@ public enum Modulo {
     CATEGORIA("Categoría", "Categorías"),
     CICLO_ACADEMICO("Ciclo académico", "Ciclos académicos"),
     CURSO("Curso", "Cursos"),
-    CURSO_HORARIO("Horario", "Horarios"),
+    HORARIO("Horario", "Horarios"),
     DEDICACION("Dedicación", "Dedicaciones"),
+
+
     DISPONIBILIDAD("Disponibilidad", "Disponibilidades"),
     DOCENTE("Docente", "Docentes"),
     ESPECIALIZACION("Especialización", "Especializaciones"),
@@ -74,6 +76,10 @@ public enum Modulo {
     }
     public String principalYaSeleccionado() {
         return "Este "+ item + " ya está seleccionado como principal";
+    }
+
+    public String noPertenece(Modulo mod) {
+        return "Esta "+ item + " no pertenece a este " + mod;
     }
 
 }

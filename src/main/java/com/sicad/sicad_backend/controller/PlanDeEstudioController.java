@@ -5,8 +5,6 @@ import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioCreateRequest;
 import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioDetalleResponse;
 import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioUpdateRequest;
-import com.sicad.sicad_backend.model.PlanDeEstudio;
-import com.sicad.sicad_backend.service.impl.PlanDeEstudioServiceImpl;
 import com.sicad.sicad_backend.service.interfaces.IPlanDeEstudioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,54 +20,43 @@ import java.util.List;
 public class PlanDeEstudioController {
 
     private final IPlanDeEstudioService service;
-    private final PlanDeEstudioServiceImpl serviceImpl;
-    private final ModelMapper modelMapper;
-
     @GetMapping("/listar")
-    public ResponseEntity<BaseListReponse<PlanDeEstudioDetalleResponse>> findAll() throws Exception {
-        List<PlanDeEstudioDetalleResponse> lista = service.findByEnabledTrue()
-                .stream()
-                .map(this::convertToResponseDTO)
-                .toList();
-
-        return ResponseEntity.ok(
-                new BaseListReponse<>(200, "Lista de Planes de Estudio", lista)
-        );
+    public ResponseEntity<BaseListReponse<PlanDeEstudioDetalleResponse>>
+            listar() throws Exception {
+        BaseListReponse<PlanDeEstudioDetalleResponse> response = service.listar();
+        return ResponseEntity.status(response.status()).body(response);
     }
 
     @GetMapping("/buscar/{idPlanDeEstudio}")
-    public ResponseEntity<BaseObjectResponse<PlanDeEstudioDetalleResponse>> findById(@PathVariable("idPlanDeEstudio") Integer id) throws Exception {
-        PlanDeEstudio obj = service.findById(id);
-        return ResponseEntity.ok(
-                new BaseObjectResponse<>(200, "Plan de Estudio encontrado", convertToResponseDTO(obj))
-        );
+    public ResponseEntity<BaseObjectResponse<PlanDeEstudioDetalleResponse>>
+            buscar(@PathVariable("idPlanDeEstudio") Integer id) {
+        BaseObjectResponse<PlanDeEstudioDetalleResponse> response = service.buscar(id);
+        return ResponseEntity.status(response.status()).body(response);
     }
 
     @PostMapping("/insertar")
-    public ResponseEntity<BaseObjectResponse<PlanDeEstudioDetalleResponse>> registrar(@Valid @RequestBody PlanDeEstudioCreateRequest request) {
-        BaseObjectResponse<PlanDeEstudioDetalleResponse> response = serviceImpl.registrarPlan(request);
+    public ResponseEntity<BaseObjectResponse<PlanDeEstudioDetalleResponse>>
+            registrar(@Valid @RequestBody PlanDeEstudioCreateRequest request) {
+        BaseObjectResponse<PlanDeEstudioDetalleResponse> response = service.registrar(request);
         return ResponseEntity.status(response.status()).body(response);
     }
 
     @PostMapping("/insertar-all")
-    public ResponseEntity<BaseListReponse<PlanDeEstudioDetalleResponse>> registrarAll(@Valid @RequestBody List<PlanDeEstudioCreateRequest> requestAll) {
-        BaseListReponse<PlanDeEstudioDetalleResponse> response = serviceImpl.registrarPlanesMultiples(requestAll);
+    public ResponseEntity<BaseListReponse<PlanDeEstudioDetalleResponse>>
+            registrarAll(@Valid @RequestBody List<PlanDeEstudioCreateRequest> request) {
+        BaseListReponse<PlanDeEstudioDetalleResponse> response = service.registrarAll(request);
         return ResponseEntity.status(response.status()).body(response);
     }
-
     @PutMapping("/actualizar/{idPlanDeEstudio}")
-    public ResponseEntity<BaseObjectResponse<PlanDeEstudioDetalleResponse>> actualizar(@PathVariable("idPlanDeEstudio") Integer id, @Valid @RequestBody PlanDeEstudioUpdateRequest dto) {
-        BaseObjectResponse<PlanDeEstudioDetalleResponse> response = serviceImpl.actualizarPlan(id, dto);
+    public ResponseEntity<BaseObjectResponse<PlanDeEstudioDetalleResponse>>
+            actualizar(@PathVariable("idPlanDeEstudio") Integer id, @Valid @RequestBody PlanDeEstudioUpdateRequest dto) {
+        BaseObjectResponse<PlanDeEstudioDetalleResponse> response = service.actualizar(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }
-    @DeleteMapping("/eliminar/{idPlanEstudio}")
-    public ResponseEntity<BaseObjectResponse<String>> delete(@PathVariable("idPlanEstudio") Integer id) {
-        BaseObjectResponse<String> response = serviceImpl.eliminarPlanDeEstudio(id);
+    @DeleteMapping("/eliminar/{idPlanDeEstudio}")
+    public ResponseEntity<BaseObjectResponse<String>>
+            eliminar(@PathVariable("idPlanDeEstudio") Integer id) {
+        BaseObjectResponse<String> response = service.eliminar(id);
         return ResponseEntity.status(response.status()).body(response);
-    }
-
-
-    private PlanDeEstudioDetalleResponse convertToResponseDTO(PlanDeEstudio obj) {
-        return modelMapper.map(obj, PlanDeEstudioDetalleResponse.class);
     }
 }

@@ -21,7 +21,7 @@ public class Algoritmo {
     private Integer idAlgoritmo;
 
     @Column(nullable = false, name = "principal")
-    private boolean principal;
+    private Boolean principal;
 
     @Column(name = "poblacion", nullable = true)
     private Integer poblacion;
