@@ -16,6 +16,8 @@ public interface ICargaRepo extends IGenericRepo<Carga, Integer> {
     boolean existsByIdCargaAndCicloAcademico_IdCicloAcademico(Integer idCarga, Integer idCicloAcademico);
 
 
+    @Query("SELECT e FROM Carga e WHERE e.idCarga = :id AND e.enabled = true")
+    Optional<Carga> findByIdAndEnabledTrue(@Param("id") Integer idCarga);
 
 
     @Query("SELECT c FROM Carga c " +

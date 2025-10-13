@@ -41,6 +41,16 @@ public class CargaServiceImpl
         return cargaRepo.findByEnabledTrueAndCicloAcademico_IdCicloAcademico(idCicloAcademico);
     }
 
+    @Override
+    public GenericObjectResponse<CargaDetalleResponse> buscar(Integer idCarga) {
+        Optional<Carga> cargaOpt = cargaRepo.findByIdAndEnabledTrue(idCarga);
+        if (cargaOpt.isEmpty()) {
+            return new GenericObjectResponse<>(404,"Carga no encontrada", null);
+        }
+        Carga carga = cargaOpt.get();
+
+        return new GenericObjectResponse<>(200,"caerga encontrada", convertToDetalle(carga));    }
+
     public GenericObjectResponse<CargaDetalleResponse> obtenerCargaDefecto(Integer idCicloAcademico){
         Optional<Carga> cargaObejct = cargaRepo.findPrincipalByCicloAcademicoAndEnabledTrue(idCicloAcademico);
         if(!cargaObejct.isPresent()){

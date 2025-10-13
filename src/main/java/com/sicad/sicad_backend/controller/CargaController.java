@@ -89,17 +89,11 @@ public class CargaController {
         if (docentesResponse.status() != 200) {
             return ResponseEntity.status(docentesResponse.status()).build();
         }
-        Carga carga =null;
-        try {
-            carga  = service.findById(idCarga);
-        }catch (Exception e){
-            return ResponseEntity.status(404).build();
+        GenericObjectResponse<CargaDetalleResponse> cargaResponse = service.buscar(idCarga);
+        CargaDetalleResponse carga = cargaResponse.data();
+        if (cargaResponse.status() != 200) {
+            return ResponseEntity.status(docentesResponse.status()).build();
         }
-
-        if(carga == null) {
-            return ResponseEntity.status(404).build();
-        }
-
 
         byte[] pdfBytes = pdfService.generarPdfCargaElectiva(docentes, carga);
         if (pdfBytes == null) {
@@ -126,13 +120,11 @@ public class CargaController {
 
         List<DocenteAsignacionResponse> docentes = docentesResponse.data();
 
-        GenericObjectResponse<CargaDetalleResponse> cargaResponse =convertToDetalle(service.findById(idCarga)) ;
-
-        if (cargaResponse.status() != 200) {
-            return ResponseEntity.status(cargaResponse.status()).build();
-        }
-
+        GenericObjectResponse<CargaDetalleResponse> cargaResponse = service.buscar(idCarga);
         CargaDetalleResponse carga = cargaResponse.data();
+        if (cargaResponse.status() != 200) {
+            return ResponseEntity.status(docentesResponse.status()).build();
+        }
 
         // Generar el archivo Excel
         byte[] excelBytes = pdfService.generarExcelCargaElectiva(docentes, carga);
