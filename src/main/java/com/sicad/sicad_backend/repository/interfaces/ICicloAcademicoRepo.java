@@ -14,12 +14,11 @@ public interface ICicloAcademicoRepo extends IGenericRepo<CicloAcademico, Intege
     boolean existsByNombre(String nombre);
     boolean existsByIdCicloAcademico(Integer idCicloAcademico);
 
-    @Query("SELECT e FROM CicloAcademico e WHERE e.idCicloAcademico = :id AND e.enabled = true")
-    Optional<CicloAcademico> findByIdAndEnabledTrue(@Param("id") Integer idCicloAcademico);
 
     @Query("SELECT e FROM CicloAcademico e WHERE e.enabled = true")
     List<CicloAcademico> findByEnabledTrue();
 
-
+    @Query("SELECT e FROM CicloAcademico e WHERE e.idCicloAcademico = :id AND e.enabled = true")
+    Optional<CicloAcademico> findByIdAndEnabledTrue(@Param("id") Integer idCicloAcademico);
 
 }

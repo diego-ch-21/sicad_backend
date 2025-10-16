@@ -1,14 +1,11 @@
 package com.sicad.sicad_backend.dto.disponibilidad;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.sql.Time;
 
 @Data
 @AllArgsConstructor
@@ -25,9 +22,17 @@ public class DisponibilidadCreateRequest {
     @Pattern(regexp = "^(LUNES|MARTES|MIERCOLES|JUEVES|VIERNES|SABADO|DOMINGO)$", message = "Día de la semana inválido")
     private String diaSemana;
 
-    @NotBlank(message = "La hora de inicio es obligatoria")
+    @NotBlank(message = "La hora de inicio es obligatorio")
+    @Pattern(
+            regexp = "^([01]\\d|2[0-3]):[0-5]\\d$",
+            message = "La hora de inicio debe tener el formato HH:mm (00:00 a 23:59)"
+    )
     private String horaInicio;
 
-    @NotBlank(message = "La hora de fin es obligatoria")
+    @NotBlank(message = "La hora de fin es obligatorio")
+    @Pattern(
+            regexp = "^([01]\\d|2[0-3]):[0-5]\\d$",
+            message = "La hora de fin debe tener el formato HH:mm (00:00 a 23:59)"
+    )
     private String horaFin;
 }

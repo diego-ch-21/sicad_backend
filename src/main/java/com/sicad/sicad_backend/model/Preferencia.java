@@ -34,6 +34,11 @@ public class Preferencia {
             foreignKey = @ForeignKey(name = "FK_PREFERENCIA_CICLO_ACADEMICO"))
     private CicloAcademico cicloAcademico;
 
+    @ManyToOne
+    @JoinColumn(name = "id_escuela", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_PREFERENCIA_ESCUELA"))
+    private Escuela escuela;
+
     @Column(nullable = false, name = "enabled")
     private Boolean enabled;
 }

@@ -10,10 +10,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IDedicacionRepo  extends IGenericRepo<Dedicacion, Integer> {
+    @Query("SELECT e FROM Dedicacion e WHERE e.enabled = true")
     List<Dedicacion> findByEnabledTrue();
 
 
     @Query("SELECT e FROM Dedicacion e WHERE e.idDedicacion = :id AND e.enabled = true")
-    Optional<Dedicacion> findByIdAndEnabledTrue(@Param("id") Integer id);
+    Optional<Dedicacion> findByIdAndEnabledTrue(@Param("id") Integer idDedicacion);
 
 }

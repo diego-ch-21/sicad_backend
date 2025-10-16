@@ -2,9 +2,12 @@ package com.sicad.sicad_backend.Enum;
 
 public enum Message {
     CORREO_EN_USO("El correo ya está en uso"),
+    CORREO_NO_ENCONTRADO("Correo no encontrado"),
     HORA_FIN_INICIO_ERROR("La hora de fin debe ser posterior a la hora de inicio"),
-    DURACION_DIFERENCIA_HORA_ERROR("La duración no coincide con la diferencia entre hora inicio y fin");
-
+    DURACION_DIFERENCIA_HORA_ERROR("La duración no coincide con la diferencia entre hora inicio y fin"),
+    CRUCE_DE_HORARIO_DISPONIBILIDAD("El horario ingresado se cruza con otra disponibilidad existente en el mismo día"),
+    LOGIN_ACCESS("Inicio de sesión exitoso"),
+    CREDENCIALES_INCORRECTAS("Credenciales incorrectas");
 
     private final String texto;
 

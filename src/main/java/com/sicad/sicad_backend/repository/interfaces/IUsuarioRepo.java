@@ -10,11 +10,16 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IUsuarioRepo extends IGenericRepo<Usuario, Integer> {
-    Optional<Usuario> findByEmail(String email);
+    @Query("SELECT u FROM Usuario u WHERE u.email = :email AND u.enabled = true")
+    Optional<Usuario> findByEmailAndEnabledTrue(@Param("email") String email);
+
     boolean existsByCodigo(String codigo);
+
+
+    @Query("SELECT e FROM Usuario e WHERE e.enabled = true")
     List<Usuario> findByEnabledTrue();
 
     @Query("SELECT e FROM Usuario e WHERE e.idUsuario = :id AND e.enabled = true")
-    Optional<Usuario> findByIdAndEnabledTrue(@Param("id") Integer id);
+    Optional<Usuario> findByIdAndEnabledTrue(@Param("id") Integer idUsuario);
 
 }

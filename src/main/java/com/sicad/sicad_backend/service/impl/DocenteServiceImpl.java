@@ -99,7 +99,7 @@ public class DocenteServiceImpl
     @Override
     public BaseObjectResponse<DocenteDetalleResponse> registrar(DocenteCreateRequest request) {
 
-        if (usuarioRepo.findByEmail(request.getEmail()).isPresent()) {
+        if (usuarioRepo.findByEmailAndEnabledTrue(request.getEmail()).isPresent()) {
             return new BaseObjectResponse<>(409, CORREO_EN_USO.toString(), null);
         }
 
@@ -190,7 +190,7 @@ public class DocenteServiceImpl
         Docente docente = docenteOpt.get();
 
         // Validar email si viene en el request
-        if (request.getEmail() != null && usuarioRepo.findByEmail(request.getEmail()).isPresent()) {
+        if (request.getEmail() != null && usuarioRepo.findByEmailAndEnabledTrue(request.getEmail()).isPresent()) {
             return new BaseObjectResponse<>(409, CORREO_EN_USO.toString(), null);
         }
 

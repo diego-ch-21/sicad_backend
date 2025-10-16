@@ -1,5 +1,9 @@
 package com.sicad.sicad_backend.service.impl;
 
+import com.sicad.sicad_backend.Enum.Modulo;
+import com.sicad.sicad_backend.dto.Especializacion.EspecializacionCreateRequest;
+import com.sicad.sicad_backend.dto.Especializacion.EspecializacionDetalleResponse;
+import com.sicad.sicad_backend.dto.Especializacion.EspecializacionResumenResponse;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaCreateRequest;
@@ -15,13 +19,16 @@ import com.sicad.sicad_backend.repository.interfaces.IPreferenciaRepo;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.IPreferenciaService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PreferenciaServiceImpl
@@ -39,139 +46,141 @@ public class PreferenciaServiceImpl
         return preferenciaRepo;
     }
 
-    public BaseObjectResponse<PreferenciaDetalleResponse> registrarPreferencia(PreferenciaCreateRequest request){
-        //validar docente
-        Docente docente = docenteRepo.findById(request.getIdDocente()).orElse(null);
-        if(docente == null){
-            return new BaseObjectResponse<>(404, "Docente no encontrado", null);
-        }
-        Asignatura asignatura = asignaturaRepo.findById(request.getIdAsignatura()).orElse(null);
-        if(asignatura == null){
-            return new BaseObjectResponse<>(404, "Asignatura no encontrada", null);
-        }
-        CicloAcademico cicloAcademico = cicloAcademicoRepo.findById(request.getIdCicloAcademico()).orElse(null);
-        if (cicloAcademico == null) {
-            return new BaseObjectResponse<>(404, "Ciclo academico no encontrada", null);
-        }
+    @Override
+    public BaseListReponse<PreferenciaResumenResponse> listarPorDocenteCicloAcademico(Integer idDocente, Integer idCicloAcademico) {
+        List<PreferenciaResumenResponse> response = preferenciaRepo.findByEnabledTrueDocenteCicloAcademico(idDocente,idCicloAcademico)
+                .stream()
+                .map(this::convPreferenciaResumen)
+                .toList();
 
+        return new BaseListReponse<>(200, Modulo.PREFERENCIA.listado(), response);
+    }
 
+    @Override
+    public BaseObjectResponse<PreferenciaDetalleResponse> buscar(Integer idPreferencia) {
+        Optional<Preferencia> preferencianOpt = preferenciaRepo.findByIdAndEnabledTrue(idPreferencia);
+        if (preferencianOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.PREFERENCIA.noEncontrado(), null);
+        }
+        return new BaseObjectResponse<>(200, Modulo.PREFERENCIA.encontrado(), convPreferenciaDetalle(preferencianOpt.get()));
+    }
+
+    @Override
+    public BaseObjectResponse<PreferenciaDetalleResponse> registrar(PreferenciaCreateRequest request) {
+        Optional<Docente> docentenOpt = docenteRepo.findByIdAndEnabledTrue(request.getIdDocente());
+        if (docentenOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.DOCENTE.noEncontrado(), null);
+        }
+        Optional<Asignatura> asignaturaOpt = asignaturaRepo.findByIdAndEnabledTrue(request.getIdAsignatura());
+        if (asignaturaOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.ASIGNATURA.noEncontrado(), null);
+        }
+        Optional<CicloAcademico> cicloAcademicoOpt = cicloAcademicoRepo.findByIdAndEnabledTrue(request.getIdCicloAcademico());
+        if (cicloAcademicoOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.CICLO_ACADEMICO.noEncontrado(), null);
+        }
+        Boolean isExiste = preferenciaRepo.isRestriccionPreferencia(request.getIdDocente(), request.getIdAsignatura(), request.getIdCicloAcademico());
+        if(isExiste) {
+            List<Modulo> modulos = new ArrayList<>();
+            modulos.add(Modulo.DOCENTE);
+            modulos.add(Modulo.ASIGNATURA);
+            modulos.add(Modulo.CICLO_ACADEMICO);
+            return new BaseObjectResponse<>(409, Modulo.PREFERENCIA.noCumple(modulos), null);
+        }
         Preferencia preferencia = new Preferencia().builder()
-                .docente(docente)
-                .asignatura(asignatura)
-                .cicloAcademico(cicloAcademico)
+                .docente(docentenOpt.get())
+                .asignatura(asignaturaOpt.get())
+                .cicloAcademico(cicloAcademicoOpt.get())
                 .enabled(true)
                 .build();
         preferenciaRepo.save(preferencia);
-
-        PreferenciaDetalleResponse dto = modelMapper.map(preferencia, PreferenciaDetalleResponse.class);
-        return new BaseObjectResponse<>(201, "Preferencia registrada", dto);
+        return new BaseObjectResponse<>(200,Modulo.PREFERENCIA.registrado(), convPreferenciaDetalle(preferencia));
     }
 
-    public BaseListReponse<PreferenciaDetalleResponse> registrarVariosPreferencias(List<PreferenciaCreateRequest> requests){
+    @Override
+    public BaseListReponse<PreferenciaDetalleResponse> registrarAll(List<PreferenciaCreateRequest> requests) {
         List<PreferenciaDetalleResponse> registrados = new ArrayList<>();
         int errorCount = 0;
 
-        for(PreferenciaCreateRequest request: requests){
-            BaseObjectResponse<PreferenciaDetalleResponse> response = registrarPreferencia(request);
-            System.out.println("status: "+response.status());
-            if(response.status() == 201 || response.data() != null){
-                registrados.add(response.data());
-            } else {
+        for (PreferenciaCreateRequest request : requests) {
+            try {
+                BaseObjectResponse<PreferenciaDetalleResponse> response = registrar(request);
+                if (response.status() == 201 && response.data() != null) {
+                    registrados.add(response.data());
+                } else {
+                    errorCount++;
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
                 errorCount++;
             }
         }
-        String mensaje = String.format("Preferencia registrados: %d. Fallidos: %d.", registrados.size(), errorCount);
-        return new BaseListReponse<>(200, mensaje, registrados);
+        return new BaseListReponse<>(201,Modulo.PREFERENCIA.resumenAllRegistro(registrados.size(), errorCount),registrados);
     }
-
-
-
-    public BaseObjectResponse<PreferenciaDetalleResponse> actualizarPreferencia(Integer id, PreferenciaUpdateRequest request) {
-        Preferencia preferencia = preferenciaRepo.findById(id).orElse(null);
-        if (preferencia == null) {
-            return new BaseObjectResponse<>(404, "Preferencia no encontrada", null);
-        }
-
-        // Validar y actualizar docente si viene en el request
-        if (request.getIdDocente() != null) {
-            Docente docente = docenteRepo.findById(request.getIdDocente()).orElse(null);
-            if (docente == null) {
-                return new BaseObjectResponse<>(404, "Docente no encontrado", null);
-            }
-            preferencia.setDocente(docente);
-        }
-
-        // Validar y actualizar asignatura si viene en el request
-        if (request.getIdAsignatura() != null) {
-            Asignatura asignatura = asignaturaRepo.findById(request.getIdAsignatura()).orElse(null);
-            if (asignatura == null) {
-                return new BaseObjectResponse<>(404, "Asignatura no encontrada", null);
-            }
-            preferencia.setAsignatura(asignatura);
-        }
-
-        // Validar y actualizar carga electiva si viene en el request
-        if (request.getIdCicloAcademico() != null) {
-            CicloAcademico cicloAcademico = cicloAcademicoRepo.findById(request.getIdCicloAcademico()).orElse(null);
-            if (cicloAcademico == null) {
-                return new BaseObjectResponse<>(404, "Ciclo academico no encontrada", null);
-            }
-            preferencia.setCicloAcademico(cicloAcademico);
-        }
-
-        preferenciaRepo.save(preferencia);
-
-        PreferenciaDetalleResponse dto = modelMapper.map(preferencia, PreferenciaDetalleResponse.class);
-        return new BaseObjectResponse<>(200, "Preferencia actualizada exitosamente", dto);
-    }
-    public BaseObjectResponse<List<PreferenciaResumenResponse>> listarPreferenciaDocente(Integer idDocente, Integer idCicloAcademico) {
-        System.out.println("idDocente: " + idDocente + " y id ciclo academico: " + idCicloAcademico);
-        // Validar existencia de docente
-        if (!docenteRepo.existsByIdDocente(idDocente)) {
-            return new BaseObjectResponse<>(400, "Docente no encontrado", null);
-        }
-
-        // Validar existencia de carga electiva
-        if (!cicloAcademicoRepo.existsByIdCicloAcademico(idCicloAcademico)) {
-            return new BaseObjectResponse<>(400, "Carga electiva no encontrada", null);
-        }
-
-        // Obtener preferencias filtradas
-        List<Preferencia> preferencias = preferenciaRepo.buscarPorDocenteYCicloAcademico(idDocente, idCicloAcademico);
-
-        // Convertir a DTOs
-        List<PreferenciaResumenResponse> listaDTO = preferencias.stream()
-                .map(p -> modelMapper.map(p, PreferenciaResumenResponse.class))
-                .collect(Collectors.toList());
-
-        String mensaje = listaDTO.isEmpty()
-                ? "No hay preferencias registradas para este docente en este ciclo academico"
-                : "Lista obtenida correctamente";
-
-        return new BaseObjectResponse<>(200, mensaje, listaDTO);
-    }
-
-    public BaseObjectResponse<String> eliminarPreferencia(Integer idPreferencia) {
-        // Validación de parámetro
-        if (idPreferencia == null) {
-            return new BaseObjectResponse<>(400, "idPreferencia no proporcionado", null);
-        }
-
-        // Validar existencia del curso
-        Preferencia preferencia = preferenciaRepo.findById(idPreferencia).orElse(null);
-        if (preferencia == null) {
-            return new BaseObjectResponse<>(404, "Preferencia  no encontrado", null);
-        }
-
-        // desabilitar
-        preferencia.setEnabled(false);
-        preferenciaRepo.save(preferencia);
-        return new BaseObjectResponse<>(200, "se elimino la preferencia exitosamente", null);
-    }
-
 
     @Override
-    public List<Preferencia> findByEnabledTrue() {
-        return preferenciaRepo.findByEnabledTrue();
+    public BaseObjectResponse<PreferenciaDetalleResponse> actualizar(Integer idPreferencia, PreferenciaUpdateRequest request) {
+        Optional<Preferencia> preferencianOpt = preferenciaRepo.findByIdAndEnabledTrue(idPreferencia);
+        if (preferencianOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.PREFERENCIA.noEncontrado(), null);
+        }
+        Preferencia preferencia = preferencianOpt.get();
+        if(request.getIdDocente() != null) {
+            Optional<Docente> docentenOpt = docenteRepo.findByIdAndEnabledTrue(request.getIdDocente());
+            if (docentenOpt.isEmpty()) {
+                return new BaseObjectResponse<>(404, Modulo.DOCENTE.noEncontrado(), null);
+            } else {
+                preferencia.setDocente(docentenOpt.get());
+            }
+        }
+        if(request.getIdAsignatura() != null) {
+            Optional<Asignatura> asignaturaOpt = asignaturaRepo.findByIdAndEnabledTrue(request.getIdAsignatura());
+            if (asignaturaOpt.isEmpty()) {
+                return new BaseObjectResponse<>(404, Modulo.ASIGNATURA.noEncontrado(), null);
+            } else {
+                preferencia.setAsignatura(asignaturaOpt.get());
+            }
+        }
+        if(request.getIdCicloAcademico() != null) {
+            Optional<CicloAcademico> cicloAcademicoOpt = cicloAcademicoRepo.findByIdAndEnabledTrue(request.getIdCicloAcademico());
+            if (cicloAcademicoOpt.isEmpty()) {
+                return new BaseObjectResponse<>(404, Modulo.CICLO_ACADEMICO.noEncontrado(), null);
+            } else {
+                preferencia.setCicloAcademico(cicloAcademicoOpt.get());
+            }
+        }
+        Boolean isExiste = preferenciaRepo.isRestriccionPreferencia(
+                preferencia.getDocente().getIdDocente(),
+                preferencia.getAsignatura().getIdAsignatura(),
+                preferencia.getCicloAcademico().getIdCicloAcademico());
+        if(isExiste) {
+            List<Modulo> modulos = new ArrayList<>();
+            modulos.add(Modulo.DOCENTE);
+            modulos.add(Modulo.ASIGNATURA);
+            modulos.add(Modulo.CICLO_ACADEMICO);
+            return new BaseObjectResponse<>(409, Modulo.PREFERENCIA.noCumple(modulos), null);
+        }
+        preferenciaRepo.save(preferencia);
+        return new BaseObjectResponse<>(200, Modulo.PREFERENCIA.actualizado(), convPreferenciaDetalle(preferencia));
+
+    }
+
+    @Override
+    public BaseObjectResponse<String> eliminar(Integer idPreferencia) {
+        Optional<Preferencia> preferencianOpt = preferenciaRepo.findByIdAndEnabledTrue(idPreferencia);
+        if (preferencianOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.PREFERENCIA.noEncontrado(), null);
+        }
+        Preferencia preferencia = preferencianOpt.get();
+        preferencia.setEnabled(false);
+        preferenciaRepo.save(preferencia);
+        return new BaseObjectResponse<>(200, Modulo.PREFERENCIA.eliminado(), null);
+    }
+
+    private PreferenciaDetalleResponse convPreferenciaDetalle(Preferencia preferencia){
+        return modelMapper.map(preferencia, PreferenciaDetalleResponse.class);
+    }
+    private PreferenciaResumenResponse convPreferenciaResumen(Preferencia preferencia){
+        return modelMapper.map(preferencia, PreferenciaResumenResponse.class);
     }
 }

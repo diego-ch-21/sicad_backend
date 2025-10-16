@@ -1,6 +1,5 @@
 package com.sicad.sicad_backend.dto.Especializacion;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class EspecializacionUdpdateRequest {
+public class EspecializacionUpdateRequest {
     private Integer idAsignatura;
     private Integer idDocente;
 }

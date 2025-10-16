@@ -111,11 +111,11 @@ public class CursoServiceImpl
         cursoRepo.save(curso);
 
 
-        if (request.getCursoHorario() == null || request.getCursoHorario().isEmpty()) {
+        if (request.getHorario() == null || request.getHorario().isEmpty()) {
             return new BaseObjectResponse<>(201, Modulo.CURSO.registrado(), convCursoDetalle(curso));
         }
 
-        BaseListReponse<HorarioDetalleResponse> response = horarioService.registrarAllPorCurso(curso.getIdCurso(),request.getCursoHorario());
+        BaseListReponse<HorarioDetalleResponse> response = horarioService.registrarAllPorCurso(curso.getIdCurso(),request.getHorario());
         Optional<Curso> cursoOpt = cursoRepo.findByIdAndEnabledTrue(curso.getIdCurso());
         Curso cursoConHorario = cursoOpt.get();
         return new BaseObjectResponse<>(201, Modulo.CURSO.registrado()+" - "+response.message(), convCursoDetalle(cursoConHorario));

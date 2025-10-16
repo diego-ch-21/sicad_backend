@@ -1,26 +1,33 @@
 package com.sicad.sicad_backend.service.impl;
 
+import com.sicad.sicad_backend.Enum.Modulo;
+import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoCreateRequest;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoDetalleResponse;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoUpdateRequest;
+import com.sicad.sicad_backend.dto.escuela.EscuelaDetalleResponse;
 import com.sicad.sicad_backend.model.CicloAcademico;
+import com.sicad.sicad_backend.model.Escuela;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.ICicloAcademicoRepo;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.ICicloAcademicoService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.sicad.sicad_backend.utils.NumbersUtils.convertirARomano;
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CicloAcademicoServiceImpl
@@ -35,32 +42,42 @@ public class CicloAcademicoServiceImpl
         return cicloAcademicoRepo;
     }
 
-    public BaseObjectResponse<CicloAcademicoDetalleResponse> registrarCiclo(CicloAcademicoCreateRequest request) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+    @Override
+    public BaseListReponse<CicloAcademicoDetalleResponse> listar() {
+        List<CicloAcademicoDetalleResponse> lista = cicloAcademicoRepo.findByEnabledTrue()
+                .stream()
+                .map(this::convCicloAcademicoDetalle)
+                .toList();
 
-        LocalDate fechaInicio;
-        LocalDate fechaFin;
+        return new BaseListReponse<>(200, Modulo.CICLO_ACADEMICO.listado(), lista);
+    }
 
-        try {
-            fechaInicio = LocalDate.parse(request.getFechaInicio(), formatter);
-            fechaFin = LocalDate.parse(request.getFechaFin(), formatter);
+    @Override
+    public BaseObjectResponse<CicloAcademicoDetalleResponse> buscar(Integer idCicloAcademico) {
+        Optional<CicloAcademico> cicloOpt = cicloAcademicoRepo.findByIdAndEnabledTrue(idCicloAcademico);
 
-            if (!fechaFin.isAfter(fechaInicio)) {
-                return new BaseObjectResponse<>(400, "La fecha fin debe ser posterior a la fecha inicio", null);
-            }
-
-        } catch (DateTimeParseException e) {
-            return new BaseObjectResponse<>(400, "Formato de fecha inválido (debe ser dd-MM-yyyy)", null);
+        if (cicloOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.CICLO_ACADEMICO.noEncontrado(), null);
         }
 
-        // Convertir periodo a romano
-        String periodoRomano = convertirARomano(request.getPeriodo());
+        return new BaseObjectResponse<>(200, Modulo.CICLO_ACADEMICO.encontrado(), convCicloAcademicoDetalle(cicloOpt.get()));
+    }
 
+    @Override
+    public BaseObjectResponse<CicloAcademicoDetalleResponse> registrar(CicloAcademicoCreateRequest request) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        LocalDate fechaInicio;
+        LocalDate fechaFin;
+        fechaInicio = LocalDate.parse(request.getFechaInicio(), formatter);
+        fechaFin = LocalDate.parse(request.getFechaFin(), formatter);
+        if (!fechaFin.isAfter(fechaInicio)) {
+            return new BaseObjectResponse<>(400, "La fecha fin debe ser posterior a la fecha inicio", null);
+        }
+
+        String periodoRomano = convertirARomano(request.getPeriodo());
         String nombre = request.getAnio() + "-" + periodoRomano;
 
-        // Validar que el nombre no exista ya en la base de datos
-        boolean existeNombre = cicloAcademicoRepo.existsByNombre(nombre);
-        if (existeNombre) {
+        if (cicloAcademicoRepo.existsByNombre(nombre)) {
             return new BaseObjectResponse<>(409, "Ya existe un ciclo académico con ese nombre", null);
         }
 
@@ -73,43 +90,55 @@ public class CicloAcademicoServiceImpl
                 .enabled(true)
                 .build();
 
-
         cicloAcademicoRepo.save(ciclo);
 
-        CicloAcademicoDetalleResponse dto = modelMapper.map(ciclo, CicloAcademicoDetalleResponse.class);
-        return new BaseObjectResponse<>(201, "Ciclo académico registrado exitosamente", dto);
+        return new BaseObjectResponse<>(201, Modulo.CICLO_ACADEMICO.registrado(),
+                convCicloAcademicoDetalle(ciclo));
     }
 
-    public BaseObjectResponse<CicloAcademicoDetalleResponse> actualizarCiclo(Integer id, CicloAcademicoUpdateRequest request) {
-        CicloAcademico ciclo = cicloAcademicoRepo.findById(id).orElse(null);
-        if (ciclo == null) {
-            return new BaseObjectResponse<>(404, "Ciclo académico no encontrado", null);
+    @Override
+    public BaseListReponse<CicloAcademicoDetalleResponse> registrarAll(List<CicloAcademicoCreateRequest> requests) {
+        List<CicloAcademicoDetalleResponse> registrados = new ArrayList<>();
+        int errores = 0;
+
+        for (CicloAcademicoCreateRequest req : requests) {
+            try {
+                BaseObjectResponse<CicloAcademicoDetalleResponse> resp = registrar(req);
+                if (resp.status() == 201 && resp.data() != null) {
+                    registrados.add(resp.data());
+                } else {
+                    errores++;
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                errores++;
+            }
         }
 
+        return new BaseListReponse<>(201,
+                Modulo.CICLO_ACADEMICO.resumenAllRegistro(registrados.size(), errores),
+                registrados);
+    }
+
+    @Override
+    public BaseObjectResponse<CicloAcademicoDetalleResponse> actualizar(Integer idCicloAcademico, CicloAcademicoUpdateRequest request) {
+        Optional<CicloAcademico> cicloOpt = cicloAcademicoRepo.findByIdAndEnabledTrue(idCicloAcademico);
+
+        if (cicloOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.CICLO_ACADEMICO.noEncontrado(), null);
+        }
+
+        CicloAcademico ciclo = cicloOpt.get();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-        if (request.getAnio() != null) {
-            ciclo.setAnio(request.getAnio());
-        }
-
-        if (request.getPeriodo() != null) {
-            ciclo.setPeriodo(request.getPeriodo());
-        }
+        if (request.getAnio() != null) ciclo.setAnio(request.getAnio());
+        if (request.getPeriodo() != null) ciclo.setPeriodo(request.getPeriodo());
 
         if (request.getFechaInicio() != null && !request.getFechaInicio().isBlank()) {
-            try {
-                ciclo.setFechaInicio(LocalDate.parse(request.getFechaInicio(), formatter));
-            } catch (DateTimeParseException e) {
-                return new BaseObjectResponse<>(400, "Formato de fechaInicio inválido (debe ser dd-MM-yyyy)", null);
-            }
+            ciclo.setFechaInicio(LocalDate.parse(request.getFechaInicio(), formatter));
         }
-
         if (request.getFechaFin() != null && !request.getFechaFin().isBlank()) {
-            try {
-                ciclo.setFechaFin(LocalDate.parse(request.getFechaFin(), formatter));
-            } catch (DateTimeParseException e) {
-                return new BaseObjectResponse<>(400, "Formato de fechaFin inválido (debe ser dd-MM-yyyy)", null);
-            }
+            ciclo.setFechaFin(LocalDate.parse(request.getFechaFin(), formatter));
         }
 
         if (ciclo.getFechaInicio() != null && ciclo.getFechaFin() != null &&
@@ -117,39 +146,30 @@ public class CicloAcademicoServiceImpl
             return new BaseObjectResponse<>(400, "La fecha fin debe ser posterior a la fecha inicio", null);
         }
 
-        // Actualizar nombre si cambió año o periodo
-        if (request.getAnio() != null || request.getPeriodo() != null) {
-            String periodoRomano = convertirARomano(ciclo.getPeriodo());
-            String nuevoNombre = ciclo.getAnio() + "-" + periodoRomano;
-            ciclo.setNombre(nuevoNombre);
-
-        }
+        String periodoRomano = convertirARomano(ciclo.getPeriodo());
+        ciclo.setNombre(ciclo.getAnio() + "-" + periodoRomano);
 
         cicloAcademicoRepo.save(ciclo);
 
-        CicloAcademicoDetalleResponse dto = modelMapper.map(ciclo, CicloAcademicoDetalleResponse.class);
-        return new BaseObjectResponse<>(200, "Ciclo académico actualizado exitosamente", dto);
-    }
-    public BaseObjectResponse<String> eliminarCicloAcademico(Integer idCicloAcademico) {
-        // Validación de parámetro
-        if (idCicloAcademico == null) {
-            return new BaseObjectResponse<>(400, "idCicloAcademico no proporcionado", null);
-        }
-
-        // Validar existencia del curso
-        CicloAcademico cicloAcademico = cicloAcademicoRepo.findById(idCicloAcademico).orElse(null);
-        if (cicloAcademico == null) {
-            return new BaseObjectResponse<>(404, "CicloAcademico  no encontrado", null);
-        }
-
-        // desabilitar
-        cicloAcademico.setEnabled(false);
-        cicloAcademicoRepo.save(cicloAcademico);
-        return new BaseObjectResponse<>(200, "se elimino el cicloAcademico exitosamente", null);
+        return new BaseObjectResponse<>(200, Modulo.CICLO_ACADEMICO.actualizado(), convCicloAcademicoDetalle(ciclo));
     }
 
     @Override
-    public List<CicloAcademico> findByEnabledTrue() {
-        return cicloAcademicoRepo.findByEnabledTrue();
+    public BaseObjectResponse<String> eliminar(Integer idCicloAcademico) {
+        Optional<CicloAcademico> cicloOpt = cicloAcademicoRepo.findByIdAndEnabledTrue(idCicloAcademico);
+
+        if (cicloOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.CICLO_ACADEMICO.noEncontrado(), null);
+        }
+
+        CicloAcademico ciclo = cicloOpt.get();
+        ciclo.setEnabled(false);
+        cicloAcademicoRepo.save(ciclo);
+
+        return new BaseObjectResponse<>(200, Modulo.CICLO_ACADEMICO.eliminado(), null);
     }
+    private CicloAcademicoDetalleResponse convCicloAcademicoDetalle(CicloAcademico obj) {
+        return modelMapper.map(obj, CicloAcademicoDetalleResponse.class);
+    }
+
 }

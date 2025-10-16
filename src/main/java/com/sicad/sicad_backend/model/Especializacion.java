@@ -9,15 +9,7 @@ import lombok.*;
 @Entity
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(
-        name = "especializacion",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "UK_ESPECIALIZACION_ASIGNATURA_DOCENTE",
-                        columnNames = {"id_asignatura", "id_docente"}
-                )
-        }
-)
+@Table(name = "especializacion")
 public class Especializacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

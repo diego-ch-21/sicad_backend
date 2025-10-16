@@ -17,4 +17,6 @@ public interface IAsignaturaRepo extends IGenericRepo<Asignatura, Integer> {
 
     @Query("SELECT e FROM Asignatura e WHERE e.idAsignatura = :id AND e.enabled = true")
     Optional<Asignatura> findByIdAndEnabledTrue(@Param("id") Integer id);
+
+
 }

@@ -11,16 +11,10 @@ import lombok.NonNull;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UsuarioDTO {
-    @NonNull
+public class UsuarioDetalleResponse {
     private Integer idUsuario;
     private Integer idRol;
-    @Email
     private String email;
-    @NonNull
-    @Size(min = 5, max=60)
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private String password;
     private boolean enabled;
     private String codigo;
     private String nombre;

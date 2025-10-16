@@ -11,23 +11,23 @@ import java.sql.Time;
 @Entity
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name="curso_horario")
+@Table(name="horario")
 public class Horario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
-    @Column(name = "id_curso_horario")
+    @Column(name = "id_horario")
     private Integer idHorario;
 
     @ManyToOne
     @JoinColumn(name = "id_curso", nullable = false,
-            foreignKey = @ForeignKey(name = "FK_CURSO_HORARIO_CURSO"))
+            foreignKey = @ForeignKey(name = "FK_HORARIO_CURSO"))
     private Curso curso;
 
     @ManyToOne
     @JoinColumn(name = "id_aula", nullable = true,
-            foreignKey = @ForeignKey(name = "FK_CURSO_HORARIO_AULA"))
+            foreignKey = @ForeignKey(name = "FK_HORARIO_AULA"))
     private Aula aula;
 
     @Column(nullable = false, name = "tipo_sesion")

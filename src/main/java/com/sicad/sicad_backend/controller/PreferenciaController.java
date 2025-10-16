@@ -6,12 +6,9 @@ import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaDetalleResponse;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaResumenResponse;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaUpdateRequest;
-import com.sicad.sicad_backend.model.Preferencia;
-import com.sicad.sicad_backend.service.impl.PreferenciaServiceImpl;
 import com.sicad.sicad_backend.service.interfaces.IPreferenciaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,56 +19,45 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PreferenciaController {
     private final IPreferenciaService service;
-    private final ModelMapper modelMapper;
-    private final PreferenciaServiceImpl serviceImpl;
 
-    @GetMapping("/listar")
-    public ResponseEntity<BaseListReponse<PreferenciaDetalleResponse>> findAll() throws Exception {
-        List<PreferenciaDetalleResponse> lista = service.findByEnabledTrue()
-                .stream()
-                .map(this::convertToDTO)
-                .toList();
-        return ResponseEntity.ok(
-                new BaseListReponse<>(200, "Lista de Preferencias", lista)
-        );
-    }
-    @GetMapping("/buscar/{idPreferencia}")
-    public ResponseEntity<BaseObjectResponse<PreferenciaDetalleResponse>> findById(@PathVariable("idPreferencia") Integer id) throws Exception {
-        Preferencia obj = service.findById(id);
-        return ResponseEntity.ok(
-                new BaseObjectResponse<>(200, "Preferencia encontrada", convertToDTO(obj))
-        );
-    }
-    @PostMapping("/insertar")
-    public ResponseEntity<BaseObjectResponse<PreferenciaDetalleResponse>> save(@Valid @RequestBody PreferenciaCreateRequest request){
-        BaseObjectResponse<PreferenciaDetalleResponse> response = serviceImpl.registrarPreferencia(request);
+    @GetMapping("/listar/{idDocente}/{idCicloAcademico}")
+    public ResponseEntity<BaseListReponse<PreferenciaResumenResponse>>
+            listar(@PathVariable("idDocente") Integer idDocente,
+                   @PathVariable("idCicloAcademico") Integer idCicloAcademico) {
+        BaseListReponse<PreferenciaResumenResponse> response = service.listarPorDocenteCicloAcademico(idDocente,idCicloAcademico);
         return ResponseEntity.status(response.status()).body(response);
     }
+
+    @GetMapping("/buscar/{idPreferencia}")
+    public ResponseEntity<BaseObjectResponse<PreferenciaDetalleResponse>>
+            buscar(@PathVariable("idPreferencia") Integer id) {
+        BaseObjectResponse<PreferenciaDetalleResponse> response = service.buscar(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
+    @PostMapping("/insertar")
+    public ResponseEntity<BaseObjectResponse<PreferenciaDetalleResponse>>
+            registrar(@Valid @RequestBody PreferenciaCreateRequest request) {
+        BaseObjectResponse<PreferenciaDetalleResponse> response = service.registrar(request);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
     @PostMapping("/insertar-all")
-    public ResponseEntity<BaseListReponse<PreferenciaDetalleResponse>> saveAll(@Valid @RequestBody List<PreferenciaCreateRequest> requests){
-        BaseListReponse<PreferenciaDetalleResponse> response = serviceImpl.registrarVariosPreferencias(requests);
+    public ResponseEntity<BaseListReponse<PreferenciaDetalleResponse>>
+            registrarAll(@Valid @RequestBody List<PreferenciaCreateRequest> request) {
+        BaseListReponse<PreferenciaDetalleResponse> response = service.registrarAll(request);
         return ResponseEntity.status(response.status()).body(response);
     }
     @PutMapping("/actualizar/{idPreferencia}")
-    public ResponseEntity<BaseObjectResponse<PreferenciaDetalleResponse>> update(@PathVariable("idPreferencia") Integer id, @Valid @RequestBody PreferenciaUpdateRequest request) throws Exception {
-        BaseObjectResponse<PreferenciaDetalleResponse> response = serviceImpl.actualizarPreferencia(id, request);
+    public ResponseEntity<BaseObjectResponse<PreferenciaDetalleResponse>>
+            actualizar(@PathVariable("idPreferencia") Integer id, @Valid @RequestBody PreferenciaUpdateRequest dto) {
+        BaseObjectResponse<PreferenciaDetalleResponse> response = service.actualizar(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }
-
     @DeleteMapping("/eliminar/{idPreferencia}")
-    public ResponseEntity<BaseObjectResponse<String>> delete(@PathVariable("idPreferencia") Integer id) {
-        BaseObjectResponse<String> response = serviceImpl.eliminarPreferencia(id);
+    public ResponseEntity<BaseObjectResponse<String>>
+            eliminar(@PathVariable("idPreferencia") Integer id) {
+        BaseObjectResponse<String> response = service.eliminar(id);
         return ResponseEntity.status(response.status()).body(response);
-    }
-
-    @GetMapping("/listar/{idDocente}/{idCicloAcademico}")
-    public ResponseEntity<BaseObjectResponse<List<PreferenciaResumenResponse>>> findByDocenteAndCargaElectiva(
-            @PathVariable("idDocente") Integer idDocente,
-            @PathVariable("idCicloAcademico") Integer idCicloAcademico) throws Exception {
-        BaseObjectResponse<List<PreferenciaResumenResponse>> response = serviceImpl.listarPreferenciaDocente(idDocente, idCicloAcademico);
-        return ResponseEntity.status(response.status()).body(response);
-    }
-    private PreferenciaDetalleResponse convertToDTO(Preferencia obj) {
-        return modelMapper.map(obj, PreferenciaDetalleResponse.class);
     }
 }

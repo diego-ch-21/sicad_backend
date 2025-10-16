@@ -75,7 +75,7 @@ public class LogisticaServiceImpl
     @Override
     public BaseObjectResponse<LogisticaDetalleResponse> registrar(LogisticaCreateRequest request) {
         Integer idRol = 5;
-        if (usuarioRepo.findByEmail(request.getEmail()).isPresent()) {
+        if (usuarioRepo.findByEmailAndEnabledTrue(request.getEmail()).isPresent()) {
             return new BaseObjectResponse<>(409, CORREO_EN_USO.toString(), null);
         }
         Optional<Rol> optionalRol = rolRepository.findById(idRol);
@@ -146,7 +146,7 @@ public class LogisticaServiceImpl
         Usuario usuario = logistica.getUsuario();
 
         if (request.getEmail() != null && !request.getEmail().equals(usuario.getEmail())) {
-            if (usuarioRepo.findByEmail(request.getEmail()).isPresent()) {
+            if (usuarioRepo.findByEmailAndEnabledTrue(request.getEmail()).isPresent()) {
                 return new BaseObjectResponse<>(409, CORREO_EN_USO.toString(), null);
             }
             usuario.setEmail(request.getEmail());

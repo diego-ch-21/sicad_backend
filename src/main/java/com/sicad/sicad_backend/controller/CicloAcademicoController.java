@@ -5,12 +5,9 @@ import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoCreateRequest;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoDetalleResponse;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoUpdateRequest;
-import com.sicad.sicad_backend.model.CicloAcademico;
-import com.sicad.sicad_backend.service.impl.CicloAcademicoServiceImpl;
 import com.sicad.sicad_backend.service.interfaces.ICicloAcademicoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,56 +19,43 @@ import java.util.List;
 public class CicloAcademicoController {
 
     private final ICicloAcademicoService service;
-    private final CicloAcademicoServiceImpl serviceImpl;
-    private final ModelMapper modelMapper;
-
     @GetMapping("/listar")
-    public ResponseEntity<BaseListReponse<CicloAcademicoDetalleResponse>> findAll() throws Exception {
-        List<CicloAcademicoDetalleResponse> lista = service.findByEnabledTrue()
-                .stream()
-                .map(this::convertToResponseDTO)
-                .toList();
-
-        return ResponseEntity.ok(
-                new BaseListReponse<>(200, "Lista de ciclos académicos", lista)
-        );
+    public ResponseEntity<BaseListReponse<CicloAcademicoDetalleResponse>>
+    listar() throws Exception {
+        BaseListReponse<CicloAcademicoDetalleResponse> response = service.listar();
+        return ResponseEntity.status(response.status()).body(response);
     }
 
     @GetMapping("/buscar/{idCicloAcademico}")
     public ResponseEntity<BaseObjectResponse<CicloAcademicoDetalleResponse>>
-        findById(@PathVariable("idCicloAcademico") Integer id) throws Exception {
-        CicloAcademico ciclo = service.findById(id);
-        return ResponseEntity.ok(
-                new BaseObjectResponse<>(200, "Ciclo académico encontrado", convertToResponseDTO(ciclo))
-        );
+    buscar(@PathVariable("idCicloAcademico") Integer id) {
+        BaseObjectResponse<CicloAcademicoDetalleResponse> response = service.buscar(id);
+        return ResponseEntity.status(response.status()).body(response);
     }
 
     @PostMapping("/insertar")
-    public ResponseEntity<BaseObjectResponse<CicloAcademicoDetalleResponse>> registrar(
-            @Valid @RequestBody CicloAcademicoCreateRequest request) {
-        BaseObjectResponse<CicloAcademicoDetalleResponse> response = serviceImpl.registrarCiclo(request);
+    public ResponseEntity<BaseObjectResponse<CicloAcademicoDetalleResponse>>
+    registrar(@Valid @RequestBody CicloAcademicoCreateRequest request) {
+        BaseObjectResponse<CicloAcademicoDetalleResponse> response = service.registrar(request);
         return ResponseEntity.status(response.status()).body(response);
     }
 
+    @PostMapping("/insertar-all")
+    public ResponseEntity<BaseListReponse<CicloAcademicoDetalleResponse>>
+    registrarAll(@Valid @RequestBody List<CicloAcademicoCreateRequest> request) {
+        BaseListReponse<CicloAcademicoDetalleResponse> response = service.registrarAll(request);
+        return ResponseEntity.status(response.status()).body(response);
+    }
     @PutMapping("/actualizar/{idCicloAcademico}")
-    public ResponseEntity<BaseObjectResponse<CicloAcademicoDetalleResponse>> actualizar(
-            @PathVariable("idCicloAcademico") Integer id,
-            @Valid @RequestBody CicloAcademicoUpdateRequest request) {
-        BaseObjectResponse<CicloAcademicoDetalleResponse> response = serviceImpl.actualizarCiclo(id, request);
+    public ResponseEntity<BaseObjectResponse<CicloAcademicoDetalleResponse>>
+    actualizar(@PathVariable("idCicloAcademico") Integer id, @Valid @RequestBody CicloAcademicoUpdateRequest dto) {
+        BaseObjectResponse<CicloAcademicoDetalleResponse> response = service.actualizar(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }
     @DeleteMapping("/eliminar/{idCicloAcademico}")
-    public ResponseEntity<BaseObjectResponse<String>> delete(@PathVariable("idCicloAcademico") Integer id) {
-        BaseObjectResponse<String> response = serviceImpl.eliminarCicloAcademico(id);
+    public ResponseEntity<BaseObjectResponse<String>>
+    eliminar(@PathVariable("idCicloAcademico") Integer id) {
+        BaseObjectResponse<String> response = service.eliminar(id);
         return ResponseEntity.status(response.status()).body(response);
-    }
-
-    // Utilidades
-    private CicloAcademicoDetalleResponse convertToResponseDTO(CicloAcademico obj) {
-        return modelMapper.map(obj, CicloAcademicoDetalleResponse.class);
-    }
-
-    private CicloAcademico convertToEntity(CicloAcademicoCreateRequest dto) {
-        return modelMapper.map(dto, CicloAcademico.class);
     }
 }

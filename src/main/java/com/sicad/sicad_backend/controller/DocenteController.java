@@ -18,7 +18,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DocenteController {
     private final IDocenteService service;
-    private final PdfGeneratorServiceImpl pdfService;
 
     @GetMapping("/listar")
     public ResponseEntity<BaseListReponse<DocenteDetalleResponse>>

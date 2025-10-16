@@ -1,6 +1,6 @@
 package com.sicad.sicad_backend.dto.jefeDepartamento;
 
-import com.sicad.sicad_backend.dto.usuario.UsuarioDTO;
+import com.sicad.sicad_backend.dto.usuario.UsuarioDetalleResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class JefeDepartamentoDetalleResponse {
     private Integer idJefeDepartamento;
-    private UsuarioDTO usuario;
+    private UsuarioDetalleResponse usuario;
     private String cargo;
     private boolean enabled;
 }

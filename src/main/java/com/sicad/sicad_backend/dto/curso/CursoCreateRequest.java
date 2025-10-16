@@ -27,6 +27,6 @@ public class CursoCreateRequest {
 
     private String grupo=null;
 
-    private List<HorarioCreateRequest> cursoHorario;
+    private List<HorarioCreateRequest> horario;
 
 }

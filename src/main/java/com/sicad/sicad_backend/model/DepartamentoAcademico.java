@@ -9,24 +9,19 @@ import lombok.*;
 @Entity
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name="director")
-public class Director {
+@Table(name="Departamento_academico")
+public class DepartamentoAcademico {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
-    private Integer idDirector;
+    private Integer idDepartamentoAcademico;
 
     @OneToOne
     @JoinColumn(name = "id_usuario", nullable = false, unique = true)
     private Usuario usuario;
 
-    @Column(nullable = false, unique = true, length = 6, name = "codigo")
-    private String codigo;
-
-    @ManyToOne
-    @JoinColumn(name = "id_escuela", nullable = true,
-            foreignKey = @ForeignKey(name = "FK_DIRECTOR_ESCUELA"))
-    private Escuela escuela;
+    @Column(nullable = false, name = "descripcion")
+    private String descripcion;
 
     @Column(nullable = false, name = "enabled")
     private Boolean enabled;
