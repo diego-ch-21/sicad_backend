@@ -2,9 +2,9 @@ package com.sicad.sicad_backend.controller;
 
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
-import com.sicad.sicad_backend.dto.cursoHorario.HorarioCreateRequest;
-import com.sicad.sicad_backend.dto.cursoHorario.HorarioDetalleResponse;
-import com.sicad.sicad_backend.dto.cursoHorario.HorarioUpdateRequest;
+import com.sicad.sicad_backend.dto.Horario.HorarioCreateRequest;
+import com.sicad.sicad_backend.dto.Horario.HorarioDetalleResponse;
+import com.sicad.sicad_backend.dto.Horario.HorarioUpdateRequest;
 import com.sicad.sicad_backend.service.interfaces.IHorarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

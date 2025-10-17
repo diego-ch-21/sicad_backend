@@ -34,11 +34,13 @@ public interface IPreferenciaRepo extends IGenericRepo<Preferencia, Integer> {
             "WHERE e.docente.idDocente = :idDocente " +
             "AND e.asignatura.idAsignatura = :idAsignatura " +
             "AND e.cicloAcademico.idCicloAcademico = :idCicloAcademico " +
+            "AND e.escuela.idEscuela = :idEscuela "+
             "AND e.enabled = true")
     boolean isRestriccionPreferencia(
             @Param("idDocente") Integer idDocente,
             @Param("idAsignatura") Integer idAsignatura,
-            @Param("idCicloAcademico") Integer idCicloAcademico);
+            @Param("idCicloAcademico") Integer idCicloAcademico,
+            @Param("idEscuela") Integer idEscuela);
 
 
 }

@@ -4,7 +4,6 @@ package com.sicad.sicad_backend.controller;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.docente.*;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
-import com.sicad.sicad_backend.service.report.pdf.PdfGeneratorServiceImpl;
 import com.sicad.sicad_backend.service.interfaces.IDocenteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

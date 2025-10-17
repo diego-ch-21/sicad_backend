@@ -1,4 +1,4 @@
-package com.sicad.sicad_backend.dto.cursoHorario;
+package com.sicad.sicad_backend.dto.Horario;
 
 import jakarta.validation.constraints.Min;
 

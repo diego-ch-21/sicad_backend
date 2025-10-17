@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.sicad.sicad_backend.Enum.Message.CODIGO_EXISTENTE;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -62,14 +64,14 @@ public class AsignaturaServiceImpl
 
     @Override
     public BaseObjectResponse<AsignaturaDetalleResponse> registrar(AsignaturaCreateRequest request) {
-        String codigo;
-        do {
-            codigo = CodigoGeneratorUtil.generarCodigoNumerico(6);
-        } while (asignaturaRepo.existsByCodigo(codigo));
+
+        if(asignaturaRepo.existsByCodigoAndEnabled(request.getCodigo())) {
+            return new BaseObjectResponse<>(409, CODIGO_EXISTENTE.toString(), null);
+        }
 
         Asignatura asignatura = Asignatura.builder()
-                .codigo(codigo)
                 .nombre(request.getNombre())
+                .codigo(request.getCodigo())
                 .enabled(true)
                 .build();
         asignaturaRepo.save(asignatura);
@@ -107,6 +109,15 @@ public class AsignaturaServiceImpl
             return new BaseObjectResponse<>(404, Modulo.ASIGNATURA.noEncontrado(), null);
         }
         Asignatura asignatura = asignaturaOpt.get();
+
+        if (request.getCodigo() != null && !request.getCodigo().isBlank()) {
+            // Solo validar conflicto si es diferente al actual
+            if (!request.getCodigo().equals(asignatura.getCodigo())
+                    && asignaturaRepo.existsByCodigoAndEnabled(request.getCodigo())) {
+                return new BaseObjectResponse<>(409, CODIGO_EXISTENTE.toString(), null);
+            }
+            asignatura.setCodigo(request.getCodigo());
+        }
 
         if (request.getNombre() != null && !request.getNombre().isBlank()) {
             asignatura.setNombre(request.getNombre());

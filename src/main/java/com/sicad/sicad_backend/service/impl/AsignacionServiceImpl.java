@@ -189,7 +189,7 @@ public class AsignacionServiceImpl
         Map<Integer, Integer> horasPorDocente = new HashMap<>();
         for (Asignacion asignacion : asignaciones) {
             Integer idDocente = asignacion.getDocente().getIdDocente();
-            int horas = asignacion.getCurso().getCursoHorario().stream()
+            int horas = asignacion.getCurso().getHorario().stream()
                     .mapToInt(Horario::getDuracionHoras)
                     .sum();
             horasPorDocente.merge(idDocente, horas, Integer::sum);
@@ -276,7 +276,7 @@ public class AsignacionServiceImpl
     }
 
     private List<Curso> obtenerCursosPorCiclo(Integer idCicloAcademico) {
-        return cursoRepo.buscarPorPeriodoAcademico(idCicloAcademico);
+        return cursoRepo.buscarPorCicloAcademico(idCicloAcademico);
     }
 
     //---------------------------------------------------------------------------------------

@@ -116,7 +116,7 @@ public class SolucionAsignacion {
         return cursos.stream()
                 .filter(curso -> curso.getIdCurso().equals(idCurso))
                 .findFirst()
-                .map(curso -> curso.getCursoHorario().stream()
+                .map(curso -> curso.getHorario().stream()
                         .mapToInt(horario -> horario.getDuracionHoras())
                         .sum())
                 .orElse(0);

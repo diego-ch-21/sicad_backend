@@ -11,4 +11,5 @@ public class PreferenciaUpdateRequest {
     private Integer idDocente;
     private Integer idAsignatura;
     private Integer idCicloAcademico;
+    private Integer idEscuela;
 }

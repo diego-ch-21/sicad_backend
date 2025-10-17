@@ -25,10 +25,9 @@ public class Curso {
             foreignKey = @ForeignKey(name = "FK_CURSO_ASIGNATURA"))
     private Asignatura asignatura;
 
-    @ManyToOne
-    @JoinColumn(name = "id_plan_de_estudio", nullable = false,
-            foreignKey = @ForeignKey(name = "FK_CURSO_PLAN_DE_ESTUDIO"))
-    private PlanDeEstudio planDeEstudio;
+    @ElementCollection
+    @Column(name = "plan_de_estudios", columnDefinition = "text[]")
+    private List<String> planDeEstudios = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "id_escuela", nullable = false,
@@ -43,11 +42,14 @@ public class Curso {
     @Column(nullable = false, unique = true, name = "codigo")
     private String codigo;
 
-    @Column(nullable = true, name = "grupo")
+    @Column(nullable = false, name = "grupo")
     private String grupo;
 
+    @Column(nullable = false, name = "ciclo")
+    private Integer ciclo;
+
     @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Horario> cursoHorario = new ArrayList<>();
+    private List<Horario> horario = new ArrayList<>();
 
     @Column(nullable = false, name = "enabled")
     private Boolean enabled;

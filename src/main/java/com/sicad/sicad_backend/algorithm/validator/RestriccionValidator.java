@@ -135,7 +135,7 @@ public class RestriccionValidator {
             }
 
             // Verificar cada horario del curso contra disponibilidad
-            for (Horario horario : curso.getCursoHorario()) {
+            for (Horario horario : curso.getHorario()) {
                 boolean tieneDisponibilidad = disponibilidades.stream()
                         .anyMatch(disp -> verificarSolapamientoHorario(disp, horario));
 
@@ -170,7 +170,7 @@ public class RestriccionValidator {
             for (Integer idCurso : cursosDocente) {
                 Curso curso = obtenerCursoPorId(idCurso);
                 if (curso != null) {
-                    todosLosHorarios.addAll(curso.getCursoHorario());
+                    todosLosHorarios.addAll(curso.getHorario());
                 }
             }
 
@@ -456,7 +456,7 @@ public class RestriccionValidator {
 
         if (curso == null || disponibilidades == null) return false;
 
-        return curso.getCursoHorario().stream()
+        return curso.getHorario().stream()
                 .allMatch(horario -> disponibilidades.stream()
                         .anyMatch(disp -> verificarSolapamientoHorario(disp, horario)));
     }
@@ -495,8 +495,8 @@ public class RestriccionValidator {
 
         if (curso1 == null || curso2 == null) return false;
 
-        for (Horario horario1 : curso1.getCursoHorario()) {
-            for (Horario horario2 : curso2.getCursoHorario()) {
+        for (Horario horario1 : curso1.getHorario()) {
+            for (Horario horario2 : curso2.getHorario()) {
                 if (hayConflictoHorario(horario1, horario2)) {
                     return true;
                 }
@@ -508,7 +508,7 @@ public class RestriccionValidator {
 
     private int obtenerHorasCurso(Integer idCurso) {
         Curso curso = obtenerCursoPorId(idCurso);
-        return curso != null ? curso.getCursoHorario().stream()
+        return curso != null ? curso.getHorario().stream()
                 .mapToInt(Horario::getDuracionHoras)
                 .sum() : 0;
     }

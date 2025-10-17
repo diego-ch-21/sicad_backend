@@ -10,7 +10,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IAsignaturaRepo extends IGenericRepo<Asignatura, Integer> {
-    boolean existsByCodigo(String codigo);
+    @Query("SELECT COUNT(a) > 0 FROM Asignatura a WHERE a.codigo = :codigo AND a.enabled = true")
+    boolean existsByCodigoAndEnabled(@Param("codigo") String codigo);
+
 
     @Query("SELECT e FROM Asignatura e WHERE e.enabled = true")
     List<Asignatura> findByEnabledTrue();

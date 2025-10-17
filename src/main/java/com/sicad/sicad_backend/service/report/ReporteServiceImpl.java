@@ -1,4 +1,4 @@
-package com.sicad.sicad_backend.service.report.pdf;
+package com.sicad.sicad_backend.service.report;
 
 
 import com.itextpdf.text.*;
@@ -18,12 +18,14 @@ import java.io.InputStream;
 import java.util.List;
 import com.sicad.sicad_backend.dto.asignacion.AsignacionResumenResponse;
 import com.sicad.sicad_backend.dto.curso.CursoAsignacionResponse;
-import com.sicad.sicad_backend.dto.cursoHorario.HorarioDetalleResponse;
+import com.sicad.sicad_backend.dto.Horario.HorarioDetalleResponse;
 import com.sicad.sicad_backend.dto.docente.DocenteAsignacionResponse;
 
+import static com.sicad.sicad_backend.utils.TextUtils.formatearListaComoTexto;
+
 @Service
-public class PdfGeneratorServiceImpl
-    implements IPdfGneratorService {
+public class ReporteServiceImpl
+    implements IReporteService {
 
     @Override
     public byte[] generarPdfCargaElectiva(List<DocenteAsignacionResponse> docentes, CargaDetalleResponse carga) {
@@ -61,6 +63,8 @@ public class PdfGeneratorServiceImpl
             return null;
         }
     }
+
+
     private void agregarEncabezado(Document document,CargaDetalleResponse carga) throws Exception {
         PdfPTable headerTable = new PdfPTable(2);
         headerTable.setWidthPercentage(100);
@@ -115,7 +119,7 @@ public class PdfGeneratorServiceImpl
         tabla.setWidths(new float[]{0.5f, 3f, 1f, 1f, 1f, 1.5f, 1f, 2f});
 
         // Encabezados
-        String[] encabezados = {"N°", "CURSO", "PLAN", "TIPO", "DIA", "HORARIO","N° HRS","ESCUELA PROFESIONAL"};
+        String[] encabezados = {"GRUPO", "CURSO", "PLAN", "TIPO", "DIA", "HORARIO","N° HRS","ESCUELA PROFESIONAL"};
         for (String encabezado : encabezados) {
             PdfPCell celda = new PdfPCell(new Phrase(encabezado, fontEncabezado));
             celda.setBackgroundColor(new BaseColor(24, 104, 139));
@@ -128,11 +132,11 @@ public class PdfGeneratorServiceImpl
         int contador = 1;
         for (AsignacionResumenResponse asignacion : docente.getAsignaciones()) {
             CursoAsignacionResponse curso = asignacion.getCurso();
-            List<HorarioDetalleResponse> horarios = curso.getCursoHorario();
+            List<HorarioDetalleResponse> horarios = curso.getHorario();
             int rowspan = horarios.size();
 
             // Columnas fijas con rowspan
-            PdfPCell celdaNum = new PdfPCell(new Phrase(String.valueOf(contador), fontDatos));
+            PdfPCell celdaNum = new PdfPCell(new Phrase(curso.getGrupo(), fontDatos));
             celdaNum.setRowspan(rowspan);
             celdaNum.setHorizontalAlignment(Element.ALIGN_CENTER);
             celdaNum.setVerticalAlignment(Element.ALIGN_MIDDLE);
@@ -145,7 +149,7 @@ public class PdfGeneratorServiceImpl
             celdaAsignatura.setPadding(8);
             tabla.addCell(celdaAsignatura);
 
-            PdfPCell celdaPlan = new PdfPCell(new Phrase(curso.getPlanDeEstudio().getNombre(), fontDatos));
+            PdfPCell celdaPlan = new PdfPCell(new Phrase(formatearListaComoTexto(curso.getPlanDeEstudios()), fontDatos));
             celdaPlan.setRowspan(rowspan);
             celdaPlan.setHorizontalAlignment(Element.ALIGN_CENTER);
             celdaPlan.setVerticalAlignment(Element.ALIGN_MIDDLE);
@@ -238,6 +242,7 @@ public class PdfGeneratorServiceImpl
                 .mapToInt(d -> d.getAsignaciones().size())
                 .sum();
     }
+    //----------------------------------------------------------------------------------------------------------------
     @Override
     public byte[] generarExcelCargaElectiva(List<DocenteAsignacionResponse> docentes, CargaDetalleResponse carga) {
         try (XSSFWorkbook workbook = new XSSFWorkbook();
@@ -321,7 +326,7 @@ public class PdfGeneratorServiceImpl
 
         // Encabezados de columna
         row = sheet.createRow(rowNum++);
-        String[] encabezados = {"N°", "CURSO", "PLAN", "TIPO", "DIA", "HORARIO", "N° HRS", "ESCUELA PROFESIONAL"};
+        String[] encabezados = {"Grupo°", "CURSO", "PLAN", "TIPO", "DIA", "HORARIO", "N° HRS", "ESCUELA PROFESIONAL"};
         for (int i = 0; i < encabezados.length; i++) {
             cell = row.createCell(i);
             cell.setCellValue(encabezados[i]);
@@ -332,7 +337,7 @@ public class PdfGeneratorServiceImpl
         int contador = 1;
         for (AsignacionResumenResponse asignacion : docente.getAsignaciones()) {
             CursoAsignacionResponse curso = asignacion.getCurso();
-            List<HorarioDetalleResponse> horarios = curso.getCursoHorario();
+            List<HorarioDetalleResponse> horarios = curso.getHorario();
 
             int startRow = rowNum;
 
@@ -344,7 +349,7 @@ public class PdfGeneratorServiceImpl
                 if (i == 0) {
                     // N°
                     cell = row.createCell(0);
-                    cell.setCellValue(contador);
+                    cell.setCellValue(curso.getGrupo());
                     cell.setCellStyle(estiloCentrado);
 
                     // Curso
@@ -354,7 +359,7 @@ public class PdfGeneratorServiceImpl
 
                     // Plan
                     cell = row.createCell(2);
-                    cell.setCellValue(curso.getPlanDeEstudio().getNombre());
+                    cell.setCellValue(formatearListaComoTexto(curso.getPlanDeEstudios()));
                     cell.setCellStyle(estiloCentrado);
                 }
 

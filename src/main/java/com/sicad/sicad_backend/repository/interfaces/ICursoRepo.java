@@ -1,21 +1,16 @@
 package com.sicad.sicad_backend.repository.interfaces;
 
-import com.sicad.sicad_backend.model.Asignatura;
 import com.sicad.sicad_backend.model.Curso;
-import com.sicad.sicad_backend.model.Escuela;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
-import jakarta.transaction.Transactional;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
 import java.util.List;
 import java.util.Optional;
 
 public interface ICursoRepo extends IGenericRepo<Curso, Integer> {
 
-    // Verifica si ya existe un curso con el código proporcionado (para evitar duplicados).
-    boolean existsByCodigo(String codigo);
+    @Query("SELECT COUNT(c) > 0 FROM Curso c WHERE c.codigo = :codigo AND c.enabled = true")
+    boolean existsByCodigoAndEnabled(@Param("codigo") String codigo);
 
 
     @Query("SELECT e FROM Curso e WHERE e.enabled = true")
@@ -27,6 +22,22 @@ public interface ICursoRepo extends IGenericRepo<Curso, Integer> {
     @Query("SELECT c FROM Curso c WHERE c.enabled = true AND c.cicloAcademico.idCicloAcademico = :id")
     List<Curso> findByEnabledTrueAndCicloAcademico(@Param("id") Integer idCicloAcademico);
 
+    @Query("""
+    SELECT c FROM Curso c
+    WHERE c.enabled = true
+      AND (:idAsignatura IS NULL OR c.asignatura.idAsignatura = :idAsignatura)
+      AND (:idCicloAcademico IS NULL OR c.cicloAcademico.idCicloAcademico = :idCicloAcademico)
+      AND (:idEscuela IS NULL OR c.escuela.idEscuela = :idEscuela)
+    """)
+    List<Curso> findByAsignaturaCicloAcademicoEscuela(
+            @Param("idCicloAcademico") Integer idCicloAcademico,
+            @Param("idEscuela") Integer idEscuela,
+            @Param("idAsignatura") Integer idAsignatura
+
+    );
+
+
+    //------------------------------------------------------------------------------------
     /**
      * Busca cursos habilitados de un ciclo académico específico (enabled = true).
      * Usa LEFT JOIN FETCH para traer también la relación cursoHorario en una sola consulta,
@@ -35,39 +46,11 @@ public interface ICursoRepo extends IGenericRepo<Curso, Integer> {
     @Query("""
        SELECT DISTINCT c
        FROM Curso c
-       LEFT JOIN FETCH c.cursoHorario
+       LEFT JOIN FETCH c.horario
        WHERE c.cicloAcademico.idCicloAcademico = :idCicloAcademico
          AND c.enabled = true
        """)
-    List<Curso> buscarPorPeriodoAcademico(@Param("idCicloAcademico") Integer idCicloAcademico);
-
-
-    /**
-     * Busca cursos habilitados de un ciclo académico específico y de una carga específica.
-     * Además, usa LEFT JOIN FETCH para traer la relación cursoHorario y evitar LazyInitializationException.
-     */
-    @Query("""
-    SELECT DISTINCT c
-    FROM Curso c
-    LEFT JOIN FETCH c.cursoHorario
-    WHERE c.cicloAcademico.idCicloAcademico = :idCicloAcademico
-      AND c.enabled = true
-    """)
-    List<Curso> buscarPorCicloAcademico(
-            @Param("idCicloAcademico") Integer idCicloAcademico);
-
-
-
-    /**
-     * Elimina todos los cursos asociados a un ciclo académico específico.
-     * Devuelve el número de registros eliminados.
-     * Usa @Modifying porque se trata de una operación de escritura.
-     * Usa @Transactional porque modifica datos en la base.
-     */
-    @Modifying
-    @Transactional
-    @Query("DELETE FROM Curso c WHERE c.cicloAcademico.idCicloAcademico = :idCicloAcademico")
-    int eliminarPorCicloAcademico(@Param("idCicloAcademico") Integer idCicloAcademico);
+    List<Curso> buscarPorCicloAcademico(@Param("idCicloAcademico") Integer idCicloAcademico);
 
 
 }

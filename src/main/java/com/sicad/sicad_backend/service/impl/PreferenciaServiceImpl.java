@@ -12,10 +12,7 @@ import com.sicad.sicad_backend.dto.preferencia.PreferenciaResumenResponse;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaUpdateRequest;
 import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
-import com.sicad.sicad_backend.repository.interfaces.IAsignaturaRepo;
-import com.sicad.sicad_backend.repository.interfaces.ICicloAcademicoRepo;
-import com.sicad.sicad_backend.repository.interfaces.IDocenteRepo;
-import com.sicad.sicad_backend.repository.interfaces.IPreferenciaRepo;
+import com.sicad.sicad_backend.repository.interfaces.*;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.IPreferenciaService;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +36,7 @@ public class PreferenciaServiceImpl
     private final IDocenteRepo docenteRepo;
     private final IAsignaturaRepo asignaturaRepo;
     private final ICicloAcademicoRepo cicloAcademicoRepo;
+    private final IEscuelaRepo escuelaRepo;
     private final ModelMapper modelMapper;
 
     @Override
@@ -79,18 +77,30 @@ public class PreferenciaServiceImpl
         if (cicloAcademicoOpt.isEmpty()) {
             return new BaseObjectResponse<>(404, Modulo.CICLO_ACADEMICO.noEncontrado(), null);
         }
-        Boolean isExiste = preferenciaRepo.isRestriccionPreferencia(request.getIdDocente(), request.getIdAsignatura(), request.getIdCicloAcademico());
+
+        Optional<Escuela> escuelaOpt = escuelaRepo.findByIdAndEnabledTrue(request.getIdEscuela());
+        if (escuelaOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.ESCUELA.noEncontrado(), null);
+        }
+
+        Boolean isExiste = preferenciaRepo.isRestriccionPreferencia(
+                request.getIdDocente(),
+                request.getIdAsignatura(),
+                request.getIdCicloAcademico(),
+                request.getIdEscuela());
         if(isExiste) {
             List<Modulo> modulos = new ArrayList<>();
             modulos.add(Modulo.DOCENTE);
             modulos.add(Modulo.ASIGNATURA);
             modulos.add(Modulo.CICLO_ACADEMICO);
+            modulos.add(Modulo.ESCUELA);
             return new BaseObjectResponse<>(409, Modulo.PREFERENCIA.noCumple(modulos), null);
         }
         Preferencia preferencia = new Preferencia().builder()
                 .docente(docentenOpt.get())
                 .asignatura(asignaturaOpt.get())
                 .cicloAcademico(cicloAcademicoOpt.get())
+                .escuela(escuelaOpt.get())
                 .enabled(true)
                 .build();
         preferenciaRepo.save(preferencia);
@@ -149,15 +159,26 @@ public class PreferenciaServiceImpl
                 preferencia.setCicloAcademico(cicloAcademicoOpt.get());
             }
         }
+        if(request.getIdEscuela() != null) {
+            Optional<Escuela> escuelaOpt = escuelaRepo.findByIdAndEnabledTrue(request.getIdEscuela());
+            if (escuelaOpt.isEmpty()) {
+                return new BaseObjectResponse<>(404, Modulo.ESCUELA.noEncontrado(), null);
+            } else {
+                preferencia.setEscuela(escuelaOpt.get());
+            }
+        }
+
         Boolean isExiste = preferenciaRepo.isRestriccionPreferencia(
                 preferencia.getDocente().getIdDocente(),
                 preferencia.getAsignatura().getIdAsignatura(),
-                preferencia.getCicloAcademico().getIdCicloAcademico());
+                preferencia.getCicloAcademico().getIdCicloAcademico(),
+                preferencia.getEscuela().getIdEscuela());
         if(isExiste) {
             List<Modulo> modulos = new ArrayList<>();
             modulos.add(Modulo.DOCENTE);
             modulos.add(Modulo.ASIGNATURA);
             modulos.add(Modulo.CICLO_ACADEMICO);
+            modulos.add(Modulo.ESCUELA);
             return new BaseObjectResponse<>(409, Modulo.PREFERENCIA.noCumple(modulos), null);
         }
         preferenciaRepo.save(preferencia);

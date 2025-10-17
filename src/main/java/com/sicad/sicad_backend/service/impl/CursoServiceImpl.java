@@ -4,9 +4,7 @@ import com.sicad.sicad_backend.Enum.Modulo;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.curso.*;
-import com.sicad.sicad_backend.dto.cursoHorario.*;
-import com.sicad.sicad_backend.dto.escuela.EscuelaCreateRequest;
-import com.sicad.sicad_backend.dto.escuela.EscuelaDetalleResponse;
+import com.sicad.sicad_backend.dto.Horario.*;
 import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.*;
@@ -19,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -78,35 +75,56 @@ public class CursoServiceImpl
         if (asignaturaOpt.isEmpty()) {
             return new BaseObjectResponse<>(404, Modulo.ASIGNATURA.noEncontrado(), null);
         }
-        Optional<PlanDeEstudio> planOpt = planDeEstudioRepo.findByIdAndEnabledTrue(request.getIdPlanDeEstudio());
-        if (planOpt.isEmpty()) {
-            return new BaseObjectResponse<>(404, Modulo.PLAN_DE_ESTUDIO.noEncontrado(), null);
-        }
+        Asignatura asignatura = asignaturaOpt.get();
+
 
         Optional<Escuela> escuelaOpt = escuelaRepo.findByIdAndEnabledTrue(request.getIdEscuela());
         if (escuelaOpt.isEmpty()) {
             return new BaseObjectResponse<>(404, Modulo.ESCUELA.noEncontrado(), null);
         }
+        Escuela escuela = escuelaOpt.get();
 
         Optional<CicloAcademico> cicloAcademicoOpt = cicloAcademicoRepo.findByIdAndEnabledTrue(request.getIdCicloAcademico());
         if (cicloAcademicoOpt.isEmpty()) {
             return new BaseObjectResponse<>(404, Modulo.CICLO_ACADEMICO.noEncontrado(), null);
         }
+        CicloAcademico cicloAcademico = cicloAcademicoOpt.get();
 
-        String codigoCurso;
-        do {
-            codigoCurso = CodigoGeneratorUtil.generarCodigoNumerico(6);
-        } while (cursoRepo.existsByCodigo(codigoCurso));
+
+        List<Curso> cursosFiltros = cursoRepo.findByAsignaturaCicloAcademicoEscuela(
+                cicloAcademico.getIdCicloAcademico(),
+                escuela.getIdEscuela(),
+                asignatura.getIdAsignatura()
+        );
+        String nuevoGrupo;
+        if (request.getGrupo() == null || request.getGrupo().isBlank()) {
+            if (cursosFiltros.isEmpty()) {
+                nuevoGrupo = "G1";
+            } else {
+                int maxGrupo = cursosFiltros.stream()
+                        .map(Curso::getGrupo)
+                        .filter(g -> g != null && g.matches("G\\d+"))
+                        .mapToInt(g -> Integer.parseInt(g.substring(1)))
+                        .max()
+                        .orElse(0);
+
+                nuevoGrupo = "G" + (maxGrupo + 1);
+            }
+        } else {
+            nuevoGrupo = request.getGrupo(); // Se respeta el valor enviado
+        }
+
 
         Curso curso = Curso.builder()
-                .asignatura(asignaturaOpt.get())
-                .codigo(codigoCurso)
-                .planDeEstudio(planOpt.get())
-                .escuela(escuelaOpt.get())
-                .cicloAcademico(cicloAcademicoOpt.get())
-                .grupo(request.getGrupo())
+                .asignatura(asignatura)
+                .planDeEstudios(request.getPlanDeEstudios())
+                .escuela(escuela)
+                .cicloAcademico(cicloAcademico)
+                .grupo(nuevoGrupo)
+                .ciclo(request.getCiclo())
                 .enabled(true)
                 .build();
+
 
         cursoRepo.save(curso);
 
@@ -128,7 +146,8 @@ public class CursoServiceImpl
             return new BaseObjectResponse<>(404, Modulo.CURSO.noEncontrado(), null);
         }
         Curso curso = cursoOpt.get();
-        // Validaciones de entidades relacionadas si se envían en la request
+
+        // Actualización de relaciones
         if (request.getIdAsignatura() != null) {
             Optional<Asignatura> asignaturaOpt = asignaturaRepo.findByIdAndEnabledTrue(request.getIdAsignatura());
             if (asignaturaOpt.isEmpty()) {
@@ -137,12 +156,8 @@ public class CursoServiceImpl
             curso.setAsignatura(asignaturaOpt.get());
         }
 
-        if (request.getIdPlanDeEstudio() != null) {
-            Optional<PlanDeEstudio> planOpt = planDeEstudioRepo.findByIdAndEnabledTrue(request.getIdPlanDeEstudio());
-            if (planOpt.isEmpty()) {
-                return new BaseObjectResponse<>(404, Modulo.PLAN_DE_ESTUDIO.noEncontrado(), null);
-            }
-            curso.setPlanDeEstudio(planOpt.get());
+        if (request.getPlanDeEstudios() != null && !request.getPlanDeEstudios().isEmpty()) {
+            curso.setPlanDeEstudios(request.getPlanDeEstudios());
         }
 
         if (request.getIdEscuela() != null) {
@@ -160,15 +175,43 @@ public class CursoServiceImpl
             }
             curso.setCicloAcademico(cicloAcademicoOpt.get());
         }
+        if(request.getCiclo() !=null){
+            curso.setCiclo(request.getCiclo());
+        }
+
+        // Obtener todos los cursos del mismo contexto (asignatura + escuela + ciclo académico)
+        List<Curso> cursosFiltros = cursoRepo.findByAsignaturaCicloAcademicoEscuela(
+                curso.getCicloAcademico().getIdCicloAcademico(),
+                curso.getEscuela().getIdEscuela(),
+                curso.getAsignatura().getIdAsignatura()
+        );
+
+        // Si enviaron grupo, validar duplicado
         if (request.getGrupo() != null) {
-            //VALIDACIONES
+            boolean grupoOcupado = cursosFiltros.stream()
+                    .anyMatch(c -> !c.getIdCurso().equals(curso.getIdCurso()) && request.getGrupo().equals(c.getGrupo()));
+
+            if (grupoOcupado) {
+                return new BaseObjectResponse<>(400, "El grupo " + request.getGrupo() + " ya está asignado a otro curso en este contexto", null);
+            }
+
             curso.setGrupo(request.getGrupo());
+        } else {
+            // Si NO enviaron grupo → generar automáticamente el siguiente
+            int maxGrupo = cursosFiltros.stream()
+                    .filter(c -> c.getGrupo() != null && c.getGrupo().matches("G\\d+"))
+                    .mapToInt(c -> Integer.parseInt(c.getGrupo().substring(1)))
+                    .max()
+                    .orElse(0);
+
+            curso.setGrupo("G" + (maxGrupo + 1));
         }
 
         cursoRepo.save(curso);
 
-        return new BaseObjectResponse<>(200, Modulo.CURSO.actualizado(),convCursoDetalle(curso));
+        return new BaseObjectResponse<>(200, Modulo.CURSO.actualizado(), convCursoDetalle(curso));
     }
+
 
     @Override
     public BaseListReponse<CursoDetalleResponse> registrarAll(List<CursoCreateRequest> requests) {

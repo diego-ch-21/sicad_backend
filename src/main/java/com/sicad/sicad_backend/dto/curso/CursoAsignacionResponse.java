@@ -1,7 +1,7 @@
 package com.sicad.sicad_backend.dto.curso;
 
 import com.sicad.sicad_backend.dto.asignatura.AsignaturaResumenResponse;
-import com.sicad.sicad_backend.dto.cursoHorario.HorarioDetalleResponse;
+import com.sicad.sicad_backend.dto.Horario.HorarioDetalleResponse;
 import com.sicad.sicad_backend.dto.escuela.EscuelaResumenResponse;
 import com.sicad.sicad_backend.dto.planDeEstudio.PlanDeEstudioResumenResponse;
 import lombok.AllArgsConstructor;
@@ -16,8 +16,9 @@ import java.util.List;
 public class CursoAsignacionResponse {
     private Integer idCurso;
     private AsignaturaResumenResponse asignatura;
-    private PlanDeEstudioResumenResponse planDeEstudio;
+    private List<String> planDeEstudios;
     private EscuelaResumenResponse escuela;
-    private List<HorarioDetalleResponse> cursoHorario;
+    private List<HorarioDetalleResponse> horario;
+    private String grupo;
     private boolean enabled;
 }
