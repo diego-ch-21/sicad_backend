@@ -1,10 +1,7 @@
 package com.sicad.sicad_backend.controller;
 
 
-import com.sicad.sicad_backend.dto.asignacion.AsignacionCreateRequest;
-import com.sicad.sicad_backend.dto.asignacion.AsignacionDetalleResponse;
-import com.sicad.sicad_backend.dto.asignacion.AsignacionResumenResponse;
-import com.sicad.sicad_backend.dto.asignacion.AsignacionUpdateRequest;
+import com.sicad.sicad_backend.dto.asignacion.*;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.carga.CargaDetalleResponse;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
@@ -27,44 +24,64 @@ public class AsignacionController {
 
     @GetMapping("/buscar/{idAsignacion}")
     public ResponseEntity<BaseObjectResponse<AsignacionDetalleResponse>>
-    buscar(@PathVariable("idAsignacion") Integer id) {
+            buscar(@PathVariable("idAsignacion") Integer id) {
         BaseObjectResponse<AsignacionDetalleResponse> response = service.buscar(id);
         return ResponseEntity.status(response.status()).body(response);
     }
 
     @PostMapping("/insertar")
     public ResponseEntity<BaseObjectResponse<AsignacionDetalleResponse>>
-    registrar(@Valid @RequestBody AsignacionCreateRequest request) {
+            registrar(@Valid @RequestBody AsignacionCreateRequest request) {
         BaseObjectResponse<AsignacionDetalleResponse> response = service.registrar(request);
         return ResponseEntity.status(response.status()).body(response);
     }
 
     @PostMapping("/insertar-all")
     public ResponseEntity<BaseListReponse<AsignacionDetalleResponse>>
-    registrarAll(@Valid @RequestBody List<AsignacionCreateRequest> request) {
+            registrarAll(@Valid @RequestBody List<AsignacionCreateRequest> request) {
         BaseListReponse<AsignacionDetalleResponse> response = service.registrarAll(request);
         return ResponseEntity.status(response.status()).body(response);
     }
     @PutMapping("/actualizar/{idAsignacion}")
     public ResponseEntity<BaseObjectResponse<AsignacionDetalleResponse>>
-    actualizar(@PathVariable("idAsignacion") Integer id, @Valid @RequestBody AsignacionUpdateRequest dto) {
+            actualizar(@PathVariable("idAsignacion") Integer id, @Valid @RequestBody AsignacionUpdateRequest dto) {
         BaseObjectResponse<AsignacionDetalleResponse> response = service.actualizar(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }
     @DeleteMapping("/eliminar/{idAsignacion}")
     public ResponseEntity<BaseObjectResponse<String>>
-    eliminar(@PathVariable("idAsignacion") Integer id) {
+            eliminar(@PathVariable("idAsignacion") Integer id) {
         BaseObjectResponse<String> response = service.eliminar(id);
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @GetMapping("/listar/{idDocente}/{idCarga}")
-    public ResponseEntity<BaseListReponse<AsignacionResumenResponse>> listarPorDocenteCarga(
-            @PathVariable("idDocente") Integer idDocente,
-            @PathVariable("idCarga") Integer idCarga) {
+    @GetMapping("/listar/carga-docente/{idCarga}/{idDocente}")
+    public ResponseEntity<BaseListReponse<AsignacionResumenResponse>>
+            listarPorDocenteCarga(
+                    @PathVariable("idCarga") Integer idCarga,
+                    @PathVariable("idDocente") Integer idDocente) {
         BaseListReponse<AsignacionResumenResponse> response = service.listarPorDocenteCarga(idDocente, idCarga);
         return ResponseEntity.status(response.status()).body(response);
     }
+
+    @GetMapping("/listar/carga-escuela/{idCarga}/{idEscuela}")
+    public ResponseEntity<BaseListReponse<AsignacionCicloResumenResponse>>
+            listarPorCargaEscuela(
+            @PathVariable("idCarga") Integer idCarga,
+            @PathVariable("idEscuela") Integer idEscuela) {
+        BaseListReponse<AsignacionCicloResumenResponse> response = service.listarPorCargaEscuela(idCarga, idEscuela);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+    @GetMapping("/listar/carga/{idCarga}")
+    public ResponseEntity<BaseListReponse<AsignacionCicloResumenResponse>>
+            listarPorCarga(
+            @PathVariable("idCarga") Integer idCarga){
+        BaseListReponse<AsignacionCicloResumenResponse> response = service.listarPorCarga(idCarga);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
+
+
     @PostMapping("/algoritmo/{idCicloAcademico}")
     public ResponseEntity<BaseObjectResponse<CargaDetalleResponse>> asignarConAlgoritmoGeneticoPSO(
             @PathVariable("idCicloAcademico") Integer idCicloAcademico) {

@@ -20,5 +20,6 @@ public class CursoAsignacionResponse {
     private EscuelaResumenResponse escuela;
     private List<HorarioDetalleResponse> horario;
     private String grupo;
+    private Integer ciclo;
     private boolean enabled;
 }

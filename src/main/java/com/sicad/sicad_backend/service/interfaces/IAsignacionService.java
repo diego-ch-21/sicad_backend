@@ -1,10 +1,7 @@
 package com.sicad.sicad_backend.service.interfaces;
 
 
-import com.sicad.sicad_backend.dto.asignacion.AsignacionCreateRequest;
-import com.sicad.sicad_backend.dto.asignacion.AsignacionDetalleResponse;
-import com.sicad.sicad_backend.dto.asignacion.AsignacionResumenResponse;
-import com.sicad.sicad_backend.dto.asignacion.AsignacionUpdateRequest;
+import com.sicad.sicad_backend.dto.asignacion.*;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.carga.CargaDetalleResponse;
@@ -26,6 +23,11 @@ public interface IAsignacionService extends ICRUD<Asignacion, Integer> {
     BaseObjectResponse<String> eliminar(Integer idAsignacion);
 
     BaseListReponse<AsignacionResumenResponse> listarPorDocenteCarga(Integer idDocente, Integer idCarga);
+
+    BaseListReponse<AsignacionCicloResumenResponse> listarPorCargaEscuela(Integer idCarga,Integer idEscuela);
+
+    BaseListReponse<AsignacionCicloResumenResponse> listarPorCarga(Integer idCarga);
+
 
     BaseObjectResponse<CargaDetalleResponse> asignarConAlgoritmoGeneticoPSO(Integer idCicloAcademico);
 

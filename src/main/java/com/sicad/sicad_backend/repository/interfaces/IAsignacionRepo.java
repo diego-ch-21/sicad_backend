@@ -30,4 +30,27 @@ public interface IAsignacionRepo extends IGenericRepo<Asignacion, Integer> {
             @Param("idDocente") Integer idDocente,
             @Param("idCarga") Integer idCarga
     );
+
+    @Query("""
+    SELECT a FROM Asignacion a
+    WHERE a.carga.idCarga = :idCarga
+      AND a.curso.escuela.idEscuela = :idEscuela
+      AND a.enabled = true
+    """)
+    List<Asignacion> findByCargaAndEscuelaEnabled(
+            @Param("idCarga") Integer idCarga,
+            @Param("idEscuela") Integer idEscuela
+    );
+
+    @Query("""
+    SELECT a FROM Asignacion a
+    WHERE a.carga.idCarga = :idCarga
+      AND a.enabled = true
+    """)
+    List<Asignacion> findByEscuelaEnabled(
+            @Param("idCarga") Integer idCarga
+    );
+
+
+
 }

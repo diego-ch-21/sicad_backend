@@ -2,10 +2,7 @@ package com.sicad.sicad_backend.service.impl;
 
 import com.sicad.sicad_backend.Enum.Modulo;
 import com.sicad.sicad_backend.algorithm.service.AlgoritmoAsignacionService;
-import com.sicad.sicad_backend.dto.asignacion.AsignacionCreateRequest;
-import com.sicad.sicad_backend.dto.asignacion.AsignacionDetalleResponse;
-import com.sicad.sicad_backend.dto.asignacion.AsignacionResumenResponse;
-import com.sicad.sicad_backend.dto.asignacion.AsignacionUpdateRequest;
+import com.sicad.sicad_backend.dto.asignacion.*;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.carga.CargaDetalleResponse;
@@ -35,6 +32,7 @@ public class AsignacionServiceImpl
     private final IAsignacionRepo asignacionRepo;
     private final IDocenteRepo docenteRepo;
     private final ICargaRepo cargaRepo;
+    private final IEscuelaRepo escuelaRepo;
     private final ICursoRepo cursoRepo;
     private final ICicloAcademicoRepo cicloAcademicoRepo;
     private final IPreferenciaRepo preferenciaRepo;
@@ -408,8 +406,57 @@ public class AsignacionServiceImpl
                 .toList();
 
         return new BaseListReponse<>(200,Modulo.ASIGNACION.listado(), response);
-
     }
+
+    @Override
+    public BaseListReponse<AsignacionCicloResumenResponse> listarPorCargaEscuela(Integer idCarga, Integer idEscuela) {
+        Optional<Carga> cargaOpt = cargaRepo.findByIdAndEnabledTrue(idCarga);
+        if (cargaOpt.isEmpty()) {
+            return new BaseListReponse<>(404, Modulo.CARGA.noEncontrado(), null);
+        }
+        Optional<Escuela> escuelaOpt = escuelaRepo.findByIdAndEnabledTrue(idEscuela);
+        if (escuelaOpt.isEmpty()) {
+            return new BaseListReponse<>(404, Modulo.ESCUELA.noEncontrado(), null);
+        }
+
+        List<AsignacionCicloResumenResponse> response = asignacionRepo.findByCargaAndEscuelaEnabled(idCarga, idEscuela)
+                .stream()
+                .map(this::convAsignacionCicloResumen) // transformamos a DTO
+                .sorted(Comparator
+                        .comparing((AsignacionCicloResumenResponse a) -> a.getCurso().getCiclo())                  // ciclo
+                        .thenComparing(a -> a.getCurso().getAsignatura().getNombre())                               // asignatura
+                        .thenComparing(a -> a.getCurso().getGrupo())                                               // grupo
+                )
+                .toList();
+
+        return new BaseListReponse<>(200, Modulo.ASIGNACION.listado(), response);
+    }
+
+
+
+    @Override
+    public BaseListReponse<AsignacionCicloResumenResponse> listarPorCarga(Integer idCarga) {
+        Optional<Carga> cargaOpt = cargaRepo.findByIdAndEnabledTrue(idCarga);
+        if (cargaOpt.isEmpty()) {
+            return new BaseListReponse<>(404, Modulo.CARGA.noEncontrado(), null);
+        }
+        List<AsignacionCicloResumenResponse> response =asignacionRepo.findByEscuelaEnabled(idCarga)
+                .stream()
+                .map(this::convAsignacionCicloResumen) // transformamos a DTO
+                .sorted(Comparator
+                        .comparing((AsignacionCicloResumenResponse a) -> a.getCurso().getCiclo())                  // ciclo
+                        .thenComparing(a -> a.getCurso().getAsignatura().getNombre())                               // asignatura
+                        .thenComparing(a -> a.getCurso().getGrupo())                                               // grupo
+                )
+                .toList();
+
+        return new BaseListReponse<>(200, Modulo.ASIGNACION.listado(), response);
+    }
+
+    private AsignacionCicloResumenResponse convAsignacionCicloResumen(Asignacion obj) {
+        return modelMapper.map(obj,AsignacionCicloResumenResponse.class);
+    }
+
     private AsignacionResumenResponse convAsignacionResumen(Asignacion obj) {
         return modelMapper.map(obj, AsignacionResumenResponse.class);
     }
