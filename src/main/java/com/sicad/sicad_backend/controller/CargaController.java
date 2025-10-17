@@ -1,6 +1,7 @@
 package com.sicad.sicad_backend.controller;
 
 
+import com.sicad.sicad_backend.Enum.Message;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.carga.CargaDetalleResponse;
@@ -23,16 +24,8 @@ public class CargaController {
 
     private final ICargaService service;
 
-    @Operation(
-            summary = "Listar cargas de un ciclo académico",
-            description = "Obtiene todas las cargas registradas para el ciclo académico indicado por su ID."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Consulta exitosa. Devuelve la lista de cargas."),
-            @ApiResponse(responseCode = "404", description = "Carga no encontrada", content = @Content(schema = @Schema(implementation = BaseListReponse.class))),
-            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content =@Content(schema = @Schema(implementation = BaseListReponse.class)))
-    })
-    @GetMapping("/listar/{idCicloAcademico}")
+    @Operation(summary = "Listar cargas de un ciclo académico")
+    @GetMapping("/listar-por-ciclo-academico/{idCicloAcademico}")
     public ResponseEntity<BaseListReponse<CargaDetalleResponse>>
             listar(@PathVariable("idCicloAcademico") Integer id){
         BaseListReponse<CargaDetalleResponse> response = service.listarPorCicloAcademico(id);
@@ -53,13 +46,13 @@ public class CargaController {
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @PutMapping("/principal/asignar/{idCicloAcademico}/{idCarga}")
+    @PutMapping("/principal-asignar-por-ciclo-academico/{idCicloAcademico}/{idCarga}")
     public ResponseEntity<BaseObjectResponse<CargaDetalleResponse>>
             asignarPrincipal(@PathVariable("idCicloAcademico") Integer idCicloAcademico, @PathVariable("idCarga") Integer idCarga) {
         BaseObjectResponse<CargaDetalleResponse> response = service.asignarPrincipal(idCicloAcademico, idCarga);
         return ResponseEntity.status(response.status()).body(response);    }
 
-    @GetMapping("/principal/buscar/{idCicloAcademico}")
+    @GetMapping("/principal-buscar-por-ciclo-academico/{idCicloAcademico}")
     public ResponseEntity<BaseObjectResponse<CargaDetalleResponse>>
             buscarPrincipal(@PathVariable("idCicloAcademico") Integer id) {
         BaseObjectResponse<CargaDetalleResponse> response = service.buscarPrincipal(id);

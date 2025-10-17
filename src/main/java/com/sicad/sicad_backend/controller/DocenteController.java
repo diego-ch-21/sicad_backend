@@ -32,7 +32,7 @@ public class DocenteController {
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @GetMapping("/usuario/buscar/{idUsuario}")
+    @GetMapping("/buscar-por-usuario/{idUsuario}")
     public ResponseEntity<BaseObjectResponse<DocenteDetalleResponse>>
             buscarPorUsuario(@PathVariable("idUsuario") Integer id) {
         BaseObjectResponse<DocenteDetalleResponse> response = service.buscarPorUsuario(id);
@@ -64,27 +64,27 @@ public class DocenteController {
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @GetMapping("/listar/especializaciones")
+    @GetMapping("/listar-especializaciones")
     public ResponseEntity<BaseListReponse<DocenteEspecializacionResponse>>
             docenteEspecializacion(){
         BaseListReponse<DocenteEspecializacionResponse> response = service.listarDocentesConEspecializaciones();
         return  ResponseEntity.status(response.status()).body(response);
     }
 
-    @GetMapping("/preferencias/{idCicloAcademico}")
+    @GetMapping("/listar-con-preferencias/{idCicloAcademico}")
     public ResponseEntity<BaseListReponse<DocentePreferenciaResponse>>
             docentesPreferencias(@PathVariable("idCicloAcademico") Integer id){
         BaseListReponse<DocentePreferenciaResponse> response = service.listarDocentesConPreferencias(id);
         return ResponseEntity.status(response.status()).body(response);
     }
-    @GetMapping("/disponibilidades/{idCicloAcademico}")
+    @GetMapping("/listar-con-disponibilidades/{idCicloAcademico}")
     public ResponseEntity<BaseListReponse<DocenteDisponibilidadResponse>>
             docentesDisponibilidad(@PathVariable("idCicloAcademico") Integer id){
         BaseListReponse<DocenteDisponibilidadResponse> response = service.listarDocentesConDisponibilidad(id);
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @GetMapping("/asignaciones/{idCarga}")
+    @GetMapping("/listar-con-asignaciones/{idCarga}")
     public ResponseEntity<BaseListReponse<DocenteAsignacionResponse>>
     docentesAsignacionesCicloAcademicoAndCarga(
             @PathVariable("idCarga") Integer idCarga) throws Exception {

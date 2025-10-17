@@ -21,10 +21,10 @@ public class DisponibilidadController {
     private final IDisponibilidadService service;
 
 
-    @GetMapping("/listar/{idDocente}/{idCicloAcademico}")
+    @GetMapping("/listar-por-ciclo-academico-docente/{idCicloAcademico}/{idDocente}")
     public ResponseEntity<BaseListReponse<DisponibilidadResumenResponse>>
-            listar(@PathVariable("idDocente") Integer idDocente,
-                   @PathVariable("idCicloAcademico") Integer idCicloAcademico) {
+            listar(@PathVariable("idCicloAcademico") Integer idCicloAcademico,
+                    @PathVariable("idDocente") Integer idDocente) {
         BaseListReponse<DisponibilidadResumenResponse> response = service.listarPorDocenteCicloAcademico(idDocente,idCicloAcademico);
         return ResponseEntity.status(response.status()).body(response);
     }

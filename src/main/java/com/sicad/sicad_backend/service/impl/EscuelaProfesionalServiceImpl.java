@@ -56,8 +56,8 @@ public class EscuelaProfesionalServiceImpl
     }
 
     @Override
-    public BaseObjectResponse<EscuelaProfesionalDetalleResponse> buscar(Integer idEscuela) {
-        Optional<EscuelaProfesional> escuelaOpt = escuelaProfesionalRepo.findByIdAndEnabledTrue(idEscuela);
+    public BaseObjectResponse<EscuelaProfesionalDetalleResponse> buscar(Integer idEscuelaProfesional) {
+        Optional<EscuelaProfesional> escuelaOpt = escuelaProfesionalRepo.findByIdAndEnabledTrue(idEscuelaProfesional);
 
         if (escuelaOpt.isEmpty()) {
             return new BaseObjectResponse<>(404, Modulo.ESCUELA_PROFESIONAL.noEncontrado(), null);
@@ -109,8 +109,8 @@ public class EscuelaProfesionalServiceImpl
     }
 
     @Override
-    public BaseObjectResponse<EscuelaProfesionalDetalleResponse> actualizar(Integer idEscuela, EscuelaProfesionalUpdateRequest request) {
-        Optional<EscuelaProfesional> escuelaOpt = escuelaProfesionalRepo.findByIdAndEnabledTrue(idEscuela);
+    public BaseObjectResponse<EscuelaProfesionalDetalleResponse> actualizar(Integer idEscuelaProfesional, EscuelaProfesionalUpdateRequest request) {
+        Optional<EscuelaProfesional> escuelaOpt = escuelaProfesionalRepo.findByIdAndEnabledTrue(idEscuelaProfesional);
         if (escuelaOpt.isEmpty()) {
             return new BaseObjectResponse<>(404, Modulo.ESCUELA_PROFESIONAL.noEncontrado(), null);
         }
@@ -142,8 +142,8 @@ public class EscuelaProfesionalServiceImpl
     }
 
     @Override
-    public BaseObjectResponse<String> eliminar(Integer idEscuela) {
-        Optional<EscuelaProfesional> escuelaOpt = escuelaProfesionalRepo.findByIdAndEnabledTrue(idEscuela);
+    public BaseObjectResponse<String> eliminar(Integer idEscuelaProfesional) {
+        Optional<EscuelaProfesional> escuelaOpt = escuelaProfesionalRepo.findByIdAndEnabledTrue(idEscuelaProfesional);
         if (escuelaOpt.isEmpty()) {
             return new BaseObjectResponse<>(404, Modulo.ESCUELA_PROFESIONAL.noEncontrado(), null);
         }

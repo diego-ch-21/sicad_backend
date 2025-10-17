@@ -60,14 +60,14 @@ public class AlgoritmoController{
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @PutMapping("/principal/seleccionar/{idAlgoritmo}")
+    @PutMapping("/principal-asignar/{idAlgoritmo}")
     public ResponseEntity<BaseObjectResponse<AlgoritmoDetalleResponse>>
             asignarPrincipal(@PathVariable("idAlgoritmo") Integer id) {
         BaseObjectResponse<AlgoritmoDetalleResponse> response = service.asignarPrincipal(id);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/principal/buscar")
+    @GetMapping("/principal-buscar")
     public ResponseEntity<BaseObjectResponse<AlgoritmoDetalleResponse>>
             buscarPrincipal() {
         BaseObjectResponse<AlgoritmoDetalleResponse> response = service.buscarPrincipal();

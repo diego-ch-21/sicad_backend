@@ -247,6 +247,17 @@ public class CursoServiceImpl
     }
 
     private CursoDetalleResponse convCursoDetalle(Curso obj) {
-        return modelMapper.map(obj, CursoDetalleResponse.class);
+        CursoDetalleResponse detalle = modelMapper.map(obj, CursoDetalleResponse.class);
+
+        if (detalle.getHorario() != null) {
+            detalle.setHorario(
+                    detalle.getHorario().stream()
+                            .filter(HorarioDetalleResponse::isEnabled)
+                            .toList()
+            );
+        }
+
+        return detalle;
     }
+
 }

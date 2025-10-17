@@ -20,7 +20,7 @@ import java.util.List;
 public class EspecializacionController {
     private final IEspecializacionService service;
 
-    @GetMapping("/listar/{idDocente}")
+    @GetMapping("/listar-por-docente/{idDocente}")
     public ResponseEntity<BaseListReponse<EspecializacionResumenResponse>>
             listar(@PathVariable("idDocente") Integer idDocente) throws Exception {
         BaseListReponse<EspecializacionResumenResponse> response = service.listarPorDocente(idDocente);

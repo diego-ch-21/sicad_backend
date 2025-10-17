@@ -19,7 +19,7 @@ import java.util.List;
 public class HorarioController {
     private final IHorarioService service;
 
-    @GetMapping("/listar/{idCurso}")
+    @GetMapping("/listar-por-curso/{idCurso}")
     public ResponseEntity<BaseListReponse<HorarioDetalleResponse>>
             listar(@PathVariable("idCurso") Integer idCurso){
         BaseListReponse<HorarioDetalleResponse> response = service.listarPorCurso(idCurso);
@@ -33,14 +33,14 @@ public class HorarioController {
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @PostMapping("/insertar/{idCurso}")
+    @PostMapping("/insertar-por-curso/{idCurso}")
     public ResponseEntity<BaseObjectResponse<HorarioDetalleResponse>>
             registrar(@PathVariable("idCurso") Integer id,@Valid @RequestBody HorarioCreateRequest request) {
         BaseObjectResponse<HorarioDetalleResponse> response = service.registrarPorCurso(id,request);
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @PostMapping("/insertar-all/{idCurso}")
+    @PostMapping("/insertar-all-por-curso/{idCurso}")
     public ResponseEntity<BaseListReponse<HorarioDetalleResponse>>
             registrarAll(@PathVariable("idCurso") Integer id,@Valid @RequestBody List<HorarioCreateRequest> request) {
         BaseListReponse<HorarioDetalleResponse> response = service.registrarAllPorCurso(id,request);

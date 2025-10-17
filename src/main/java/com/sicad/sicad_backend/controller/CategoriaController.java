@@ -34,7 +34,7 @@ public class CategoriaController {
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @GetMapping("/buscar/docente/{idDocente}")
+    @GetMapping("/buscar-por-docente/{idDocente}")
     public ResponseEntity<BaseObjectResponse<CategoriaDetalleResponse>>
             buscarPorDocente(@PathVariable("idDocente") Integer id) {
         BaseObjectResponse<CategoriaDetalleResponse> response = service.buscarPorDocente(id);

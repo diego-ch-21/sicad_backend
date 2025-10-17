@@ -24,4 +24,8 @@ public enum Message {
     public String toString() {
         return texto;
     }
+
+    public String getTexto() {
+        return texto;
+    }
 }

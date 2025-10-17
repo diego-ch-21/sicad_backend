@@ -33,7 +33,7 @@ public class DedicacionController {
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @GetMapping("/buscar/docente/{idDocente}")
+    @GetMapping("/buscar-por-docente/{idDocente}")
     public ResponseEntity<BaseObjectResponse<DedicacionDetalleResponse>>
             buscarPorDocente(@PathVariable("idDocente") Integer id) {
         BaseObjectResponse<DedicacionDetalleResponse> response = service.buscarPorDocente(id);

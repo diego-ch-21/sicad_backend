@@ -23,7 +23,7 @@ public class ResultadoController {
         return ResponseEntity.status(response.status()).body(response);
     }
 
-    @GetMapping("/buscar/docente/{idCarga}")
+    @GetMapping("/buscar-por-carga/{idCarga}")
     public ResponseEntity<BaseObjectResponse<ResultadoDetalleResponse>>
             buscarPorDocente(@PathVariable("idCarga") Integer id) {
         BaseObjectResponse<ResultadoDetalleResponse> response = service.buscarPorCarga(id);

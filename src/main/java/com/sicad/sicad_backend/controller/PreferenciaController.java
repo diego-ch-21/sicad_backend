@@ -20,10 +20,10 @@ import java.util.List;
 public class PreferenciaController {
     private final IPreferenciaService service;
 
-    @GetMapping("/listar/{idDocente}/{idCicloAcademico}")
+    @GetMapping("/listar-por-ciclo-academico-docente/{idCicloAcademico}/{idDocente}")
     public ResponseEntity<BaseListReponse<PreferenciaResumenResponse>>
-            listar(@PathVariable("idDocente") Integer idDocente,
-                   @PathVariable("idCicloAcademico") Integer idCicloAcademico) {
+            listar(@PathVariable("idCicloAcademico") Integer idCicloAcademico,
+                    @PathVariable("idDocente") Integer idDocente) {
         BaseListReponse<PreferenciaResumenResponse> response = service.listarPorDocenteCicloAcademico(idDocente,idCicloAcademico);
         return ResponseEntity.status(response.status()).body(response);
     }

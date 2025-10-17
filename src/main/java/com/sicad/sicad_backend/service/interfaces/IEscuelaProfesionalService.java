@@ -12,13 +12,12 @@ public interface IEscuelaProfesionalService  extends ICRUD<EscuelaProfesional, I
 
         BaseListReponse<EscuelaProfesionalDetalleResponse> listar();
 
-        BaseObjectResponse<EscuelaProfesionalDetalleResponse> buscar(Integer idDirector);
+        BaseObjectResponse<EscuelaProfesionalDetalleResponse> buscar(Integer idEscuelaProfesional);
 
         BaseObjectResponse<EscuelaProfesionalDetalleResponse> registrar(EscuelaProfesionalCreateRequest request);
 
+        BaseObjectResponse<EscuelaProfesionalDetalleResponse> actualizar(Integer idEscuelaProfesional, EscuelaProfesionalUpdateRequest request);
 
-        BaseObjectResponse<EscuelaProfesionalDetalleResponse> actualizar(Integer idDirector, EscuelaProfesionalUpdateRequest request);
-
-        BaseObjectResponse<String> eliminar(Integer idDirector);
+        BaseObjectResponse<String> eliminar(Integer idEscuelaProfesional);
     
 }
