@@ -65,19 +65,27 @@ public class AsignaturaServiceImpl
     @Override
     public BaseObjectResponse<AsignaturaDetalleResponse> registrar(AsignaturaCreateRequest request) {
 
-        if(asignaturaRepo.existsByCodigoAndEnabled(request.getCodigo())) {
-            return new BaseObjectResponse<>(409, CODIGO_EXISTENTE.toString(), null);
-        }
+        // Generar código aleatorio único de 6 dígitos
+        String nuevoCodigo = generarCodigoUnico();
 
         Asignatura asignatura = Asignatura.builder()
                 .nombre(request.getNombre())
-                .codigo(request.getCodigo())
+                .codigo(nuevoCodigo)
                 .enabled(true)
                 .build();
         asignaturaRepo.save(asignatura);
 
         return new BaseObjectResponse<>(201, Modulo.ALGORITMO.registrado(), convAsignaturaDetalle(asignatura));
     }
+
+    private String generarCodigoUnico() {
+        String codigo;
+        do {
+            codigo = String.format("%06d", (int) (Math.random() * 1000000)); // Ejemplo: 004329
+        } while (asignaturaRepo.existsByCodigoAndEnabled(codigo)); // Evitar duplicados
+        return codigo;
+    }
+
 
     @Override
     public BaseListReponse<AsignaturaDetalleResponse> registrarAll(List<AsignaturaCreateRequest> requests) {

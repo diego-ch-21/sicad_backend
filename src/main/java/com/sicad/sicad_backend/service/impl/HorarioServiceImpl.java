@@ -117,7 +117,7 @@ public class HorarioServiceImpl
                 .build();
 
         horarioRepo.save(horario);
-        return new BaseObjectResponse<>(200, Modulo.HORARIO.registrado(), convHorarioDetalle(horario));
+        return new BaseObjectResponse<>(201, Modulo.HORARIO.registrado(), convHorarioDetalle(horario));
 
     }
 
@@ -135,8 +135,10 @@ public class HorarioServiceImpl
             try {
                 BaseObjectResponse<HorarioDetalleResponse> response = registrarPorCurso(idCurso,request);
                 if (response.status() == 201 && response.data() != null) {
+                    System.out.println("true");
                     registrados.add(response.data());
                 } else {
+                    System.out.println("false");
                     errorCount++;
                 }
             } catch (Exception e) {

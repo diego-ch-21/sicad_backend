@@ -142,7 +142,7 @@ public class RestriccionValidator {
                 if (!tieneDisponibilidad) {
                     penalizacion += 25; // Penalización por horario no disponible
                     log.debug("Docente {} no disponible para curso {} en {}",
-                            idDocente, curso.getCodigo(), horario.getDiaSemana());
+                            idDocente, "", horario.getDiaSemana());
                 }
             }
         }
@@ -209,7 +209,7 @@ public class RestriccionValidator {
             if (preferenciasDocente == null || preferenciasDocente.isEmpty()) {
                 penalizacion += 100; // Penalización alta por no tener preferencias
                 log.debug("Docente {} no tiene preferencias registradas y se le asignó curso {}",
-                        idDocente, curso.getCodigo());
+                        idDocente, "");
                 continue;
             }
 
@@ -221,7 +221,7 @@ public class RestriccionValidator {
             if (!tienePreferencia) {
                 penalizacion += 100; // Penalización alta - restricción dura
                 log.debug("VIOLACIÓN: Docente {} no tiene preferencia por asignatura {} del curso {}",
-                        idDocente, curso.getAsignatura().getNombre(), curso.getCodigo());
+                        idDocente, curso.getAsignatura().getNombre(),"");
             }
         }
 

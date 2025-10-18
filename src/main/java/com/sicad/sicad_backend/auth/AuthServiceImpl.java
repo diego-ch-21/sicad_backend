@@ -18,6 +18,7 @@ import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.service.interfaces.IEscuelaProfesionalService;
 import com.sicad.sicad_backend.utils.CodigoGeneratorUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -30,6 +31,7 @@ import java.util.Optional;
 
 import static com.sicad.sicad_backend.Enum.Message.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl
@@ -127,16 +129,22 @@ public class AuthServiceImpl
 
     //no se usara
     public BaseObjectResponse<AuthResponse> registerAdmin(RegisterRequest request) {
-        Integer idRol =RolEnum.ADMIN.getNumero();
+        Integer idRol = RolEnum.ADMIN.getNumero();
+
+        // 1. VERIFICAR si el correo YA está registrado
         Optional<Usuario> optionalUser = userRepo.findByEmailAndEnabledTrue(request.getEmail());
-        if (optionalUser.isEmpty()) {
-            return new BaseObjectResponse<>(404, CORREO_NO_ENCONTRADO.toString(), null);
+        if (optionalUser.isPresent()) { // Si el usuario ya existe, devolvemos 409
+            return new BaseObjectResponse<>(409, "El correo ya está registrado.", null);
+            // Usar Modulo.USUARIO.noCumple(...) si tienes un mensaje específico para conflicto
         }
-        Optional<Rol> optionalRol = rolRepo.findById(idRol);
-        if (!optionalRol.isPresent()) {
+
+        // 2. BUSCAR el rol de administrador
+        Optional<Rol> rolOpt = rolRepo.findByIdAndEnabledTrue(idRol);
+
+        if (rolOpt.isEmpty()) { // Si el Rol no existe, devolvemos 404 (esto es correcto)
             return new BaseObjectResponse<>(404, Modulo.ROL.noEncontrado(), null);
         }
-        Rol rolUsuario = optionalRol.get();
+        Rol rolUsuario = rolOpt.get();
 
         // Generar código único y verificar duplicado
         String codigo;
@@ -169,6 +177,7 @@ public class AuthServiceImpl
                 .usuario(usuarioDetalleResponse)
                 .build();
 
+        // Éxito en el registro
         return new BaseObjectResponse<>(201, Modulo.USUARIO.registrado(), authResponse);
     }
 

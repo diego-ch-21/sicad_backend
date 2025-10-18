@@ -44,7 +44,7 @@ public class Usuario implements UserDetails {
     @Column(nullable = false, name = "nombre")
     private String nombre;
 
-    @Column(nullable = false, name = "apellido")
+    @Column(nullable = true, name = "apellido")
     private String apellido;
 
     @Column(nullable = false, name = "created_at")

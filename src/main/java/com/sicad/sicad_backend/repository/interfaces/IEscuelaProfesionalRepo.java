@@ -6,10 +6,12 @@ import com.sicad.sicad_backend.model.Usuario;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface IEscuelaProfesionalRepo extends IGenericRepo<EscuelaProfesional, Integer> {
     @Query("SELECT d FROM EscuelaProfesional d WHERE d.usuario = :usuario")
     Optional<EscuelaProfesional> findByUsuario(@Param("usuario") Usuario usuario);

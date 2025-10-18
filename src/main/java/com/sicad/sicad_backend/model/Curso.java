@@ -26,7 +26,11 @@ public class Curso {
     private Asignatura asignatura;
 
     @ElementCollection
-    @Column(name = "plan_de_estudios", columnDefinition = "text[]")
+    @CollectionTable(
+            name = "curso_plan_estudios",
+            joinColumns = @JoinColumn(name = "curso_id_curso")
+    )
+    @Column(name = "plan")
     private List<String> planDeEstudios = new ArrayList<>();
 
     @ManyToOne
@@ -39,7 +43,7 @@ public class Curso {
             foreignKey = @ForeignKey(name = "FK_CURSO_CICLO_ACADEMICO"))
     private CicloAcademico cicloAcademico;
 
-    @Column(nullable = false, unique = true, name = "codigo")
+    @Column(nullable = true, unique = true, name = "codigo")
     private String codigo;
 
     @Column(nullable = false, name = "grupo")

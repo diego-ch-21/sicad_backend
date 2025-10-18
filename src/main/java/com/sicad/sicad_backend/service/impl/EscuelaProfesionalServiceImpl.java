@@ -35,7 +35,7 @@ public class EscuelaProfesionalServiceImpl
         implements IEscuelaProfesionalService {
 
     private final IUsuarioRepo userRepository;
-    private IEscuelaProfesionalRepo escuelaProfesionalRepo;
+    private final IEscuelaProfesionalRepo escuelaProfesionalRepo;
     private final IUsuarioRepo usuarioRepo;
     private final IRolRepo rolRepository;
     private final PasswordEncoder passwordEncoder;

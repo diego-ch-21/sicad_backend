@@ -117,6 +117,7 @@ public class CursoServiceImpl
 
         Curso curso = Curso.builder()
                 .asignatura(asignatura)
+                .codigo(generarCodigoUnico())
                 .planDeEstudios(request.getPlanDeEstudios())
                 .escuela(escuela)
                 .cicloAcademico(cicloAcademico)
@@ -137,6 +138,13 @@ public class CursoServiceImpl
         Optional<Curso> cursoOpt = cursoRepo.findByIdAndEnabledTrue(curso.getIdCurso());
         Curso cursoConHorario = cursoOpt.get();
         return new BaseObjectResponse<>(201, Modulo.CURSO.registrado()+" - "+response.message(), convCursoDetalle(cursoConHorario));
+    }
+    private String generarCodigoUnico() {
+        String codigo;
+        do {
+            codigo = String.format("%06d", (int) (Math.random() * 1000000)); // Ejemplo: 034582
+        } while (cursoRepo.existsByCodigoAndEnabled(codigo)); // Asegura que no se repita
+        return codigo;
     }
 
     @Override

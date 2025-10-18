@@ -14,7 +14,6 @@ import lombok.NoArgsConstructor;
 public class AsignaturaCreateRequest {
     @NotBlank(message = "El nombre es obligatorio")
     private String nombre;
-    @NotBlank(message = "El código es obligatorio")
     @Size(max = 8, message = "El código no debe exceder los 8 caracteres")
     private String codigo;
 }

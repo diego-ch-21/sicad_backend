@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DepartamentoAcademicoDetalleResponse {
-    private Integer idDirector;
+    private Integer idDepartamentoAcademico;
     private UsuarioDetalleResponse usuario;
     private boolean enabled;
 }
