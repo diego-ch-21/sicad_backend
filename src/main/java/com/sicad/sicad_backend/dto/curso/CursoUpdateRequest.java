@@ -20,6 +20,7 @@ public class CursoUpdateRequest {
     private List<String> planDeEstudios = new ArrayList<>();
     private Integer idEscuela;
     private Integer idCicloAcademico;
+
     @Min(value = 1, message = "El ciclo debe ser mínimo 1")
     @Max(value = 10, message = "El ciclo debe ser máximo 10")
     private Integer ciclo;

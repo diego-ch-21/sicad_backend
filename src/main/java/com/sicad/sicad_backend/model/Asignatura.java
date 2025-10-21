@@ -17,7 +17,7 @@ public class Asignatura {
     @Column(name = "id_asignatura")
     private Integer idAsignatura;
 
-    @Column(nullable = false,length = 6, name = "codigo")
+    @Column(nullable = false,length = 8, name = "codigo")
     private String codigo;
 
     @Column(nullable = false, name = "nombre")

@@ -45,8 +45,8 @@ public class PreferenciaServiceImpl
     }
 
     @Override
-    public BaseListReponse<PreferenciaResumenResponse> listarPorDocenteCicloAcademico(Integer idDocente, Integer idCicloAcademico) {
-        List<PreferenciaResumenResponse> response = preferenciaRepo.findByEnabledTrueDocenteCicloAcademico(idDocente,idCicloAcademico)
+    public BaseListReponse<PreferenciaResumenResponse> listarPorDocenteCicloAcademico(Integer idCicloAcademico,Integer idDocente) {
+        List<PreferenciaResumenResponse> response = preferenciaRepo.findByEnabledTrueDocenteCicloAcademico(idCicloAcademico,idDocente)
                 .stream()
                 .map(this::convPreferenciaResumen)
                 .toList();
@@ -104,7 +104,7 @@ public class PreferenciaServiceImpl
                 .enabled(true)
                 .build();
         preferenciaRepo.save(preferencia);
-        return new BaseObjectResponse<>(200,Modulo.PREFERENCIA.registrado(), convPreferenciaDetalle(preferencia));
+        return new BaseObjectResponse<>(201,Modulo.PREFERENCIA.registrado(), convPreferenciaDetalle(preferencia));
     }
 
     @Override

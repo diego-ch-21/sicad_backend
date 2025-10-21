@@ -2,6 +2,7 @@ package com.sicad.sicad_backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Where;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,9 @@ public class Curso {
     private Integer ciclo;
 
     @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Horario> horario = new ArrayList<>();
+    @Where(clause = "enabled = true")
+    private List<Horario> horarios = new ArrayList<>();
+
 
     @Column(nullable = false, name = "enabled")
     private Boolean enabled;

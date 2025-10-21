@@ -114,25 +114,29 @@ public class AlgoritmoServiceImpl
         if (optAlgoritmo.isEmpty()) {
             return new BaseObjectResponse<>(404, Modulo.ALGORITMO.noEncontrado(), null);
         }
+
         Algoritmo algoritmo = optAlgoritmo.get();
 
+        // Solo actualizar si el valor NO es null (en el caso de los objetos)
         if (request.getPoblacion() != null) algoritmo.setPoblacion(request.getPoblacion());
         if (request.getGeneracionGa() != null) algoritmo.setGeneracionGa(request.getGeneracionGa());
-        algoritmo.setProbCruzamientos(request.getProbCruzamientos());
-        algoritmo.setProbMutacion(request.getProbMutacion());
-        algoritmo.setElitismo(request.getElitismo());
+        if (request.getProbCruzamientos() != 0.0) algoritmo.setProbCruzamientos(request.getProbCruzamientos());
+        if (request.getProbMutacion() != 0.0) algoritmo.setProbMutacion(request.getProbMutacion());
+        if (request.getElitismo() != 0.0) algoritmo.setElitismo(request.getElitismo());
         if (request.getEnjambrePso() != null) algoritmo.setEnjambrePso(request.getEnjambrePso());
         if (request.getIteracionesPso() != null) algoritmo.setIteracionesPso(request.getIteracionesPso());
-        algoritmo.setInerciaInicial(request.getInerciaInicial());
-        algoritmo.setInerciaFinal(request.getInerciaFinal());
-        algoritmo.setCUno(request.getCUno());
-        algoritmo.setCDos(request.getCDos());
-        algoritmo.setVelocidadMaxima(request.getVelocidadMaxima());
+        if (request.getInerciaInicial() != 0.0) algoritmo.setInerciaInicial(request.getInerciaInicial());
+        if (request.getInerciaFinal() != 0.0) algoritmo.setInerciaFinal(request.getInerciaFinal());
+        if (request.getCUno() != null) algoritmo.setCUno(request.getCUno());
+        if (request.getCDos() != null) algoritmo.setCDos(request.getCDos());
+        if (request.getVelocidadMaxima() != 0.0) algoritmo.setVelocidadMaxima(request.getVelocidadMaxima());
         if (request.getCicloHibridos() != null) algoritmo.setCicloHibridos(request.getCicloHibridos());
+
         algoritmoRepo.save(algoritmo);
 
-        return new BaseObjectResponse<>(200, Modulo.ALGORITMO.actualizado(),  convAlgoritmoDetalle(algoritmo));
+        return new BaseObjectResponse<>(200, Modulo.ALGORITMO.actualizado(), convAlgoritmoDetalle(algoritmo));
     }
+
 
     @Override
     public BaseObjectResponse<String> eliminar(Integer idAlgoritmo) {

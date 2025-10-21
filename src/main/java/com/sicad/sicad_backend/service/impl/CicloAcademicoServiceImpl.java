@@ -65,20 +65,27 @@ public class CicloAcademicoServiceImpl
 
     @Override
     public BaseObjectResponse<CicloAcademicoDetalleResponse> registrar(CicloAcademicoCreateRequest request) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-        LocalDate fechaInicio;
-        LocalDate fechaFin;
-        fechaInicio = LocalDate.parse(request.getFechaInicio(), formatter);
-        fechaFin = LocalDate.parse(request.getFechaFin(), formatter);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        LocalDate fechaInicio = LocalDate.parse(request.getFechaInicio(), formatter);
+        LocalDate fechaFin = LocalDate.parse(request.getFechaFin(), formatter);
+
         if (!fechaFin.isAfter(fechaInicio)) {
             return new BaseObjectResponse<>(400, "La fecha fin debe ser posterior a la fecha inicio", null);
         }
 
-        String periodoRomano = convertirARomano(request.getPeriodo());
-        String nombre = request.getAnio() + "-" + periodoRomano;
+        // Manejar el periodo 0 de forma explícita
+        String periodoTexto;
+        if (request.getPeriodo() == 0) {
+            periodoTexto = "0"; // o "Especial", "Anual", según tu dominio
+        } else {
+            periodoTexto = convertirARomano(request.getPeriodo());
+        }
+
+        String nombre = request.getAnio() + "-" + periodoTexto;
 
         if (cicloAcademicoRepo.existsByNombre(nombre)) {
-            return new BaseObjectResponse<>(409, "Ya existe un ciclo académico con ese nombre", null);
+            return new BaseObjectResponse<>(409, "Ya existe el ciclo académico " + nombre, null);
         }
 
         CicloAcademico ciclo = CicloAcademico.builder()
@@ -95,6 +102,7 @@ public class CicloAcademicoServiceImpl
         return new BaseObjectResponse<>(201, Modulo.CICLO_ACADEMICO.registrado(),
                 convCicloAcademicoDetalle(ciclo));
     }
+
 
     @Override
     public BaseListReponse<CicloAcademicoDetalleResponse> registrarAll(List<CicloAcademicoCreateRequest> requests) {
@@ -122,37 +130,57 @@ public class CicloAcademicoServiceImpl
 
     @Override
     public BaseObjectResponse<CicloAcademicoDetalleResponse> actualizar(Integer idCicloAcademico, CicloAcademicoUpdateRequest request) {
+        // Buscar el ciclo académico activo
         Optional<CicloAcademico> cicloOpt = cicloAcademicoRepo.findByIdAndEnabledTrue(idCicloAcademico);
-
         if (cicloOpt.isEmpty()) {
             return new BaseObjectResponse<>(404, Modulo.CICLO_ACADEMICO.noEncontrado(), null);
         }
 
         CicloAcademico ciclo = cicloOpt.get();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        if (request.getAnio() != null) ciclo.setAnio(request.getAnio());
-        if (request.getPeriodo() != null) ciclo.setPeriodo(request.getPeriodo());
+        // Actualizar año si fue enviado
+        if (request.getAnio() != null) {
+            ciclo.setAnio(request.getAnio());
+        }
 
+        // Actualizar periodo si fue enviado
+        if (request.getPeriodo() != null) {
+            ciclo.setPeriodo(request.getPeriodo());
+        }
+
+        // Actualizar fechas si fueron enviadas
         if (request.getFechaInicio() != null && !request.getFechaInicio().isBlank()) {
-            ciclo.setFechaInicio(LocalDate.parse(request.getFechaInicio(), formatter));
+            ciclo.setFechaInicio(LocalDate.parse(request.getFechaInicio().trim(), formatter));
         }
         if (request.getFechaFin() != null && !request.getFechaFin().isBlank()) {
-            ciclo.setFechaFin(LocalDate.parse(request.getFechaFin(), formatter));
+            ciclo.setFechaFin(LocalDate.parse(request.getFechaFin().trim(), formatter));
         }
 
+        // Validar coherencia de fechas (si ambas existen)
         if (ciclo.getFechaInicio() != null && ciclo.getFechaFin() != null &&
                 !ciclo.getFechaFin().isAfter(ciclo.getFechaInicio())) {
             return new BaseObjectResponse<>(400, "La fecha fin debe ser posterior a la fecha inicio", null);
         }
 
+        // Regenerar nombre del ciclo académico (ej: "2025-II")
         String periodoRomano = convertirARomano(ciclo.getPeriodo());
-        ciclo.setNombre(ciclo.getAnio() + "-" + periodoRomano);
+        String nuevoNombre = ciclo.getAnio() + "-" + periodoRomano;
 
+        // Validar duplicado solo si el nombre cambió
+        if (!nuevoNombre.equals(ciclo.getNombre()) && cicloAcademicoRepo.existsByNombre(nuevoNombre)) {
+            return new BaseObjectResponse<>(409, "Ya existe el ciclo académico  "+ciclo.getNombre(), null);
+        }
+
+        ciclo.setNombre(nuevoNombre);
+
+        // Guardar cambios
         cicloAcademicoRepo.save(ciclo);
 
+        // Devolver respuesta con los datos actualizados
         return new BaseObjectResponse<>(200, Modulo.CICLO_ACADEMICO.actualizado(), convCicloAcademicoDetalle(ciclo));
     }
+
 
     @Override
     public BaseObjectResponse<String> eliminar(Integer idCicloAcademico) {

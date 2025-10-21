@@ -13,6 +13,8 @@ import java.util.Optional;
 
 public interface IAulaRepo extends IGenericRepo<Aula, Integer> {
 
+    @Query("SELECT a FROM Aula a WHERE a.nombre = :nombre AND a.enabled = true")
+    Optional<Aula> findByNombreAndEnabledTrue(@Param("nombre") String nombre);
 
     @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END " +
             "FROM Aula a WHERE a.nombre = :nombre AND a.enabled = true")

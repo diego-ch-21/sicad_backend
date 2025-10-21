@@ -17,8 +17,6 @@ public class PlanDeEstudio {
     @Column(name = "id_plan_de_estudio")
     private Integer idPlanDeEstudio;
 
-    @Column(nullable = false, name = "codigo")
-    private Integer codigo;
 
     @Column(nullable = false, name = "nombre")
     private String nombre;

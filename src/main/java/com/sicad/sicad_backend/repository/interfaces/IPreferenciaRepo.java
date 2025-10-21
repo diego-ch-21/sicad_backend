@@ -22,8 +22,8 @@ public interface IPreferenciaRepo extends IGenericRepo<Preferencia, Integer> {
             "AND e.docente.idDocente = :idDocente " +
             "AND e.cicloAcademico.idCicloAcademico = :idCicloAcademico")
     List<Preferencia> findByEnabledTrueDocenteCicloAcademico(
-            @Param("idDocente") Integer idDocente,
-            @Param("idCicloAcademico") Integer idCicloAcademico);
+            @Param("idCicloAcademico") Integer idCicloAcademico,
+            @Param("idDocente") Integer idDocente);
 
 
     @Query("SELECT e FROM Preferencia e WHERE e.idPreferencia = :id AND e.enabled = true")

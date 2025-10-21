@@ -16,8 +16,9 @@ public interface ICursoRepo extends IGenericRepo<Curso, Integer> {
     @Query("SELECT e FROM Curso e WHERE e.enabled = true")
     List<Curso> findByEnabledTrue();
 
-    @Query("SELECT e FROM Curso e WHERE e.idCurso = :id AND e.enabled = true")
+    @Query("SELECT c FROM Curso c LEFT JOIN FETCH c.horarios WHERE c.idCurso = :id AND c.enabled = true")
     Optional<Curso> findByIdAndEnabledTrue(@Param("id") Integer idCurso);
+
 
     @Query("SELECT c FROM Curso c WHERE c.enabled = true AND c.cicloAcademico.idCicloAcademico = :id")
     List<Curso> findByEnabledTrueAndCicloAcademico(@Param("id") Integer idCicloAcademico);
@@ -46,7 +47,7 @@ public interface ICursoRepo extends IGenericRepo<Curso, Integer> {
     @Query("""
        SELECT DISTINCT c
        FROM Curso c
-       LEFT JOIN FETCH c.horario
+       LEFT JOIN FETCH c.horarios
        WHERE c.cicloAcademico.idCicloAcademico = :idCicloAcademico
          AND c.enabled = true
        """)

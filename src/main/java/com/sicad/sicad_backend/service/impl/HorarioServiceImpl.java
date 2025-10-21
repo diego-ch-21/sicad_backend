@@ -21,8 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.sql.Time;
+// import java.sql.Time; // <-- CAMBIO: Eliminado
 import java.time.Duration;
+import java.time.LocalTime; // <-- CAMBIO: Ya estaba, pero ahora es el único que se usa
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -78,6 +79,7 @@ public class HorarioServiceImpl
         if (cursoOpt.isEmpty()) {
             return new BaseObjectResponse<>(404, Modulo.CURSO.noEncontrado(), null);
         }
+
         int horaInicio = Integer.parseInt(request.getHoraInicio().split(":")[0]);
         int horaFin = Integer.parseInt(request.getHoraFin().split(":")[0]);
 
@@ -90,35 +92,36 @@ public class HorarioServiceImpl
             return new BaseObjectResponse<>(400, DURACION_DIFERENCIA_HORA_ERROR.toString(), null);
         }
 
-        Time horaInicioTime = Time.valueOf(request.getHoraInicio());
-        Time horaFinTime = Time.valueOf(request.getHoraFin());
+        // --- CAMBIO AQUÍ ---
+        // Se usa LocalTime.parse() en lugar de Time.valueOf()
+        LocalTime horaInicioTime = LocalTime.parse(request.getHoraInicio());
+        LocalTime horaFinTime = LocalTime.parse(request.getHoraFin());
+        // --- FIN DEL CAMBIO ---
 
-        Aula aula =null;
-        if(request.getIdAula() !=null){
-            Optional<Aula> aulaOpt= aulaRepo.findByIdAndEnabledTrue(request.getIdAula());
-            //VALIDAR el aula que esta siendo usado en una idCicloAcademico y rango de fecha (Todavia no se implementa
-            if(aulaOpt.isEmpty()){
+        Aula aula = null;
+        if (request.getIdAula() != null) {
+            Optional<Aula> aulaOpt = aulaRepo.findByIdAndEnabledTrue(request.getIdAula());
+            if (aulaOpt.isEmpty()) {
                 return new BaseObjectResponse<>(404, Modulo.AULA.noEncontrado(), null);
             } else {
-                aula =aulaOpt.get();
+                aula = aulaOpt.get();
             }
-
         }
 
         Horario horario = Horario.builder()
                 .curso(cursoOpt.get())
                 .tipoSesion(request.getTipoSesion())
                 .diaSemana(request.getDiaSemana())
-                .horaInicio(horaInicioTime)
-                .horaFin(horaFinTime)
+                .horaInicio(horaInicioTime) // <-- Ya es LocalTime
+                .horaFin(horaFinTime)       // <-- Ya es LocalTime
                 .duracionHoras(request.getDuracionHoras())
                 .aula(aula)
                 .enabled(true)
                 .build();
 
         horarioRepo.save(horario);
-        return new BaseObjectResponse<>(201, Modulo.HORARIO.registrado(), convHorarioDetalle(horario));
 
+        return new BaseObjectResponse<>(201, Modulo.HORARIO.registrado(), convHorarioDetalle(horario));
     }
 
     @Override
@@ -159,60 +162,57 @@ public class HorarioServiceImpl
 
         Horario horario = horarioOpt.get();
 
-
-        // Actualizar Aula si viene
         if (request.getIdAula() != null) {
             Optional<Aula> aulaOpt = aulaRepo.findByIdAndEnabledTrue(request.getIdAula());
             if (aulaOpt.isEmpty()) {
                 return new BaseObjectResponse<>(404, Modulo.AULA.noEncontrado(), null);
             }
-            horario.setAula(aulaOpt.get());
-        }
-
-        // Actualizar hora inicio o fin si vienen
-        Time horaInicioTime = horario.getHoraInicio();
-        Time horaFinTime = horario.getHoraFin();
-
-        if (request.getHoraInicio() != null) {
-            horaInicioTime = Time.valueOf(request.getHoraInicio());
-            horario.setHoraInicio(horaInicioTime);
-        }
-        if (request.getHoraFin() != null) {
-            horaFinTime = Time.valueOf(request.getHoraFin());
-            horario.setHoraFin(horaFinTime);
-        }
-
-        // Validar coherencia de horas si alguno de los dos cambió
-        if (request.getHoraInicio() != null || request.getHoraFin() != null) {
-            int horaInicio = horaInicioTime.toLocalTime().getHour();
-            int horaFin = horaFinTime.toLocalTime().getHour();
-            if (horaFin <= horaInicio) {
-                return new BaseObjectResponse<>(400, HORA_FIN_INICIO_ERROR.toString(), null);
+            if (horario.getAula() == null || !horario.getAula().getIdAula().equals(request.getIdAula())) {
+                horario.setAula(aulaOpt.get());
             }
         }
 
-        // Actualizar duración si viene
-        if (request.getDuracionHoras() != null) {
+        // --- CAMBIO AQUÍ ---
+        // Se usa LocalTime y LocalTime.parse()
+        LocalTime horaInicioTime = (request.getHoraInicio() != null)
+                ? LocalTime.parse(request.getHoraInicio())
+                : horario.getHoraInicio(); // <-- horario.getHoraInicio() ya devuelve LocalTime
 
-            int duracionCalculada = (int) Duration.between(
-                    horaInicioTime.toLocalTime(),
-                    horaFinTime.toLocalTime()
-            ).toHours();
+        LocalTime horaFinTime = (request.getHoraFin() != null)
+                ? LocalTime.parse(request.getHoraFin())
+                : horario.getHoraFin(); // <-- horario.getHoraFin() ya devuelve LocalTime
+        // --- FIN DEL CAMBIO ---
 
-            if (duracionCalculada != request.getDuracionHoras()) {
-                return new BaseObjectResponse<>(400, DURACION_DIFERENCIA_HORA_ERROR.toString(), null);
-            }
 
-            horario.setDuracionHoras(request.getDuracionHoras());
+        Integer duracionHoras = (request.getDuracionHoras() != null)
+                ? request.getDuracionHoras()
+                : horario.getDuracionHoras();
+
+        // --- CAMBIO AQUÍ ---
+        // Se eliminan las variables 'inicioLT' y 'finLT' porque horaInicioTime y horaFinTime ya son LocalTime
+        // LocalTime inicioLT = horaInicioTime.toLocalTime(); // <-- Eliminado
+        // LocalTime finLT = horaFinTime.toLocalTime(); // <-- Eliminado
+
+        // Se usan las variables 'horaInicioTime' y 'horaFinTime' directamente
+        if (horaFinTime.isBefore(horaInicioTime) || horaFinTime.equals(horaInicioTime)) {
+            return new BaseObjectResponse<>(400, HORA_FIN_INICIO_ERROR.toString(), null);
         }
 
+        int duracionCalculada = (int) Duration.between(horaInicioTime, horaFinTime).toHours();
+        // --- FIN DEL CAMBIO ---
 
-        // Actualizar tipo de sesión
+        if (duracionCalculada != duracionHoras) {
+            return new BaseObjectResponse<>(400, DURACION_DIFERENCIA_HORA_ERROR.toString(), null);
+        }
+
+        horario.setHoraInicio(horaInicioTime);
+        horario.setHoraFin(horaFinTime);
+        horario.setDuracionHoras(duracionHoras);
+
         if (request.getTipoSesion() != null) {
             horario.setTipoSesion(request.getTipoSesion());
         }
 
-        // Actualizar día de semana
         if (request.getDiaSemana() != null) {
             horario.setDiaSemana(request.getDiaSemana());
         }
@@ -220,7 +220,6 @@ public class HorarioServiceImpl
         horarioRepo.save(horario);
         return new BaseObjectResponse<>(200, Modulo.HORARIO.actualizado(), convHorarioDetalle(horario));
     }
-
 
     @Override
     public BaseObjectResponse<String> eliminar(Integer idHorario) {

@@ -12,10 +12,17 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IDocenteRepo extends IGenericRepo<Docente, Integer> {
-    Optional<Docente> findByUsuario(Usuario usuario);
-    boolean existsByCodigo(String codigo);
 
-    boolean existsByIdDocente(Integer idDocente);
+    @Query("SELECT d FROM Docente d WHERE d.usuario = :usuario AND d.enabled = true")
+    Optional<Docente> findByUsuarioAndEnabledTrue(@Param("usuario") Usuario usuario);
+
+    @Query("SELECT CASE WHEN COUNT(d) > 0 THEN true ELSE false END " +
+            "FROM Docente d WHERE d.codigo = :codigo AND d.enabled = true")
+    boolean existsByCodigoAndEnabledTrue(@Param("codigo") String codigo);
+
+    @Query("SELECT CASE WHEN COUNT(d) > 0 THEN true ELSE false END " +
+            "FROM Docente d WHERE d.idDocente = :idDocente AND d.enabled = true")
+    boolean existsByIdDocenteAndEnabledTrue(@Param("idDocente") Integer idDocente);
 
     @Query("SELECT e FROM Docente e WHERE e.enabled = true")
     List<Docente> findByEnabledTrue();

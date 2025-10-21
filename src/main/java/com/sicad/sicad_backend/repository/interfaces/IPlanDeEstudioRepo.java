@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IPlanDeEstudioRepo extends IGenericRepo<PlanDeEstudio, Integer> {
-    boolean existsByCodigo(Integer codigo);
 
     @Query("SELECT e FROM PlanDeEstudio e WHERE e.enabled = true")
     List<PlanDeEstudio> findByEnabledTrue();

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.sql.Time;
+import java.time.LocalTime;
 
 @Data
 @AllArgsConstructor
@@ -37,14 +38,14 @@ public class Horario {
     private String diaSemana;
 
     @Column(nullable = false, name = "hora_inicio")
-    private Time horaInicio;
+    private LocalTime horaInicio;
 
     @Column(nullable = false, name = "hora_fin")
-    private Time horaFin;
+    private LocalTime horaFin;
 
     @Column(nullable = false, name = "duracion_horas")
     private Integer duracionHoras;
 
     @Column(nullable = false, name = "enabled")
-    private boolean enabled;
+    private Boolean enabled;
 }

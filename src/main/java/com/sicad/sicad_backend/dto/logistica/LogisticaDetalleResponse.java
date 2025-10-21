@@ -11,5 +11,6 @@ import lombok.NoArgsConstructor;
 public class LogisticaDetalleResponse {
     private Integer idLogistica;
     private UsuarioDetalleResponse usuario;
+    private String cargo;
     private boolean enabled;
 }

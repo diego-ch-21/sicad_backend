@@ -62,13 +62,8 @@ public class PlanDeEstudioServiceImpl
 
     @Override
     public BaseObjectResponse<PlanDeEstudioDetalleResponse> registrar(PlanDeEstudioCreateRequest request) {
-        Integer codigo;
-        do {
-            codigo = Integer.parseInt(CodigoGeneratorUtil.generarCodigoNumerico(6));
-        } while (planRepo.existsByCodigo(codigo));
 
         PlanDeEstudio plan = PlanDeEstudio.builder()
-                .codigo(codigo)
                 .nombre(request.getNombre())
                 .enabled(true)
                 .build();

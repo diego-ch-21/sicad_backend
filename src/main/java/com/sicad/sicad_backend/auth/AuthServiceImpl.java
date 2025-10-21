@@ -76,7 +76,7 @@ public class AuthServiceImpl
                     departamentoAcademico = departamentoAcademicoRepo.findByUsuario(usuario).orElse(null);
                     break;
                 case DOCENTE: // Docente
-                    docente = docenteRepository.findByUsuario(usuario).orElse(null);
+                    docente = docenteRepository.findByUsuarioAndEnabledTrue(usuario).orElse(null);
                     break;
                 case ESCUELA_PROFESIONAL: //Escuela profesional
                     escuelaProfesional = escuelaProfesionalRepo.findByUsuario(usuario).orElse(null);
@@ -160,7 +160,7 @@ public class AuthServiceImpl
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .nombre(request.getNombre())
-                .apellido(request.getApellido())
+                .apellido(null)
                 .enabled(true)
                 .cretedAt(createdAt)
                 .rol(rolUsuario)

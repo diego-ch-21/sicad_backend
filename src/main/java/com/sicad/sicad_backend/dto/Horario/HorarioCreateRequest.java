@@ -1,11 +1,11 @@
 package com.sicad.sicad_backend.dto.Horario;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Min;
 import lombok.Data;
+import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 @Data
@@ -18,15 +18,17 @@ public class HorarioCreateRequest {
     private String tipoSesion;
 
     @NotBlank(message = "El día de la semana es obligatorio")
-    @Pattern(regexp = "^(lunes|martes|miercoles|jueves|viernes|sabado|domingo)$", message = "Día de la semana inválido")
+    @Pattern(regexp = "^(LUNES|MARTES|MIERCOLES|JUEVES|VIERNES|SABADO|DOMINGO)$", message = "Día de la semana inválido")
     private String diaSemana;
 
     @NotBlank(message = "La hora de inicio es obligatoria")
-    @Pattern(regexp = "^\\d{2}:\\d{2}:\\d{2}$", message = "La hora debe estar en formato HH:mm:ss")
+    // Validación estricta para "HH:00:00"
+    @Pattern(regexp = "^(0[0-9]|1[0-9]|2[0-3]):00:00$", message = "La hora debe ser en punto y en formato HH:00:00")
     private String horaInicio;
 
     @NotBlank(message = "La hora de fin es obligatoria")
-    @Pattern(regexp = "^\\d{2}:\\d{2}:\\d{2}$", message = "La hora debe estar en formato HH:mm:ss")
+    // Validación estricta para "HH:00:00"
+    @Pattern(regexp = "^(0[0-9]|1[0-9]|2[0-3]):00:00$", message = "La hora debe ser en punto y en formato HH:00:00")
     private String horaFin;
 
     @NotNull(message = "La duración es un campo obligatorio")

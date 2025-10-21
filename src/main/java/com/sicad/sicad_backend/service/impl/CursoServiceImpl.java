@@ -123,21 +123,26 @@ public class CursoServiceImpl
                 .cicloAcademico(cicloAcademico)
                 .grupo(nuevoGrupo)
                 .ciclo(request.getCiclo())
+                .horarios(new ArrayList<>())
                 .enabled(true)
                 .build();
 
 
         cursoRepo.save(curso);
 
-
-        if (request.getHorario() == null || request.getHorario().isEmpty()) {
-            return new BaseObjectResponse<>(201, Modulo.CURSO.registrado(), convCursoDetalle(curso));
+        CursoDetalleResponse cursoResponse = convCursoDetalle(curso);
+        if (request.getHorarios() == null || request.getHorarios().isEmpty()) {
+            System.out.println("esta vacia o nula");
+            return new BaseObjectResponse<>(201, Modulo.CURSO.registrado(), cursoResponse);
+        } else {
+            System.out.println("no esta vacia ni nula");
+        }
+        BaseListReponse<HorarioDetalleResponse> response = horarioService.registrarAllPorCurso(curso.getIdCurso(),request.getHorarios());
+        if(response.status() ==201){
+            cursoResponse.setHorarios(response.data());
         }
 
-        BaseListReponse<HorarioDetalleResponse> response = horarioService.registrarAllPorCurso(curso.getIdCurso(),request.getHorario());
-        Optional<Curso> cursoOpt = cursoRepo.findByIdAndEnabledTrue(curso.getIdCurso());
-        Curso cursoConHorario = cursoOpt.get();
-        return new BaseObjectResponse<>(201, Modulo.CURSO.registrado()+" - "+response.message(), convCursoDetalle(cursoConHorario));
+        return new BaseObjectResponse<>(201, Modulo.CURSO.registrado()+" - "+response.message(), cursoResponse);
     }
     private String generarCodigoUnico() {
         String codigo;
@@ -255,17 +260,16 @@ public class CursoServiceImpl
     }
 
     private CursoDetalleResponse convCursoDetalle(Curso obj) {
+        /*
+        List<Horario> horariosFiltrados = obj.getHorarios().stream()
+                .filter(Horario::getEnabled)
+                .toList();
+        obj.setHorarios(horariosFiltrados);
+
+         */
         CursoDetalleResponse detalle = modelMapper.map(obj, CursoDetalleResponse.class);
-
-        if (detalle.getHorario() != null) {
-            detalle.setHorario(
-                    detalle.getHorario().stream()
-                            .filter(HorarioDetalleResponse::isEnabled)
-                            .toList()
-            );
-        }
-
         return detalle;
     }
+
 
 }

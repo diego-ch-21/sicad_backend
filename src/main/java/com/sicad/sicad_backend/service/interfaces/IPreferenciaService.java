@@ -12,7 +12,7 @@ import com.sicad.sicad_backend.service.base.ICRUD;
 import java.util.List;
 
 public interface IPreferenciaService extends ICRUD<Preferencia, Integer> {
-    BaseListReponse<PreferenciaResumenResponse> listarPorDocenteCicloAcademico(Integer idDocente, Integer idCicloAcademico);
+    BaseListReponse<PreferenciaResumenResponse> listarPorDocenteCicloAcademico(Integer idCicloAcademico,Integer idDocente);
 
     BaseObjectResponse<PreferenciaDetalleResponse> buscar(Integer idPreferencia);
 

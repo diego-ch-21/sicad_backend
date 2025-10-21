@@ -22,5 +22,6 @@ public class DocenteDetalleResponse {
     private Integer horasMaxLectivas;
     private Boolean tienePermisoExceso;
     private Date createdAt;
+    private String codigo;
     private boolean enabled;
 }

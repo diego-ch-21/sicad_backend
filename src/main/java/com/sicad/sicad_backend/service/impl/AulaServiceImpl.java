@@ -83,6 +83,7 @@ public class AulaServiceImpl
         aula.setPiso(request.getPiso());
         aula.setCapacidad(request.getCapacidad());
         aula.setEstado(request.getEstado());
+        aula.setNumeroEquipos(0);
         aula.setEnabled(true);
         aulaRepo.save(aula);
         return new BaseObjectResponse<>(201, Modulo.AULA.actualizado(), convAulaDetalle(aula));
@@ -111,34 +112,32 @@ public class AulaServiceImpl
     @Override
     public BaseObjectResponse<AulaDetalleResponse> actualizar(Integer idAula, AulaUpdateRequest request) {
         Optional<Aula> aulaOpt = aulaRepo.findByIdAndEnabledTrue(idAula);
-
         if (aulaOpt.isEmpty()) {
             return new BaseObjectResponse<>(404, Modulo.AULA.noEncontrado(), null);
         }
+
         Aula aula = aulaOpt.get();
-        if(request.getNombre() !=null){
-            boolean existe = aulaRepo.existsNombre(request.getNombre());
-            if(existe){
-                return new BaseObjectResponse<>(404, "el nombre "+request.getNombre()+" ya esta en uso", null);
-            } else {
-                aula.setNombre(request.getNombre());
+
+        // Validar nombre duplicado
+        if (request.getNombre() != null) {
+            Optional<Aula> aulaExistente = aulaRepo.findByNombreAndEnabledTrue(request.getNombre());
+            if (aulaExistente.isPresent() && !aulaExistente.get().getIdAula().equals(aula.getIdAula())) {
+                return new BaseObjectResponse<>(409, "El nombre " + request.getNombre() + " ya está en uso", null);
             }
+            aula.setNombre(request.getNombre());
         }
 
         if (request.getTipo() != null) {
             String tipo = request.getTipo().toUpperCase();
             aula.setTipo(tipo);
 
-            // Validación: si es LABORATORIO, numeroEquipos es obligatorio
             if ("LABORATORIO".equals(tipo)) {
-                if (request.getNumeroEquipos()== null) {
+                if (request.getNumeroEquipos() == null) {
                     return new BaseObjectResponse<>(400, "Si el tipo es LABORATORIO, debe proporcionar número de equipos", null);
                 } else {
                     aula.setNumeroEquipos(request.getNumeroEquipos());
                 }
-
             } else {
-                // Si cambia a TEORIA, se elimina el número de equipos
                 aula.setNumeroEquipos(null);
             }
         }
@@ -151,6 +150,7 @@ public class AulaServiceImpl
 
         return new BaseObjectResponse<>(200, Modulo.AULA.actualizado(), convAulaDetalle(aula));
     }
+
 
     @Override
     public BaseObjectResponse<String> eliminar(Integer idAula) {

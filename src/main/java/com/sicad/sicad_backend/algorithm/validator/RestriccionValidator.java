@@ -5,7 +5,8 @@ import com.sicad.sicad_backend.algorithm.model.SolucionAsignacion;
 import com.sicad.sicad_backend.model.*;
 import lombok.extern.slf4j.Slf4j;
 
-import java.sql.Time;
+// import java.sql.Time; // <-- CAMBIO: Eliminado
+import java.time.LocalTime; // <-- CAMBIO: Añadido
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -135,7 +136,7 @@ public class RestriccionValidator {
             }
 
             // Verificar cada horario del curso contra disponibilidad
-            for (Horario horario : curso.getHorario()) {
+            for (Horario horario : curso.getHorarios()) {
                 boolean tieneDisponibilidad = disponibilidades.stream()
                         .anyMatch(disp -> verificarSolapamientoHorario(disp, horario));
 
@@ -150,11 +151,14 @@ public class RestriccionValidator {
         return penalizacion;
     }
 
+    // --- CAMBIO AQUÍ ---
+    // Se usan isAfter() e isBefore() de LocalTime
     private boolean verificarSolapamientoHorario(Disponibilidad disponibilidad, Horario horario) {
         return disponibilidad.getDiaSemana().equalsIgnoreCase(horario.getDiaSemana()) &&
-                !disponibilidad.getHoraInicio().after(horario.getHoraInicio()) &&
-                !disponibilidad.getHoraFin().before(horario.getHoraFin());
+                !disponibilidad.getHoraInicio().isAfter(horario.getHoraInicio()) && // disponibilidad.inicio <= horario.inicio
+                !disponibilidad.getHoraFin().isBefore(horario.getHoraFin());      // disponibilidad.fin >= horario.fin
     }
+    // --- FIN DEL CAMBIO ---
 
     /**
      * Verifica conflictos de horarios - sin cambios
@@ -170,7 +174,7 @@ public class RestriccionValidator {
             for (Integer idCurso : cursosDocente) {
                 Curso curso = obtenerCursoPorId(idCurso);
                 if (curso != null) {
-                    todosLosHorarios.addAll(curso.getHorario());
+                    todosLosHorarios.addAll(curso.getHorarios());
                 }
             }
 
@@ -228,18 +232,24 @@ public class RestriccionValidator {
         return penalizacion;
     }
 
+    // --- CAMBIO AQUÍ ---
+    // Se usa LocalTime y los métodos isBefore()
     private boolean hayConflictoHorario(Horario horario1, Horario horario2) {
         if (!horario1.getDiaSemana().equalsIgnoreCase(horario2.getDiaSemana())) {
             return false;
         }
 
-        Time inicio1 = horario1.getHoraInicio();
-        Time fin1 = horario1.getHoraFin();
-        Time inicio2 = horario2.getHoraInicio();
-        Time fin2 = horario2.getHoraFin();
+        LocalTime inicio1 = horario1.getHoraInicio();
+        LocalTime fin1 = horario1.getHoraFin();
+        LocalTime inicio2 = horario2.getHoraInicio();
+        LocalTime fin2 = horario2.getHoraFin();
 
-        return !(fin1.before(inicio2) || fin2.before(inicio1));
+        // Lógica de no-conflicto: (fin1 <= inicio2) o (fin2 <= inicio1)
+        // El opuesto (conflicto) es: !(fin1 <= inicio2 || fin2 <= inicio1)
+        // .isBefore() incluye la igualdad, así que usamos solo isBefore
+        return !(fin1.isBefore(inicio2) || fin1.equals(inicio2) || fin2.isBefore(inicio1) || fin2.equals(inicio1));
     }
+    // --- FIN DEL CAMBIO ---
 
     /**
      * Evalúa preferencias como BONIFICACIÓN adicional
@@ -456,7 +466,7 @@ public class RestriccionValidator {
 
         if (curso == null || disponibilidades == null) return false;
 
-        return curso.getHorario().stream()
+        return curso.getHorarios().stream()
                 .allMatch(horario -> disponibilidades.stream()
                         .anyMatch(disp -> verificarSolapamientoHorario(disp, horario)));
     }
@@ -495,8 +505,8 @@ public class RestriccionValidator {
 
         if (curso1 == null || curso2 == null) return false;
 
-        for (Horario horario1 : curso1.getHorario()) {
-            for (Horario horario2 : curso2.getHorario()) {
+        for (Horario horario1 : curso1.getHorarios()) {
+            for (Horario horario2 : curso2.getHorarios()) {
                 if (hayConflictoHorario(horario1, horario2)) {
                     return true;
                 }
@@ -508,7 +518,7 @@ public class RestriccionValidator {
 
     private int obtenerHorasCurso(Integer idCurso) {
         Curso curso = obtenerCursoPorId(idCurso);
-        return curso != null ? curso.getHorario().stream()
+        return curso != null ? curso.getHorarios().stream()
                 .mapToInt(Horario::getDuracionHoras)
                 .sum() : 0;
     }
@@ -519,7 +529,6 @@ public class RestriccionValidator {
                 .findFirst()
                 .orElse(null);
     }
-
     private Docente obtenerDocentePorId(Integer idDocente) {
         return docentes.stream()
                 .filter(docente -> docente.getIdDocente().equals(idDocente))

@@ -42,7 +42,7 @@ public class PreferenciaController {
     public ResponseEntity<BaseListReponse<PreferenciaResumenResponse>>
     listar(@PathVariable("idCicloAcademico") Integer idCicloAcademico,
            @PathVariable("idDocente") Integer idDocente) {
-        BaseListReponse<PreferenciaResumenResponse> response = service.listarPorDocenteCicloAcademico(idDocente,idCicloAcademico);
+        BaseListReponse<PreferenciaResumenResponse> response = service.listarPorDocenteCicloAcademico(idCicloAcademico,idDocente);
         return ResponseEntity.status(response.status()).body(response);
     }
 

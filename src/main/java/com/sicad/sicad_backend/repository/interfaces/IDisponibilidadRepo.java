@@ -27,8 +27,8 @@ public interface IDisponibilidadRepo extends IGenericRepo<Disponibilidad, Intege
             "AND e.docente.idDocente = :idDocente " +
             "AND e.cicloAcademico.idCicloAcademico = :idCicloAcademico")
     List<Disponibilidad> findByEnabledTrueDocenteCicloAcademico(
-            @Param("idDocente") Integer idDocente,
-            @Param("idCicloAcademico") Integer idCicloAcademico);
+            @Param("idCicloAcademico") Integer idCicloAcademico,
+            @Param("idDocente") Integer idDocente);
 
 
     @Query("SELECT e FROM Disponibilidad e WHERE e.idDisponibilidad = :id AND e.enabled = true")

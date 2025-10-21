@@ -24,15 +24,15 @@ public class AlgoritmoUpdateRequest {
 
     @DecimalMin(value = "0.0", message = "La probabilidad de cruzamientos no puede ser negativa")
     @DecimalMax(value = "1.0", message = "La probabilidad de cruzamientos no puede ser mayor a 1")
-    private double probCruzamientos;
+    private Double probCruzamientos;
 
     @DecimalMin(value = "0.0", message = "La probabilidad de mutación no puede ser negativa")
     @DecimalMax(value = "1.0", message = "La probabilidad de mutación no puede ser mayor a 1")
-    private double probMutacion;
+    private Double probMutacion;
 
     @DecimalMin(value = "0.0", message = "El elitismo no puede ser negativo")
     @DecimalMax(value = "1.0", message = "El elitismo no puede ser mayor a 1")
-    private double elitismo;
+    private Double elitismo;
 
     @Positive(message = "El enjambre PSO debe ser un número positivo")
     private Integer enjambrePso;
@@ -41,10 +41,10 @@ public class AlgoritmoUpdateRequest {
     private Integer iteracionesPso;
 
     @DecimalMin(value = "0.0", message = "La inercia inicial no puede ser negativa")
-    private double inerciaInicial;
+    private Double inerciaInicial;
 
     @DecimalMin(value = "0.0", message = "La inercia final no puede ser negativa")
-    private double inerciaFinal;
+    private Double inerciaFinal;
 
     @DecimalMin(value = "0.0", message = "cUno no puede ser negativo")
     @JsonProperty("cUno")
@@ -55,7 +55,7 @@ public class AlgoritmoUpdateRequest {
     private Double cDos;
 
     @DecimalMin(value = "0.0", message = "La velocidad máxima no puede ser negativa")
-    private double velocidadMaxima;
+    private Double velocidadMaxima;
 
     @Positive(message = "El ciclo de híbridos debe ser un número positivo")
     private Integer cicloHibridos;

@@ -65,26 +65,41 @@ public class AsignaturaServiceImpl
     @Override
     public BaseObjectResponse<AsignaturaDetalleResponse> registrar(AsignaturaCreateRequest request) {
 
-        // Generar código aleatorio único de 6 dígitos
-        String nuevoCodigo = generarCodigoUnico();
+        String codigoFinal;
 
+        // Si el usuario no envía un código, genera uno automáticamente
+        if (request.getCodigo() == null || request.getCodigo().isEmpty()) {
+            codigoFinal = generarCodigoUnico();
+        }
+        // Si lo envía, valida que no exista
+        else if (asignaturaRepo.existsByCodigoAndEnabled(request.getCodigo())) {
+            return new BaseObjectResponse<>(409, CODIGO_EXISTENTE.toString(), null);
+        }
+        else {
+            codigoFinal = request.getCodigo(); // usa el que mandó
+        }
+
+        // Crear y guardar la asignatura
         Asignatura asignatura = Asignatura.builder()
                 .nombre(request.getNombre())
-                .codigo(nuevoCodigo)
+                .codigo(codigoFinal)
                 .enabled(true)
                 .build();
         asignaturaRepo.save(asignatura);
 
-        return new BaseObjectResponse<>(201, Modulo.ALGORITMO.registrado(), convAsignaturaDetalle(asignatura));
+        // Retornar respuesta
+        return new BaseObjectResponse<>(201, Modulo.ASIGNATURA.registrado(), convAsignaturaDetalle(asignatura));
     }
 
     private String generarCodigoUnico() {
         String codigo;
         do {
-            codigo = String.format("%06d", (int) (Math.random() * 1000000)); // Ejemplo: 004329
-        } while (asignaturaRepo.existsByCodigoAndEnabled(codigo)); // Evitar duplicados
+            String numero = String.format("%06d", (int) (Math.random() * 1000000));
+            codigo = "PR" + numero;
+        } while (asignaturaRepo.existsByCodigoAndEnabled(codigo));
         return codigo;
     }
+
 
 
     @Override
@@ -116,20 +131,23 @@ public class AsignaturaServiceImpl
         if (asignaturaOpt.isEmpty()) {
             return new BaseObjectResponse<>(404, Modulo.ASIGNATURA.noEncontrado(), null);
         }
+
         Asignatura asignatura = asignaturaOpt.get();
 
-        if (request.getCodigo() != null && !request.getCodigo().isBlank()) {
-            // Solo validar conflicto si es diferente al actual
-            if (!request.getCodigo().equals(asignatura.getCodigo())
-                    && asignaturaRepo.existsByCodigoAndEnabled(request.getCodigo())) {
+        // Actualizar código (si se envía y es válido)
+        String nuevoCodigo = request.getCodigo();
+        if (nuevoCodigo != null && !nuevoCodigo.isBlank()) {
+            if (!nuevoCodigo.equals(asignatura.getCodigo()) && asignaturaRepo.existsByCodigoAndEnabled(nuevoCodigo)) {
                 return new BaseObjectResponse<>(409, CODIGO_EXISTENTE.toString(), null);
             }
-            asignatura.setCodigo(request.getCodigo());
+            asignatura.setCodigo(nuevoCodigo);
         }
 
+        // Actualizar nombre (si se envía)
         if (request.getNombre() != null && !request.getNombre().isBlank()) {
             asignatura.setNombre(request.getNombre());
         }
+
         asignaturaRepo.save(asignatura);
 
         return new BaseObjectResponse<>(200, Modulo.ASIGNATURA.actualizado(), convAsignaturaDetalle(asignatura));

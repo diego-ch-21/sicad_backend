@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PreferenciaCreateRequest {
+public class   PreferenciaCreateRequest {
     @NotNull(message = "El idDocente es un campo obligatorio")
     private Integer idDocente;
     @NotNull(message = "El idAsignatura es un campo obligatorio")

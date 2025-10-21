@@ -18,10 +18,11 @@ public class CursoDetalleResponse {
     private Integer idCurso;
     private String codigo;
     private String grupo;
+    private Integer ciclo;
     private AsignaturaResumenResponse asignatura;
     private List<String> planDeEstudios;
     private EscuelaResumenResponse escuela;
     private CicloAcademicoResumenResponse cicloAcademico;
-    private List<HorarioDetalleResponse> horario;
+    private List<HorarioDetalleResponse> horarios;
     private boolean enabled;
 }

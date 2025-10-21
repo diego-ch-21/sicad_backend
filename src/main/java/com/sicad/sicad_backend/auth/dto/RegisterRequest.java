@@ -19,8 +19,4 @@ public class RegisterRequest {
     private String password;
     @NotBlank(message = "Los nombre es un campo obligatorio")
     private String nombre;
-    @NotBlank(message = "Los apellido es un campo obligatorio")
-    private String apellido;
-
-
 }

@@ -2,6 +2,7 @@ package com.sicad.sicad_backend.dto.docente;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,4 +22,7 @@ public class DocenteUpdateRequest {
     private Integer idDedicacion;
     @NotNull(message = "El idCategoria es un campo obligatorio")
     private Integer idCategoria;
+
+    @Size(max = 6, message = "El código no debe exceder los 6 caracteres")
+    private String codigo;
 }

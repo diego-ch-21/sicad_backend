@@ -372,7 +372,7 @@ public class AlgoritmoAsignacionService {
     private boolean puedeAsignarCurso(SolucionAsignacion solucion, Docente docente, Curso curso) {
         // 1. Verificar límite de horasMaxLectivas (RESTRICCIÓN DURA)
         int horasActuales = solucion.getHorasTotalesDocente(docente.getIdDocente());
-        int horasCurso = curso.getHorario().stream()
+        int horasCurso = curso.getHorarios().stream()
                 .mapToInt(Horario::getDuracionHoras)
                 .sum();
 

@@ -42,7 +42,7 @@ public class DisponibilidadController {
     public ResponseEntity<BaseListReponse<DisponibilidadResumenResponse>>
     listar(@PathVariable("idCicloAcademico") Integer idCicloAcademico,
            @PathVariable("idDocente") Integer idDocente) {
-        BaseListReponse<DisponibilidadResumenResponse> response = service.listarPorDocenteCicloAcademico(idDocente,idCicloAcademico);
+        BaseListReponse<DisponibilidadResumenResponse> response = service.listarPorDocenteCicloAcademico(idCicloAcademico,idDocente);
         return ResponseEntity.status(response.status()).body(response);
     }
 

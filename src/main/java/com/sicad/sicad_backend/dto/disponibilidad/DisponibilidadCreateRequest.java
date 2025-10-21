@@ -23,16 +23,10 @@ public class DisponibilidadCreateRequest {
     private String diaSemana;
 
     @NotBlank(message = "La hora de inicio es obligatorio")
-    @Pattern(
-            regexp = "^([01]\\d|2[0-3]):[0-5]\\d$",
-            message = "La hora de inicio debe tener el formato HH:mm (00:00 a 23:59)"
-    )
+    @Pattern(regexp = "^(0[0-9]|1[0-9]|2[0-3]):00:00$", message = "La hora debe ser en punto y en formato HH:00:00")
     private String horaInicio;
 
     @NotBlank(message = "La hora de fin es obligatorio")
-    @Pattern(
-            regexp = "^([01]\\d|2[0-3]):[0-5]\\d$",
-            message = "La hora de fin debe tener el formato HH:mm (00:00 a 23:59)"
-    )
+    @Pattern(regexp = "^(0[0-9]|1[0-9]|2[0-3]):00:00$", message = "La hora debe ser en punto y en formato HH:00:00")
     private String horaFin;
 }

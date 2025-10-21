@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DisponibilidadDetalleResponse {
+    private Integer idDisponibilidad;
     private DocenteResumenResponse docente;
     private CicloAcademicoResumenResponse cicloAcademico;
     private String diaSemana;

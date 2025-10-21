@@ -11,15 +11,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class HorarioUpdateRequest {
+    @Pattern(regexp = "^(T|L|P|T-P)$", message = "Tipo de sesión inválido")
     private String tipoSesion;
 
-    @Pattern(regexp = "^(lunes|martes|miercoles|jueves|viernes|sabado|domingo)$", message = "Día de la semana inválido")
+    @Pattern(regexp = "^(LUNES|MARTES|MIERCOLES|JUEVES|VIERNES|SABADO|DOMINGO)$", message = "Día de la semana inválido")
     private String diaSemana;
 
-    @Pattern(regexp = "^\\d{2}:\\d{2}:\\d{2}$", message = "La hora debe estar en formato HH:mm:ss")
+    @Pattern(regexp = "^(0[0-9]|1[0-9]|2[0-3]):00:00$", message = "La hora debe ser en punto y en formato HH:00:00")
     private String horaInicio;
 
-    @Pattern(regexp = "^\\d{2}:\\d{2}:\\d{2}$", message = "La hora debe estar en formato HH:mm:ss")
+    @Pattern(regexp = "^(0[0-9]|1[0-9]|2[0-3]):00:00$", message = "La hora debe ser en punto y en formato HH:00:00")
     private String horaFin;
 
     @Min(value = 1, message = "La duración debe ser al menos de 1 hora")

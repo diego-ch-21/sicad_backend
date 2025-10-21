@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.sicad.sicad_backend.Enum.Message.CODIGO_EXISTENTE;
 import static com.sicad.sicad_backend.Enum.Message.CORREO_EN_USO;
 
 @Slf4j
@@ -119,11 +120,10 @@ public class DocenteServiceImpl
 
         }
         LocalDate fecha = LocalDate.now();
-        String anioDosDigitos = String.valueOf(fecha.getYear()).substring(2);
 
         String codigoUsuario;
         do {
-            codigoUsuario = anioDosDigitos+CodigoGeneratorUtil.generarCodigoNumerico(6);
+            codigoUsuario = "FI"+CodigoGeneratorUtil.generarCodigoNumerico(6);
         } while (usuarioRepo.existsByCodigo(codigoUsuario));
 
 
@@ -141,10 +141,19 @@ public class DocenteServiceImpl
 
 
         String codigoDocente;
-        do {
-            codigoDocente = anioDosDigitos+CodigoGeneratorUtil.generarCodigoNumerico(6);
-        } while (docenteRepo.existsByCodigo(codigoDocente));
 
+        if (request.getCodigo() == null) {
+            // Generar código automáticamente
+            do {
+                codigoDocente = "DO" + CodigoGeneratorUtil.generarCodigoNumerico(4);
+            } while (docenteRepo.existsByCodigoAndEnabledTrue(codigoDocente));
+        } else {
+            // Usar el código proporcionado por el request
+            codigoDocente = request.getCodigo();
+            if (docenteRepo.existsByCodigoAndEnabledTrue(codigoDocente)) {
+                return new BaseObjectResponse<>(409, CODIGO_EXISTENTE.toString(), null);
+            }
+        }
 
         Docente docente = Docente.builder()
                 .usuario(usuario)
@@ -183,29 +192,37 @@ public class DocenteServiceImpl
     public BaseObjectResponse<DocenteDetalleResponse> actualizar(Integer idDocente, DocenteUpdateRequest request) {
 
         Optional<Docente> docenteOpt = docenteRepo.findByIdAndEnabledTrue(idDocente);
-
         if (docenteOpt.isEmpty()) {
             return new BaseObjectResponse<>(404, Modulo.DOCENTE.noEncontrado(), null);
         }
+
         Docente docente = docenteOpt.get();
-
-        // Validar email si viene en el request
-        if (request.getEmail() != null && usuarioRepo.findByEmailAndEnabledTrue(request.getEmail()).isPresent()) {
-            return new BaseObjectResponse<>(409, CORREO_EN_USO.toString(), null);
-        }
-
-        // Obtener el usuario vinculado
         Usuario usuario = docente.getUsuario();
 
-        // Actualizar campos SOLO si vienen
-        if (request.getEmail() != null) usuario.setEmail(request.getEmail());
+        // Validar email solo si viene en el request y pertenece a otro usuario
+        if (request.getEmail() != null) {
+            Optional<Usuario> existingUserOpt = usuarioRepo.findByEmailAndEnabledTrue(request.getEmail());
+            if (existingUserOpt.isPresent() && !existingUserOpt.get().getIdUsuario().equals(usuario.getIdUsuario())) {
+                return new BaseObjectResponse<>(409, CORREO_EN_USO.toString(), null);
+            }
+            usuario.setEmail(request.getEmail());
+        }
+
+        // Actualizar otros campos del usuario
         if (request.getNombre() != null) usuario.setNombre(request.getNombre());
         if (request.getApellido() != null) usuario.setApellido(request.getApellido());
         if (request.getPassword() != null) usuario.setPassword(passwordEncoder.encode(request.getPassword()));
-
         usuarioRepo.save(usuario);
 
-        // Validar y actualizar dedicación solo si viene
+        // Actualizar código si se envía (opcional)
+        if (request.getCodigo() != null) {
+            if (docenteRepo.existsByCodigoAndEnabledTrue(request.getCodigo()) && !request.getCodigo().equals(docente.getCodigo())) {
+                return new BaseObjectResponse<>(409, CODIGO_EXISTENTE.toString(), null);
+            }
+            docente.setCodigo(request.getCodigo());
+        }
+
+        // Actualizar dedicación
         if (request.getIdDedicacion() != null) {
             Optional<Dedicacion> dedicacionOpt = dedicacionRepo.findByIdAndEnabledTrue(request.getIdDedicacion());
             if (dedicacionOpt.isEmpty()) {
@@ -214,7 +231,7 @@ public class DocenteServiceImpl
             docente.setDedicacion(dedicacionOpt.get());
         }
 
-        // Validar y actualizar categoría solo si viene
+        // Actualizar categoría
         if (request.getIdCategoria() != null) {
             Optional<Categoria> categoriaOpt = categoriaRepo.findByIdAndEnabledTrue(request.getIdCategoria());
             if (categoriaOpt.isEmpty()) {
@@ -224,9 +241,9 @@ public class DocenteServiceImpl
         }
 
         docenteRepo.save(docente);
-
         return new BaseObjectResponse<>(200, Modulo.DOCENTE.actualizado(), convDocenteDetalle(docente));
     }
+
 
     @Override
     public BaseObjectResponse<String> eliminar(Integer idDocente) {
