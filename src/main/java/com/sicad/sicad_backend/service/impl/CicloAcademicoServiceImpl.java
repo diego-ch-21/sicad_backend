@@ -1,6 +1,7 @@
 package com.sicad.sicad_backend.service.impl;
 
 import com.sicad.sicad_backend.Enum.Modulo;
+import com.sicad.sicad_backend.Enum.TipoNotificacion;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoCreateRequest;
@@ -8,11 +9,16 @@ import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoDetalleResponse;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoUpdateRequest;
 import com.sicad.sicad_backend.dto.escuela.EscuelaDetalleResponse;
 import com.sicad.sicad_backend.model.CicloAcademico;
+import com.sicad.sicad_backend.model.Docente;
 import com.sicad.sicad_backend.model.Escuela;
+import com.sicad.sicad_backend.model.Notificacion;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.ICicloAcademicoRepo;
+import com.sicad.sicad_backend.repository.interfaces.IDocenteRepo;
+import com.sicad.sicad_backend.repository.interfaces.INotificacionRepo;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.ICicloAcademicoService;
+import com.sicad.sicad_backend.service.interfaces.INoficacionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -35,6 +41,7 @@ public class CicloAcademicoServiceImpl
         implements ICicloAcademicoService {
 
     private final ICicloAcademicoRepo cicloAcademicoRepo;
+    private final INoficacionService notificacionService;
     private final ModelMapper modelMapper;
 
     @Override
@@ -99,8 +106,7 @@ public class CicloAcademicoServiceImpl
 
         cicloAcademicoRepo.save(ciclo);
 
-        return new BaseObjectResponse<>(201, Modulo.CICLO_ACADEMICO.registrado(),
-                convCicloAcademicoDetalle(ciclo));
+        return new BaseObjectResponse<>(201, Modulo.CICLO_ACADEMICO.registrado(), convCicloAcademicoDetalle(ciclo));
     }
 
 
