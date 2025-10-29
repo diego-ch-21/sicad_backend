@@ -1,5 +1,6 @@
 package com.sicad.sicad_backend.service.interfaces;
 
+import com.sicad.sicad_backend.dto.base.BaseListPageResponse;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.categoria.CategoriaCreateRequest;
@@ -7,11 +8,14 @@ import com.sicad.sicad_backend.dto.categoria.CategoriaDetalleResponse;
 import com.sicad.sicad_backend.dto.categoria.CategoriaUpdateRequest;
 import com.sicad.sicad_backend.model.Categoria;
 import com.sicad.sicad_backend.service.base.ICRUD;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface ICategoriaService extends ICRUD<Categoria, Integer> {
     BaseListReponse<CategoriaDetalleResponse> listar();
+
+    BaseListPageResponse<CategoriaDetalleResponse> listarPaginado(Pageable pageable);
 
     BaseObjectResponse<CategoriaDetalleResponse> buscar(Integer idCategoria);
 

@@ -1,6 +1,7 @@
 package com.sicad.sicad_backend.service.impl;
 
 import com.sicad.sicad_backend.Enum.Modulo;
+import com.sicad.sicad_backend.dto.base.BaseListPageResponse;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.categoria.CategoriaCreateRequest;
@@ -16,6 +17,7 @@ import com.sicad.sicad_backend.service.interfaces.ICategoriaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -47,6 +49,21 @@ public class CategoriaServiceImpl
 
         return new BaseListReponse<>(200, Modulo.CATEGORIA.listado(), lista);
     }
+
+    @Override
+    public BaseListPageResponse<CategoriaDetalleResponse> listarPaginado(Pageable pageable) {
+        var page = categoriaRepo.findByEnabledTrue(pageable)
+                .map(this::convCategoriaDetalle);
+        return new BaseListPageResponse<>(
+                200,
+                Modulo.CATEGORIA.listado(),
+                page.getContent(),
+                page.getNumber(),
+                page.getTotalPages(),
+                page.getTotalElements()
+        );
+    }
+
 
     @Override
     public BaseObjectResponse<CategoriaDetalleResponse> buscar(Integer idCategoria) {

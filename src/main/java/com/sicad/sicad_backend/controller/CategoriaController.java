@@ -1,5 +1,6 @@
 package com.sicad.sicad_backend.controller;
 
+import com.sicad.sicad_backend.dto.base.BaseListPageResponse;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.base.BaseMessageResponse; // Importación necesaria
 import com.sicad.sicad_backend.dto.categoria.CategoriaCreateRequest;
@@ -15,6 +16,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses; // Importación nec
 import io.swagger.v3.oas.annotations.tags.Tag; // Importación necesaria
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,6 +45,18 @@ public class CategoriaController {
         BaseListReponse<CategoriaDetalleResponse> response = service.listar();
         return ResponseEntity.status(response.status()).body(response);
     }
+
+
+    @GetMapping("/listar-paginado")
+    public ResponseEntity<BaseListPageResponse<CategoriaDetalleResponse>> listarPaginado(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        BaseListPageResponse<CategoriaDetalleResponse> response = service.listarPaginado(pageable);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
 
     // --- BUSCAR POR ID ---
     @Operation(
