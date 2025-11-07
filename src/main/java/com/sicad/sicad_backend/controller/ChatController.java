@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/chat")
 @Tag(name = "Chat", description = "Endpoints para la gestión de mensajería entre usuarios")
 public class ChatController {
 
@@ -101,7 +102,7 @@ public class ChatController {
     // ============ REST Endpoints ============
 
     @Operation(summary = "Obtener conversación entre dos usuarios")
-    @GetMapping("/chat/conversacion/{idUsuario1}/{idUsuario2}")
+    @GetMapping("/chat-conversacion/{idUsuario1}/{idUsuario2}")
     public ResponseEntity<BaseListReponse<MensajeResponse>>
     obtenerConversacion(@PathVariable Integer idUsuario1, @PathVariable Integer idUsuario2) {
         BaseListReponse<MensajeResponse> response =
@@ -110,7 +111,7 @@ public class ChatController {
     }
 
     @Operation(summary = "Obtener todas las conversaciones de un usuario")
-    @GetMapping("/chat/conversaciones/{idUsuario}")
+    @GetMapping("/chat-conversaciones/{idUsuario}")
     public ResponseEntity<BaseListReponse<ConversacionResponse>>
     obtenerConversaciones(@PathVariable Integer idUsuario) {
         BaseListReponse<ConversacionResponse> response =
@@ -119,7 +120,7 @@ public class ChatController {
     }
 
     @Operation(summary = "Marcar una conversación como leída")
-    @PutMapping("/chat/marcar-leida/{idRemitente}/{idDestinatario}")
+    @PutMapping("/chat-marcar-leida/{idRemitente}/{idDestinatario}")
     public ResponseEntity<BaseObjectResponse<Void>>
     marcarConversacionComoLeida(@PathVariable Integer idRemitente,
                                 @PathVariable Integer idDestinatario) {
@@ -129,7 +130,7 @@ public class ChatController {
     }
 
     @Operation(summary = "Enviar mensaje vía REST")
-    @PostMapping("/chat/enviar")
+    @PostMapping("/chat-enviar")
     public ResponseEntity<BaseObjectResponse<MensajeResponse>>
     enviarMensajeRest(@Valid @RequestBody MensajeRequest request) {
         BaseObjectResponse<MensajeResponse> response = mensajeService.enviarMensaje(request);
