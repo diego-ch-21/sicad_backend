@@ -18,7 +18,7 @@ public class CursoAsignacionResponse {
     private AsignaturaResumenResponse asignatura;
     private List<String> planDeEstudios;
     private EscuelaResumenResponse escuela;
-    private List<HorarioDetalleResponse> horario;
+    private List<HorarioDetalleResponse> horarios;
     private String grupo;
     private Integer ciclo;
     private boolean enabled;
