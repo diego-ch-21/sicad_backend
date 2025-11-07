@@ -26,6 +26,7 @@ public enum Modulo {
     PREFERENCIA("Preferencia", "Preferencias"),
     RESULTADO("Resultado", "Resultados"),
     ROL("Rol", "Roles"),
+    MENSAJE("Mensaje", "Mensajes"),
     USUARIO("Usuario", "Usuarios");
 
     private final String item;
