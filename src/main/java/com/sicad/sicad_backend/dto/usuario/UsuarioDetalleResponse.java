@@ -20,5 +20,6 @@ public class UsuarioDetalleResponse {
     private String codigo;
     private String nombre;
     private String apellido;
+    private String urlPerfil;
 
 }

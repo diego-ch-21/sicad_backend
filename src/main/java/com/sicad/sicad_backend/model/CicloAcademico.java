@@ -24,6 +24,10 @@ public class CicloAcademico {
     private Integer periodo;
     @Column(nullable = false, name = "nombre")
     private String nombre;
+    @Column(name = "url_pdf")
+    private String urlPdf;
+    @Column(name= "url_excel")
+    private String urlExcel;
     @Column(nullable = false, name = "fecha_inicio")
     private LocalDate fechaInicio;
     @Column(nullable = false, name = "fecha_fin")

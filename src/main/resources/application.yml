@@ -26,3 +26,7 @@ spring:
   main:
     allow-bean-definition-overriding: true
 
+supabase:
+  url: ${SP_URL}
+  key: ${SP_KEY}
+  bucket: ${SP_BUCKET}

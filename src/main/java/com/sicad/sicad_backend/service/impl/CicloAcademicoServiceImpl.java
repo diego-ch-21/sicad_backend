@@ -1,17 +1,17 @@
 package com.sicad.sicad_backend.service.impl;
 
 import com.sicad.sicad_backend.Enum.Modulo;
+import com.sicad.sicad_backend.Enum.TipoFile;
 import com.sicad.sicad_backend.Enum.TipoNotificacion;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoCreateRequest;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoDetalleResponse;
+import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoFileResponse;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoUpdateRequest;
 import com.sicad.sicad_backend.dto.escuela.EscuelaDetalleResponse;
-import com.sicad.sicad_backend.model.CicloAcademico;
-import com.sicad.sicad_backend.model.Docente;
-import com.sicad.sicad_backend.model.Escuela;
-import com.sicad.sicad_backend.model.Notificacion;
+import com.sicad.sicad_backend.dto.usuario.UsuarioDetalleResponse;
+import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.ICicloAcademicoRepo;
 import com.sicad.sicad_backend.repository.interfaces.IDocenteRepo;
@@ -19,10 +19,12 @@ import com.sicad.sicad_backend.repository.interfaces.INotificacionRepo;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.ICicloAcademicoService;
 import com.sicad.sicad_backend.service.interfaces.INoficacionService;
+import com.sicad.sicad_backend.service.interfaces.ISupabaseStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -42,6 +44,7 @@ public class CicloAcademicoServiceImpl
 
     private final ICicloAcademicoRepo cicloAcademicoRepo;
     private final INoficacionService notificacionService;
+    private final ISupabaseStorageService storageService;
     private final ModelMapper modelMapper;
 
     @Override
@@ -68,6 +71,17 @@ public class CicloAcademicoServiceImpl
         }
 
         return new BaseObjectResponse<>(200, Modulo.CICLO_ACADEMICO.encontrado(), convCicloAcademicoDetalle(cicloOpt.get()));
+    }
+
+    @Override
+    public BaseObjectResponse<CicloAcademicoFileResponse> buscarFile(Integer idCicloAcademico) {
+        Optional<CicloAcademico> cicloOpt = cicloAcademicoRepo.findByIdAndEnabledTrue(idCicloAcademico);
+
+        if (cicloOpt.isEmpty()) {
+            return new BaseObjectResponse<>(404, Modulo.CICLO_ACADEMICO.noEncontrado(), null);
+        }
+
+        return new BaseObjectResponse<>(200, Modulo.CICLO_ACADEMICO.encontrado(), convCicloAcademicoFile(cicloOpt.get()));
     }
 
     @Override
@@ -187,6 +201,77 @@ public class CicloAcademicoServiceImpl
         return new BaseObjectResponse<>(200, Modulo.CICLO_ACADEMICO.actualizado(), convCicloAcademicoDetalle(ciclo));
     }
 
+    @Override
+    public BaseObjectResponse<CicloAcademicoFileResponse> actualizarFilePdf(Integer idCicloAcademico, MultipartFile filePdf) {
+        try {
+            Optional<CicloAcademico> cicloOpt = cicloAcademicoRepo.findByIdAndEnabledTrue(idCicloAcademico);
+            if (cicloOpt.isEmpty()) {
+                return new BaseObjectResponse<>(404, Modulo.CICLO_ACADEMICO.noEncontrado(), null);
+            }
+
+            if (filePdf == null || filePdf.isEmpty()) {
+                return new BaseObjectResponse<>(400, "Debe enviar un archivo PDF", null);
+            }
+
+            TipoFile tipo = storageService.getTipoFile(filePdf);
+            if (!tipo.equals(TipoFile.PDF)) {
+                return new BaseObjectResponse<>(400, "El archivo debe ser un PDF válido", null);
+            }
+
+            CicloAcademico ciclo = cicloOpt.get();
+
+            // Eliminar archivo anterior
+            if (ciclo.getUrlPdf() != null && !ciclo.getUrlPdf().isEmpty()) {
+                storageService.deleteFile(ciclo.getUrlPdf());
+            }
+
+            String nuevoUrl = storageService.uploadFile(filePdf, "doc");
+            ciclo.setUrlPdf(nuevoUrl);
+            cicloAcademicoRepo.save(ciclo);
+
+            return new BaseObjectResponse<>(200, "PDF actualizado correctamente", convCicloAcademicoFile(ciclo));
+
+        } catch (Exception e) {
+            log.error("Error al actualizar PDF de ciclo académico", e);
+            return new BaseObjectResponse<>(500, "Error al actualizar el PDF de ciclo académico", null);
+        }
+    }
+    @Override
+    public BaseObjectResponse<CicloAcademicoFileResponse> actualizarFileExcel(Integer idCicloAcademico, MultipartFile fileExcel) {
+        try {
+            Optional<CicloAcademico> cicloOpt = cicloAcademicoRepo.findByIdAndEnabledTrue(idCicloAcademico);
+            if (cicloOpt.isEmpty()) {
+                return new BaseObjectResponse<>(404, Modulo.CICLO_ACADEMICO.noEncontrado(), null);
+            }
+
+            if (fileExcel == null || fileExcel.isEmpty()) {
+                return new BaseObjectResponse<>(400, "Debe enviar un archivo Excel", null);
+            }
+
+            TipoFile tipo = storageService.getTipoFile(fileExcel);
+            if (!tipo.equals(TipoFile.EXCEL)) {
+                return new BaseObjectResponse<>(400, "El archivo debe ser un Excel válido", null);
+            }
+
+            CicloAcademico ciclo = cicloOpt.get();
+
+            if (ciclo.getUrlExcel() != null && !ciclo.getUrlExcel().isEmpty()) {
+                storageService.deleteFile(ciclo.getUrlExcel());
+            }
+
+            String nuevoUrl = storageService.uploadFile(fileExcel, "doc");
+            ciclo.setUrlExcel(nuevoUrl);
+            cicloAcademicoRepo.save(ciclo);
+
+            return new BaseObjectResponse<>(200, "Excel actualizado correctamente", convCicloAcademicoFile(ciclo));
+
+        } catch (Exception e) {
+            log.error("Error al actualizar Excel de ciclo académico", e);
+            return new BaseObjectResponse<>(500, "Error al actualizar el Excel de ciclo académico", null);
+        }
+    }
+
+
 
     @Override
     public BaseObjectResponse<String> eliminar(Integer idCicloAcademico) {
@@ -204,6 +289,10 @@ public class CicloAcademicoServiceImpl
     }
     private CicloAcademicoDetalleResponse convCicloAcademicoDetalle(CicloAcademico obj) {
         return modelMapper.map(obj, CicloAcademicoDetalleResponse.class);
+    }
+
+    private CicloAcademicoFileResponse convCicloAcademicoFile(CicloAcademico obj) {
+        return modelMapper.map(obj, CicloAcademicoFileResponse.class);
     }
 
 }

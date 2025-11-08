@@ -5,6 +5,7 @@ import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.base.BaseMessageResponse; // Importación necesaria
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoCreateRequest;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoDetalleResponse;
+import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoFileResponse;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoUpdateRequest;
 import com.sicad.sicad_backend.service.interfaces.ICicloAcademicoService;
 import io.swagger.v3.oas.annotations.Operation; // Importación necesaria
@@ -17,6 +18,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -57,6 +59,22 @@ public class CicloAcademicoController {
     public ResponseEntity<BaseObjectResponse<CicloAcademicoDetalleResponse>>
     buscar(@PathVariable("idCicloAcademico") Integer id) {
         BaseObjectResponse<CicloAcademicoDetalleResponse> response = service.buscar(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
+    @Operation(
+            summary = "Buscar ciclo académico file por ID",
+            description = "Busca y obtiene los detalles de un ciclo académico específico usando su ID."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ciclo académico encontrado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Ciclo académico no encontrado",
+                    content = @Content(schema = @Schema(implementation = BaseMessageResponse.class)))
+    })
+    @GetMapping("/buscar-file/{idCicloAcademico}")
+    public ResponseEntity<BaseObjectResponse<CicloAcademicoFileResponse>>
+    buscarFile(@PathVariable("idCicloAcademico") Integer id) {
+        BaseObjectResponse<CicloAcademicoFileResponse> response = service.buscarFile(id);
         return ResponseEntity.status(response.status()).body(response);
     }
 
@@ -106,6 +124,46 @@ public class CicloAcademicoController {
         BaseObjectResponse<CicloAcademicoDetalleResponse> response = service.actualizar(id, dto);
         return ResponseEntity.status(response.status()).body(response);
     }
+
+
+
+    @Operation(
+            summary = "Actualizar PDF del ciclo académico",
+            description = "Sube un PDF para el ciclo académico y reemplaza el existente."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "PDF actualizado correctamente"),
+            @ApiResponse(responseCode = "404", description = "Ciclo académico no encontrado",
+                    content = @Content(schema = @Schema(implementation = BaseMessageResponse.class)))
+    })
+    @PutMapping("/actualizar-pdf/{idCicloAcademico}")
+    public ResponseEntity<BaseObjectResponse<CicloAcademicoFileResponse>> actualizarFilePdf(
+            @PathVariable Integer idCicloAcademico,
+            @RequestParam("file") MultipartFile file) {
+
+        BaseObjectResponse<CicloAcademicoFileResponse> response = service.actualizarFilePdf(idCicloAcademico, file);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
+
+    @Operation(
+            summary = "Actualizar Excel del ciclo académico",
+            description = "Sube un archivo Excel para el ciclo académico y reemplaza el existente."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Excel actualizado correctamente"),
+            @ApiResponse(responseCode = "404", description = "Ciclo académico no encontrado",
+                    content = @Content(schema = @Schema(implementation = BaseMessageResponse.class)))
+    })
+    @PutMapping("/actualizar-excel/{idCicloAcademico}")
+    public ResponseEntity<BaseObjectResponse<CicloAcademicoFileResponse>> actualizarFileExcel(
+            @PathVariable Integer idCicloAcademico,
+            @RequestParam("file") MultipartFile file) {
+
+        BaseObjectResponse<CicloAcademicoFileResponse> response = service.actualizarFileExcel(idCicloAcademico, file);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
 
     // --- ELIMINAR ---
     @Operation(

@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag; // Importación necesaria
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -55,6 +56,26 @@ public class UsuarioController {
     public ResponseEntity<BaseObjectResponse<UsuarioDetalleResponse>>
     buscar(@PathVariable("idUsuario") Integer id) {
         BaseObjectResponse<UsuarioDetalleResponse> response = service.buscar(id);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
+    @Operation(
+            summary = "Actualizar URL de perfil",
+            description = "Actualiza la foto de perfil de un usuario subiendo una imagen a Supabase Storage."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "URL de perfil actualizada exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado",
+                    content = @Content(schema = @Schema(implementation = BaseMessageResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Archivo inválido o error en la subida",
+                    content = @Content(schema = @Schema(implementation = BaseMessageResponse.class)))
+    })
+    @PutMapping("/actualizar-url-perfil/{idUsuario}")
+    public ResponseEntity<BaseObjectResponse<UsuarioDetalleResponse>> actualizarUrlPerfil(
+            @PathVariable("idUsuario") Integer idUsuario,
+            @RequestParam("file") MultipartFile file) {
+
+        BaseObjectResponse<UsuarioDetalleResponse> response = service.actualizarUrlPerfil(idUsuario, file);
         return ResponseEntity.status(response.status()).body(response);
     }
 

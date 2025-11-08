@@ -37,6 +37,8 @@ public class Usuario implements UserDetails {
     @Column(nullable = false, name = "email")
     @Email
     private String email;
+    @Column(name="url_perfil")
+    private String urlPerfil;
 
     @Column(nullable = false, length = 8, name = "codigo")
     private String codigo;
