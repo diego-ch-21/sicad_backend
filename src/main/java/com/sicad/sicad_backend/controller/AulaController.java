@@ -1,8 +1,8 @@
 package com.sicad.sicad_backend.controller;
 
-import com.sicad.sicad_backend.dto.Aula.AulaCreateRequest;
-import com.sicad.sicad_backend.dto.Aula.AulaDetalleResponse;
-import com.sicad.sicad_backend.dto.Aula.AulaUpdateRequest;
+import com.sicad.sicad_backend.dto.aula.AulaCreateRequest;
+import com.sicad.sicad_backend.dto.aula.AulaDetalleResponse;
+import com.sicad.sicad_backend.dto.aula.AulaUpdateRequest;
 import com.sicad.sicad_backend.dto.base.BaseMessageResponse; // Importación necesaria
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;

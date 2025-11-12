@@ -1,6 +1,6 @@
 package com.sicad.sicad_backend.dto.Horario;
 
-import com.sicad.sicad_backend.dto.Aula.AulaResumenResponse;
+import com.sicad.sicad_backend.dto.aula.AulaResumenResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

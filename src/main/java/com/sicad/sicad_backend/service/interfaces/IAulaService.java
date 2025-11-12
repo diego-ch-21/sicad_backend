@@ -2,10 +2,9 @@ package com.sicad.sicad_backend.service.interfaces;
 
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
-import com.sicad.sicad_backend.dto.Aula.AulaCreateRequest;
-import com.sicad.sicad_backend.dto.Aula.AulaDetalleResponse;
-import com.sicad.sicad_backend.dto.Aula.AulaUpdateRequest;
-import com.sicad.sicad_backend.model.Asignatura;
+import com.sicad.sicad_backend.dto.aula.AulaCreateRequest;
+import com.sicad.sicad_backend.dto.aula.AulaDetalleResponse;
+import com.sicad.sicad_backend.dto.aula.AulaUpdateRequest;
 import com.sicad.sicad_backend.model.Aula;
 import com.sicad.sicad_backend.service.base.ICRUD;
 

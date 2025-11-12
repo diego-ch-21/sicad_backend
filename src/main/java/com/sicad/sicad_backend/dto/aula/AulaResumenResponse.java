@@ -1,4 +1,4 @@
-package com.sicad.sicad_backend.dto.Aula;
+package com.sicad.sicad_backend.dto.aula;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

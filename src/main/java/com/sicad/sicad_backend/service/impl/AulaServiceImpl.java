@@ -1,15 +1,12 @@
 package com.sicad.sicad_backend.service.impl;
 
 import com.sicad.sicad_backend.Enum.Modulo;
-import com.sicad.sicad_backend.dto.Aula.AulaCreateRequest;
-import com.sicad.sicad_backend.dto.Aula.AulaDetalleResponse;
-import com.sicad.sicad_backend.dto.Aula.AulaUpdateRequest;
+import com.sicad.sicad_backend.dto.aula.AulaCreateRequest;
+import com.sicad.sicad_backend.dto.aula.AulaDetalleResponse;
+import com.sicad.sicad_backend.dto.aula.AulaUpdateRequest;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
-import com.sicad.sicad_backend.dto.escuela.EscuelaCreateRequest;
-import com.sicad.sicad_backend.dto.escuela.EscuelaDetalleResponse;
 import com.sicad.sicad_backend.model.Aula;
-import com.sicad.sicad_backend.model.Escuela;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.IAulaRepo;
 import com.sicad.sicad_backend.service.base.CRUDImpl;

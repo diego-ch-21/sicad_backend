@@ -1,6 +1,5 @@
-package com.sicad.sicad_backend.dto.Aula;
+package com.sicad.sicad_backend.dto.aula;
 
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
