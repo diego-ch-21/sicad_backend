@@ -16,7 +16,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RolesResponse {
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private DocenteUsuarioResponse docente;
     private DepartamentoAcademicoUsuarioResponse departamentoAcademico;
     private LogisticaUsuarioResponse logistica;

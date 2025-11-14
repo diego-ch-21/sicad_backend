@@ -8,7 +8,6 @@ import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.escuela.EscuelaCreateRequest;
 import com.sicad.sicad_backend.dto.escuela.EscuelaDetalleResponse;
 import com.sicad.sicad_backend.dto.preferencia.PreferenciaResumenResponse;
-import com.sicad.sicad_backend.jwt.JwtService;
 import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
 import com.sicad.sicad_backend.repository.interfaces.*;
@@ -44,7 +43,6 @@ public class DocenteServiceImpl
     private final IDedicacionRepo dedicacionRepo;
     private final ICicloAcademicoRepo cicloAcademicoRepo;
     private final ICargaRepo cargaRepo;
-    private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
 

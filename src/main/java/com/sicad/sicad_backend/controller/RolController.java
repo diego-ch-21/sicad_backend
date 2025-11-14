@@ -14,7 +14,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses; // Importación nec
 import io.swagger.v3.oas.annotations.tags.Tag; // Importación necesaria
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import static com.sicad.sicad_backend.Enum.RolEnum.*;
+
 
 import java.util.List;
 
@@ -33,6 +36,7 @@ public class RolController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista de roles obtenida exitosamente")
     })
+    @PreAuthorize("@access.isAdmin()")
     @GetMapping("/listar")
     public ResponseEntity<BaseListReponse<RolDetalleResponse>>
     listar() throws Exception {
@@ -50,6 +54,7 @@ public class RolController {
             @ApiResponse(responseCode = "404", description = "Rol no encontrado",
                     content = @Content(schema = @Schema(implementation = BaseMessageResponse.class)))
     })
+    @PreAuthorize("@access.isAdmin()")
     @GetMapping("/buscar/{idRol}")
     public ResponseEntity<BaseObjectResponse<RolDetalleResponse>>
     buscar(@PathVariable("idRol") Integer id) {

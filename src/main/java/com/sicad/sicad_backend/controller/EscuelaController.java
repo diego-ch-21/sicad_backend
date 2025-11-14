@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,6 +37,7 @@ public class EscuelaController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista de escuelas obtenida exitosamente")
     })
+    @PreAuthorize("@access.isAdmin()")
     @GetMapping("/listar")
     public ResponseEntity<BaseListReponse<EscuelaDetalleResponse>>
     listar() throws Exception {
@@ -53,6 +55,7 @@ public class EscuelaController {
             @ApiResponse(responseCode = "404", description = "Escuela no encontrada",
                     content = @Content(schema = @Schema(implementation = BaseMessageResponse.class)))
     })
+    @PreAuthorize("@access.isAdmin()")
     @GetMapping("/buscar/{idEscuela}")
     public ResponseEntity<BaseObjectResponse<EscuelaDetalleResponse>>
     buscar(@PathVariable("idEscuela") Integer id) {
@@ -68,6 +71,7 @@ public class EscuelaController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Escuela registrada exitosamente")
     })
+    @PreAuthorize("@access.isAdmin()")
     @PostMapping("/insertar")
     public ResponseEntity<BaseObjectResponse<EscuelaDetalleResponse>>
     registrar(@Valid @RequestBody EscuelaCreateRequest request) {
@@ -83,6 +87,7 @@ public class EscuelaController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Escuelas registradas exitosamente")
     })
+    @PreAuthorize("@access.isAdmin()")
     @PostMapping("/insertar-all")
     public ResponseEntity<BaseListReponse<EscuelaDetalleResponse>>
     registrarAll(@Valid @RequestBody List<EscuelaCreateRequest> request) {
@@ -100,6 +105,7 @@ public class EscuelaController {
             @ApiResponse(responseCode = "404", description = "Escuela no encontrada para actualizar",
                     content = @Content(schema = @Schema(implementation = BaseMessageResponse.class)))
     })
+    @PreAuthorize("@access.isAdmin()")
     @PutMapping("/actualizar/{idEscuela}")
     public ResponseEntity<BaseObjectResponse<EscuelaDetalleResponse>>
     actualizar(@PathVariable("idEscuela") Integer id, @Valid @RequestBody EscuelaUpdateRequest dto) {
@@ -117,6 +123,7 @@ public class EscuelaController {
             @ApiResponse(responseCode = "404", description = "Escuela no encontrada para eliminar",
                     content = @Content(schema = @Schema(implementation = BaseMessageResponse.class)))
     })
+    @PreAuthorize("@access.isAdmin()")
     @DeleteMapping("/eliminar/{idEscuela}")
     public ResponseEntity<BaseObjectResponse<String>>
     eliminar(@PathVariable("idEscuela") Integer id) {

@@ -30,3 +30,6 @@ supabase:
   url: ${SP_URL}
   key: ${SP_KEY}
   bucket: ${SP_BUCKET}
+
+jwt:
+  secret: ${KEY_SECRET}

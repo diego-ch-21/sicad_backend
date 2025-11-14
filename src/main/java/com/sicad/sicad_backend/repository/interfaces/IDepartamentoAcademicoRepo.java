@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface IDepartamentoAcademicoRepo extends IGenericRepo<DepartamentoAcademico, Integer> {
 
-    @Query("SELECT d FROM DepartamentoAcademico d WHERE d.usuario = :usuario")
+    @Query("SELECT d FROM DepartamentoAcademico d WHERE d.usuario = :usuario AND d.enabled = true")
     Optional<DepartamentoAcademico> findByUsuario(@Param("usuario") Usuario usuario);
 
     @Query("SELECT e FROM DepartamentoAcademico e WHERE e.enabled = true")
