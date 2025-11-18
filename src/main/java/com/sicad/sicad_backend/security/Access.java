@@ -22,8 +22,11 @@ public class Access {
     public boolean isEscuelaProf(){
         return hasRole(RolEnum.ESCUELA_PROFESIONAL.name());
     }
-    public boolean isLogistica(){
+    public boolean isLogistica() {
         return hasRole(RolEnum.LOGISTICA.name());
+    }
+    public boolean isAll(){
+        return isAdmin() || isDepaAcad() || isDocente() || isEscuelaProf() || isLogistica();
     }
 
     private boolean hasRole(String role) {

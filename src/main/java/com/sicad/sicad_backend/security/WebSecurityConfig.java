@@ -52,7 +52,7 @@ public class WebSecurityConfig {
     }
 
     /**
-     * ✅ Configuración CORS integrada en Security
+     * Configuración CORS integrada en Security
      * Esta es la forma más limpia y recomendada
      */
     @Bean
