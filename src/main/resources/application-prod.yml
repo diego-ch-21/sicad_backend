@@ -1,0 +1,16 @@
+server:
+  port: ${PROD_SERVER_PORT}
+
+spring:
+  datasource:
+    url: ${PROD_DB_URL}
+    username: ${PROD_DB_USERNAME}
+    password: ${PROD_DB_PASSWORD}
+
+supabase:
+  url: ${PROD_SP_URL}
+  key: ${PROD_SP_KEY}
+  bucket: ${PROD_SP_BUCKET}
+
+jwt:
+  secret: ${PROD_KEY_SECRET}

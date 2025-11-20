@@ -93,7 +93,7 @@ public class UsuarioServiceImpl
             }
 
             // 5. Subir la nueva imagen a Supabase Storage (carpeta "img")
-            String nuevaUrlPerfil = storageService.uploadFile(file, "img");
+            String nuevaUrlPerfil = storageService.uploadFile(file, "profile");
 
             // 6. Actualizar la URL del perfil en la base de datos
             usuario.setUrlPerfil(nuevaUrlPerfil);

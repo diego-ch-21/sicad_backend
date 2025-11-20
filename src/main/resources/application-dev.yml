@@ -1,0 +1,16 @@
+server:
+  port: ${DEV_SERVER_PORT}
+
+spring:
+  datasource:
+    url: ${DEV_DB_URL}
+    username: ${DEV_DB_USERNAME}
+    password: ${DEV_DB_PASSWORD}
+
+supabase:
+  url: ${DEV_SP_URL}
+  key: ${DEV_SP_KEY}
+  bucket: ${DEV_SP_BUCKET}
+
+jwt:
+  secret: ${DEV_KEY_SECRET}

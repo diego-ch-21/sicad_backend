@@ -225,7 +225,7 @@ public class CicloAcademicoServiceImpl
                 storageService.deleteFile(ciclo.getUrlPdf());
             }
 
-            String nuevoUrl = storageService.uploadFile(filePdf, "doc");
+            String nuevoUrl = storageService.uploadFile(filePdf, "documents");
             ciclo.setUrlPdf(nuevoUrl);
             cicloAcademicoRepo.save(ciclo);
 
@@ -259,7 +259,7 @@ public class CicloAcademicoServiceImpl
                 storageService.deleteFile(ciclo.getUrlExcel());
             }
 
-            String nuevoUrl = storageService.uploadFile(fileExcel, "doc");
+            String nuevoUrl = storageService.uploadFile(fileExcel, "documents");
             ciclo.setUrlExcel(nuevoUrl);
             cicloAcademicoRepo.save(ciclo);
 

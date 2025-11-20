@@ -25,7 +25,7 @@ import java.util.UUID;
 public class SupabaseStorageServiceImpl
     implements ISupabaseStorageService {
     private final SupabaseStorageConfig config;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     /**
      * Sube un archivo a Supabase Storage
@@ -43,8 +43,8 @@ public class SupabaseStorageServiceImpl
         }
 
         // Validar que el folder sea válido (solo "doc" o "img")
-        if (!folder.equals("doc") && !folder.equals("img")) {
-            throw new IllegalArgumentException("Folder debe ser 'doc' o 'img'");
+        if (!folder.equals("documents") && !folder.equals("")) {
+            throw new IllegalArgumentException("Folder debe ser 'documents' o 'profile'");
         }
 
         // Generar nombre único para el archivo usando UUID
