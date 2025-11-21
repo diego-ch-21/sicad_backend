@@ -1,6 +1,3 @@
-server:
-  port: ${PROD_SERVER_PORT}
-
 spring:
   datasource:
     url: ${PROD_DB_URL}
@@ -12,5 +9,4 @@ supabase:
   key: ${PROD_SP_KEY}
   bucket: ${PROD_SP_BUCKET}
 
-jwt:
-  secret: ${PROD_KEY_SECRET}
+
