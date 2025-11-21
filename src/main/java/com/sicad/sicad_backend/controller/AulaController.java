@@ -36,7 +36,6 @@ public class AulaController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista de aulas obtenida exitosamente")
     })
-    @PreAuthorize("@access.isLogistica()")
     @GetMapping("/listar")
     public ResponseEntity<BaseListReponse<AulaDetalleResponse>>
     listar() throws Exception {
@@ -54,7 +53,6 @@ public class AulaController {
             @ApiResponse(responseCode = "404", description = "Aula no encontrada",
                     content = @Content(schema = @Schema(implementation = BaseMessageResponse.class)))
     })
-    @PreAuthorize("@access.isLogistica()")
     @GetMapping("/buscar/{idAula}")
     public ResponseEntity<BaseObjectResponse<AulaDetalleResponse>>
     buscar(@PathVariable("idAula") Integer id) {
@@ -70,7 +68,6 @@ public class AulaController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Aula registrada exitosamente")
     })
-    @PreAuthorize("@access.isLogistica()")
     @PostMapping("/insertar")
     public ResponseEntity<BaseObjectResponse<AulaDetalleResponse>>
     registrar(@Valid @RequestBody AulaCreateRequest request) {
@@ -86,7 +83,6 @@ public class AulaController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Aulas registradas exitosamente")
     })
-    @PreAuthorize("@access.isLogistica()")
     @PostMapping("/insertar-all")
     public ResponseEntity<BaseListReponse<AulaDetalleResponse>>
     registrarAll(@Valid @RequestBody List<AulaCreateRequest> request) {
@@ -104,7 +100,6 @@ public class AulaController {
             @ApiResponse(responseCode = "404", description = "Aula no encontrada para actualizar",
                     content = @Content(schema = @Schema(implementation = BaseMessageResponse.class)))
     })
-    @PreAuthorize("@access.isLogistica()")
     @PutMapping("/actualizar/{idAula}")
     public ResponseEntity<BaseObjectResponse<AulaDetalleResponse>>
     actualizar(@PathVariable("idAula") Integer id, @Valid @RequestBody AulaUpdateRequest dto) {
@@ -122,7 +117,6 @@ public class AulaController {
             @ApiResponse(responseCode = "404", description = "Aula no encontrada para eliminar",
                     content = @Content(schema = @Schema(implementation = BaseMessageResponse.class)))
     })
-    @PreAuthorize("@access.isLogistica()")
     @DeleteMapping("/eliminar/{idAula}")
     public ResponseEntity<BaseObjectResponse<String>>
     eliminar(@PathVariable("idAula") Integer id) {
