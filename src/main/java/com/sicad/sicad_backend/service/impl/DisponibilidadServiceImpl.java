@@ -231,6 +231,7 @@ public class DisponibilidadServiceImpl
                 disponibilidadRepo.findByEnabledTrueDocenteCicloAcademico(
                         docenteOpt.get().getIdDocente(),
                         cicloOpt.get().getIdCicloAcademico());
+        log.info("num:"+listaDisponibilidadDelDocente.size());
 
         // CAMBIO: La llamada a hayCruceHorario ahora envía LocalTime
         if (hayCruceHorario(listaDisponibilidadDelDocente, request.getDiaSemana(), horaInicio, horaFin)) {

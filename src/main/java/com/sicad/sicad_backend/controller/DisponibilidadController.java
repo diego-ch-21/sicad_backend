@@ -89,6 +89,7 @@ public class DisponibilidadController {
     @PostMapping("/insertar-all")
     public ResponseEntity<BaseListReponse<DisponibilidadDetalleResponse>>
     registrarAll(@Valid @RequestBody List<DisponibilidadCreateRequest> request) {
+        System.out.println("prueba ****************************");
         BaseListReponse<DisponibilidadDetalleResponse> response = service.registrarAll(request);
         return ResponseEntity.status(response.status()).body(response);
     }
