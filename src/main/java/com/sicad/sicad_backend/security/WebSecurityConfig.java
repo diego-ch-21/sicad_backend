@@ -24,7 +24,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
-//@Profile(value = {"dev", "qa", "prod"})
+//@Profile({"dev", "qa", "prod"})
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -109,7 +109,8 @@ public class WebSecurityConfig {
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
-                                "/swagger-ui.html"
+                                "/swagger-ui.html",
+                                "/asignatura/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
