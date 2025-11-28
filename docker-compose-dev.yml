@@ -1,0 +1,42 @@
+services:
+  app:
+    container_name: sicad_container
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      APP_ENV: dev
+      SERVER_PORT: ${SERVER_PORT}
+
+      DEV_DB_URL: ${DEV_DB_URL}
+      DEV_DB_USERNAME: ${DEV_DB_USERNAME}
+      DEV_DB_PASSWORD: ${DEV_DB_PASSWORD}
+
+      DEV_SP_URL: ${DEV_SP_URL}
+      DEV_SP_KEY: ${DEV_SP_KEY}
+      DEV_SP_BUCKET: ${DEV_SP_BUCKET}
+    depends_on:
+      - postgres_db
+    networks:
+      - sicad_network
+
+  postgres_db:
+    container_name: postgres_container
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: ${DEV_DB_NAME}
+      POSTGRES_USER: ${DEV_DB_USERNAME}
+      POSTGRES_PASSWORD: ${DEV_DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - sicad_network
+
+volumes:
+  postgres_data:
+
+networks:
+  sicad_network:

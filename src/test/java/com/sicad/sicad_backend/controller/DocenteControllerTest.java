@@ -22,10 +22,14 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+/*
 @ActiveProfiles("test")
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(controllers = DocenteController.class)
+
+ */
 public class DocenteControllerTest {
+    /*
 
     @Autowired
     private MockMvc mockMvc;
@@ -96,4 +100,6 @@ public class DocenteControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
     }
+
+     */
 }

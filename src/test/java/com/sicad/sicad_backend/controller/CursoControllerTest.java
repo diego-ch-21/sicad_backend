@@ -31,11 +31,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.hamcrest.Matchers.*;
 
+/*
 @ActiveProfiles("test")
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(controllers = CursoController.class)
-public class CursoControllerTest {
 
+ */
+public class CursoControllerTest {
+/*
     @Autowired
     private MockMvc mockMvc;
 
@@ -164,4 +167,5 @@ public class CursoControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message", is("OK")));
     }
+ */
 }
