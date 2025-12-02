@@ -19,7 +19,7 @@ import java.util.List;
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name="usuario")
-public class Usuario implements UserDetails {
+public class Usuario {
     @Id
     @EqualsAndHashCode.Include
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,31 +54,5 @@ public class Usuario implements UserDetails {
 
     @Column(nullable = false, name = "enabled")
     private Boolean enabled;
-
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority((rol.getNombre())));
-    }
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-    @Override
-    public String getUsername() {
-        return email;
-    }
 
 }

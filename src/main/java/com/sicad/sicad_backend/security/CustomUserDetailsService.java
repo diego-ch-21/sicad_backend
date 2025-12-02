@@ -33,6 +33,6 @@ public class CustomUserDetailsService
         List<GrantedAuthority> roles = new ArrayList<>();
         String rol = usuario.getRol().getNombre();
         roles.add(new SimpleGrantedAuthority(rol));
-        return new User(usuario.getUsername(),usuario.getPassword(),roles);
+        return new User(usuario.getEmail(),usuario.getPassword(),roles);
     }
 }
