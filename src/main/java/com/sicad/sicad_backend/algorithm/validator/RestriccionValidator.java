@@ -197,7 +197,7 @@ public class RestriccionValidator {
      */
     private double verificarPreferenciasObligatorias(SolucionAsignacion solucion) {
         double penalizacion = 0.0;
-
+        /*
         for (Map.Entry<Integer, Integer> asignacion : solucion.getAsignaciones().entrySet()) {
             Integer idCurso = asignacion.getKey();
             Integer idDocente = asignacion.getValue();
@@ -229,6 +229,9 @@ public class RestriccionValidator {
             }
         }
 
+         */
+
+        //return penalizacion;
         return penalizacion;
     }
 
@@ -257,53 +260,48 @@ public class RestriccionValidator {
      * La verificación obligatoria ya se hace en restricciones duras
      */
     private double evaluarPreferencias(SolucionAsignacion solucion) {
-        double bonificacion = 0.0;
-        int preferenciasAltas = 0; // Preferencias de alta prioridad satisfechas
+        double puntosBonificacion = 0.0;
+        int coincidencias = 0;
         int totalAsignaciones = 0;
 
-        for (Map.Entry<Integer, Integer> asignacion : solucion.getAsignaciones().entrySet()) {
-            Integer idCurso = asignacion.getKey();
-            Integer idDocente = asignacion.getValue();
+        for (Map.Entry<Integer, Integer> entry : solucion.getAsignaciones().entrySet()) {
+            Integer idCurso = entry.getKey();
+            Integer idDocente = entry.getValue();
 
+            // Ignorar cursos no asignados
             if (idDocente == -1) continue;
 
-            totalAsignaciones++;
+            // Validación de seguridad
             Curso curso = obtenerCursoPorId(idCurso);
             if (curso == null) continue;
 
-            List<Preferencia> preferenciasDocente = preferenciasPorDocente.get(idDocente);
-            if (preferenciasDocente != null) {
-                // Buscar si tiene preferencia por esta asignatura
-                Optional<Preferencia> preferenciaOpt = preferenciasDocente.stream()
-                        .filter(pref -> pref.getAsignatura().getIdAsignatura()
-                                .equals(curso.getAsignatura().getIdAsignatura()))
-                        .findFirst();
+            totalAsignaciones++;
 
-                if (preferenciaOpt.isPresent()) {
-                    Preferencia preferencia = preferenciaOpt.get();
-
-                    // Bonificación base por preferencia (ya validada como obligatoria)
-                    bonificacion += 5;
-
-                    // Bonificación adicional si tiene prioridad alta (si tu modelo lo soporta)
-                    // Si tienes un campo como "prioridad" en Preferencia:
-                    // if (preferencia.getPrioridad() != null && preferencia.getPrioridad() >= 4) {
-                    //     bonificacion += 10;
-                    //     preferenciasAltas++;
-                    // }
-
-                    log.debug("Preferencia confirmada: Docente {} en asignatura {}",
-                            idDocente, curso.getAsignatura().getNombre());
-                }
+            // Verificar si existe preferencia (Lógica optimizada)
+            if (tienePreferencia(idDocente, curso)) {
+                coincidencias++;
+                puntosBonificacion += 10.0; // Puntos arbitrarios por cumplir deseo
             }
         }
 
-        // Calcular porcentaje (ahora debería ser 100% si todo está bien)
-        double porcentaje = totalAsignaciones > 0 ?
-                (double) totalAsignaciones / totalAsignaciones : 0.0;
-        solucion.setPorcentajePreferencias(porcentaje * 100);
+        // Calcular porcentaje real para estadísticas (0 a 100%)
+        double porcentaje = (totalAsignaciones > 0)
+                ? ((double) coincidencias / totalAsignaciones) * 100.0
+                : 0.0;
 
-        return bonificacion * PESO_PREFERENCIAS / 100.0;
+        solucion.setPorcentajePreferencias(porcentaje);
+
+        // Retornar la bonificación ponderada por el peso configurado
+        return puntosBonificacion * PESO_PREFERENCIAS;
+    }
+    private boolean tienePreferencia(Integer idDocente, Curso curso) {
+        List<Preferencia> prefs = preferenciasPorDocente.get(idDocente);
+        if (prefs == null || prefs.isEmpty()) return false;
+
+        // Retorna true si ALGUNA preferencia coincide con la asignatura del curso
+        return prefs.stream()
+                .anyMatch(pref -> pref.getAsignatura().getIdAsignatura()
+                        .equals(curso.getAsignatura().getIdAsignatura()));
     }
 
     /**
@@ -390,10 +388,13 @@ public class RestriccionValidator {
             }
 
             // 2. NUEVO: Verificar preferencias (obligatorias)
+            /*
             if (esValida && !verificarPreferenciaParaAsignacion(idCurso, idDocente)) {
                 esValida = false;
                 log.debug("Eliminando por falta de preferencia: Curso {} - Docente {}", idCurso, idDocente);
             }
+
+             */
 
             if (!esValida) {
                 cursosAEliminar.add(idCurso);
