@@ -36,7 +36,6 @@ public class RolController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista de roles obtenida exitosamente")
     })
-    @PreAuthorize("@access.isAdmin()")
     @GetMapping("/listar")
     public ResponseEntity<BaseListReponse<RolDetalleResponse>>
     listar() throws Exception {
@@ -54,7 +53,6 @@ public class RolController {
             @ApiResponse(responseCode = "404", description = "Rol no encontrado",
                     content = @Content(schema = @Schema(implementation = BaseMessageResponse.class)))
     })
-    @PreAuthorize("@access.isAdmin()")
     @GetMapping("/buscar/{idRol}")
     public ResponseEntity<BaseObjectResponse<RolDetalleResponse>>
     buscar(@PathVariable("idRol") Integer id) {
