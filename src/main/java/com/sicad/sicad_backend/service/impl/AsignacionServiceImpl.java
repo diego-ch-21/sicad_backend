@@ -66,9 +66,10 @@ public class AsignacionServiceImpl
             // 2. Recolección de datos necesarios
             // Obtener docentes que tienen disponibilidad para este cicloa cademico
             List<Docente> docentes = obtenerDocentesDisponibles(idCicloAcademico);
+            System.out.println("cantidad de docentes: "+docentes.size());
             // obtener cursos de un ciclo academico especifico
             List<Curso> cursos = obtenerCursosPorCiclo(idCicloAcademico);
-
+            System.out.println("cantidad de cursos de este ciclo: "+cursos.size());
             if (docentes.isEmpty()) {
                 return new BaseObjectResponse<>(400, "No hay docentes disponibles para este ciclo academico", null);
             }
@@ -266,10 +267,13 @@ public class AsignacionServiceImpl
 
     // Métodos auxiliares para el algoritmo
     private List<Docente> obtenerDocentesDisponibles(Integer idCicloAcademico) {
-        // Obtener docentes que tienen disponibilidad para esta carga electiva
+        // 1. Obtiene todas las disponibilidades (ej. 500 registros)
         List<Disponibilidad> disponibilidades = disponibilidadRepo.findByCicloAcademico_IdCicloAcademico(idCicloAcademico);
+
+        // 2. Extrae los docentes y elimina duplicados
         return disponibilidades.stream()
                 .map(Disponibilidad::getDocente)
+                .distinct()
                 .collect(Collectors.toList());
     }
 
