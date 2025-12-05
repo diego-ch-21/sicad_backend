@@ -132,7 +132,7 @@ public class ReporteServiceImpl
         int contador = 1;
         for (AsignacionResumenResponse asignacion : docente.getAsignaciones()) {
             CursoAsignacionResponse curso = asignacion.getCurso();
-            List<HorarioDetalleResponse> horarios = curso.getHorario();
+            List<HorarioDetalleResponse> horarios = curso.getHorarios();
             int rowspan = horarios.size();
 
             // Columnas fijas con rowspan
@@ -337,7 +337,7 @@ public class ReporteServiceImpl
         int contador = 1;
         for (AsignacionResumenResponse asignacion : docente.getAsignaciones()) {
             CursoAsignacionResponse curso = asignacion.getCurso();
-            List<HorarioDetalleResponse> horarios = curso.getHorario();
+            List<HorarioDetalleResponse> horarios = curso.getHorarios();
 
             int startRow = rowNum;
 
