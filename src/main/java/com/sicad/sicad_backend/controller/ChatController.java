@@ -25,79 +25,6 @@ import org.springframework.web.bind.annotation.*;
 public class ChatController {
 
     private final IMensajeService mensajeService;
-    private final SimpMessagingTemplate messagingTemplate;
-
-    // ============ WebSocket Endpoints ============
-
-    /**
-     * Envía un mensaje a través de WebSocket
-     * El cliente envía a: /app/chat.enviar
-     * El mensaje se distribuye a: /user/{idDestinatario}/queue/mensajes
-     */
-    @MessageMapping("/chat.enviar")
-    public void enviarMensajeWebSocket(@Payload @Valid MensajeRequest request) {
-        BaseObjectResponse<MensajeResponse> response = mensajeService.enviarMensaje(request);
-
-        if (response.status() == 201) {
-            MensajeResponse mensaje = response.data();
-
-            // Notificar al destinatario
-            NotificacionMensaje notificacion = NotificacionMensaje.builder()
-                    .tipo(TipoMensaje.MENSAJE)
-                    .mensaje(mensaje)
-                    .build();
-
-            messagingTemplate.convertAndSendToUser(
-                    mensaje.getIdDestinatario().toString(),
-                    "/queue/mensajes",
-                    notificacion
-            );
-
-            // Confirmar al remitente
-            messagingTemplate.convertAndSendToUser(
-                    mensaje.getIdRemitente().toString(),
-                    "/queue/mensajes",
-                    notificacion
-            );
-        }
-    }
-
-    /**
-     * Notifica que un usuario está escribiendo
-     * El cliente envía a: /app/chat.escribiendo
-     */
-    @MessageMapping("/chat.escribiendo")
-    public void notificarEscribiendo(@Payload NotificacionMensaje notificacion) {
-        messagingTemplate.convertAndSendToUser(
-                notificacion.getIdUsuario().toString(),
-                "/queue/mensajes",
-                NotificacionMensaje.builder()
-                        .tipo(TipoMensaje.ESCRIBIENDO)
-                        .idUsuario(notificacion.getIdUsuario())
-                        .build()
-        );
-    }
-
-    /**
-     * Marca mensajes como leídos
-     * El cliente envía a: /app/chat.leido
-     */
-    @MessageMapping("/chat.leido")
-    public void marcarComoLeido(@Payload NotificacionMensaje notificacion) {
-        if (notificacion.getMensaje() != null && notificacion.getMensaje().getIdMensaje() != null) {
-            mensajeService.marcarComoLeido(notificacion.getMensaje().getIdMensaje());
-
-            // Notificar al remitente que su mensaje fue leído
-            messagingTemplate.convertAndSendToUser(
-                    notificacion.getMensaje().getIdRemitente().toString(),
-                    "/queue/mensajes",
-                    NotificacionMensaje.builder()
-                            .tipo(TipoMensaje.LEIDO)
-                            .mensaje(notificacion.getMensaje())
-                            .build()
-            );
-        }
-    }
 
     // ============ REST Endpoints ============
 
@@ -142,12 +69,6 @@ public class ChatController {
                     .tipo(TipoMensaje.MENSAJE)
                     .mensaje(mensaje)
                     .build();
-
-            messagingTemplate.convertAndSendToUser(
-                    mensaje.getIdDestinatario().toString(),
-                    "/queue/mensajes",
-                    notificacion
-            );
         }
 
         return ResponseEntity.status(response.status()).body(response);
