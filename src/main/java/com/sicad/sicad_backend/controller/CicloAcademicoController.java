@@ -3,6 +3,7 @@ package com.sicad.sicad_backend.controller;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.base.BaseMessageResponse; // Importación necesaria
+import com.sicad.sicad_backend.dto.carga.CargaDetalleResponse;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoCreateRequest;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoDetalleResponse;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoFileResponse;
@@ -181,4 +182,7 @@ public class CicloAcademicoController {
         BaseObjectResponse<String> response = service.eliminar(id);
         return ResponseEntity.status(response.status()).body(response);
     }
+
+    //-------------------------
+
 }

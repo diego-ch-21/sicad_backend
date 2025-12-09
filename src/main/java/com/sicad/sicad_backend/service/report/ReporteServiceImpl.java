@@ -7,7 +7,14 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.pdf.draw.LineSeparator;
+import com.sicad.sicad_backend.dto.CicloCargaCurso.AsignaturaAgrupadaResponse;
+import com.sicad.sicad_backend.dto.CicloCargaCurso.CursoAgrupadoResponse;
+import com.sicad.sicad_backend.dto.CicloCargaCurso.CursoConDocenteResponse;
+import com.sicad.sicad_backend.dto.CicloCargaCurso.HorarioCursoResponse;
+import com.sicad.sicad_backend.dto.asignacion.AsignacionCicloResumenResponse;
 import com.sicad.sicad_backend.dto.carga.CargaDetalleResponse;
+import com.sicad.sicad_backend.dto.docente.DocenteResumenResponse;
+import com.sicad.sicad_backend.dto.escuela.EscuelaDetalleResponse;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
@@ -15,7 +22,12 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import com.sicad.sicad_backend.dto.asignacion.AsignacionResumenResponse;
 import com.sicad.sicad_backend.dto.curso.CursoAsignacionResponse;
 import com.sicad.sicad_backend.dto.Horario.HorarioDetalleResponse;
@@ -508,4 +520,277 @@ public class ReporteServiceImpl
         style.setVerticalAlignment(VerticalAlignment.CENTER);
         return style;
     }
+
+    //----------------------------------------------------------------------
+
+
+    @Override
+    public byte[] generarPdfCursosAgrupadoCarga(List<CursoAgrupadoResponse> data, CargaDetalleResponse carga) {
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // ---------------- ENCABEZADO ----------------
+            agregarEncabezado(document, carga,null);
+
+            // ---------------- COLORES ----------------
+            BaseColor azulOscuro = new BaseColor(0, 70, 140);
+            BaseColor celeste = new BaseColor(173, 216, 230);
+            BaseColor grisClaro = new BaseColor(240, 240, 240);
+
+            // ---------------- ESTILOS ----------------
+            Font cicloFont = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD, azulOscuro);
+            Font asignaturaFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, new BaseColor(30, 30, 30));
+            Font textoFont = new Font(Font.FontFamily.HELVETICA, 10);
+
+            // ---------------- CONTENIDO ----------------
+            for (CursoAgrupadoResponse ciclo : data) {
+
+                Paragraph pciclo = new Paragraph("CICLO " + ciclo.getCiclo(), cicloFont);
+                pciclo.setSpacingBefore(15f);
+                pciclo.setSpacingAfter(10f);
+                document.add(pciclo);
+
+                for (AsignaturaAgrupadaResponse asig : ciclo.getAsignaturas()) {
+
+                    Paragraph pasig = new Paragraph(
+                            asig.getNombre() + " (" + asig.getCodigo() + ")",
+                            asignaturaFont
+                    );
+                    pasig.setSpacingAfter(5f);
+                    document.add(pasig);
+
+                    // Tabla principal de cursos
+                    PdfPTable table = new PdfPTable(6); // Código, Grupo, Plan, Horarios, Escuela, Docente
+                    table.setWidthPercentage(100);
+                    table.setWidths(new float[]{10f, 8f, 12f, 45f, 15f, 20f}); // columnas ajustadas
+
+                    agregarCeldaHeaderColor(table, "Código", celeste);
+                    agregarCeldaHeaderColor(table, "Grupo", celeste);
+                    agregarCeldaHeaderColor(table, "Plan", celeste);
+                    agregarCeldaHeaderColor(table, "Horarios", celeste);
+                    agregarCeldaHeaderColor(table, "Escuela", celeste);
+                    agregarCeldaHeaderColor(table, "Docente", celeste);
+
+                    for (CursoConDocenteResponse c : asig.getCursos()) {
+                        // Código
+                        table.addCell(crearCelda(c.getCodigoCurso(), textoFont));
+                        // Grupo
+                        table.addCell(crearCelda(c.getGrupo(), textoFont));
+                        // Plan de estudios
+                        table.addCell(crearCelda(String.join(", ", c.getPlanDeEstudios()), textoFont));
+
+                        // Horarios: subtabla
+                        PdfPTable horariosTable = new PdfPTable(3); // Día, Hora, Tipo
+                        horariosTable.setWidthPercentage(100);
+                        for (HorarioCursoResponse h : c.getHorarios()) {
+                            horariosTable.addCell(crearCelda(h.getDia(), textoFont));
+                            horariosTable.addCell(crearCelda(h.getHoraInicio() + " - " + h.getHoraFin(), textoFont));
+                            horariosTable.addCell(crearCelda(h.getTipoSesion(), textoFont));
+                        }
+                        PdfPCell horariosCell = new PdfPCell(horariosTable);
+                        horariosCell.setPadding(2f);
+                        table.addCell(horariosCell);
+
+                        // Escuela
+                        table.addCell(crearCelda(c.getEscuela(), textoFont));
+
+                        // Docente
+                        String docente = (c.getDocente() != null && !c.getDocente().isEmpty())
+                                ? c.getDocente()
+                                : "Sin docente asignado";
+                        table.addCell(crearCelda(docente, textoFont));
+                    }
+
+                    document.add(table);
+                    document.add(new Paragraph("\n"));
+                }
+            }
+
+            document.close();
+            return out.toByteArray();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public byte[] generarPdfCursosAgrupadoCarga(List<CursoAgrupadoResponse> data, CargaDetalleResponse carga, EscuelaDetalleResponse escuela) {
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // ---------------- ENCABEZADO ----------------
+            agregarEncabezado(document, carga, escuela);
+
+            // ---------------- COLORES ----------------
+            BaseColor azulOscuro = new BaseColor(0, 70, 140);
+            BaseColor celeste = new BaseColor(173, 216, 230);
+
+            // ---------------- ESTILOS ----------------
+            Font cicloFont = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD, azulOscuro);
+            Font asignaturaFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, new BaseColor(30, 30, 30));
+            Font textoFont = new Font(Font.FontFamily.HELVETICA, 10);
+
+            // ---------------- CONTENIDO ----------------
+            for (CursoAgrupadoResponse ciclo : data) {
+
+                // Filtramos asignaturas que tengan al menos un curso de la escuela (si se pasó)
+                List<AsignaturaAgrupadaResponse> asignaturasFiltradas = ciclo.getAsignaturas().stream()
+                        .map(asig -> {
+                            List<CursoConDocenteResponse> cursosFiltrados = asig.getCursos().stream()
+                                    .filter(c -> escuela == null || escuela.getNombre().equalsIgnoreCase(c.getEscuela()))
+                                    .toList();
+                            if (cursosFiltrados.isEmpty()) return null;
+                            AsignaturaAgrupadaResponse nuevaAsig = new AsignaturaAgrupadaResponse();
+                            nuevaAsig.setNombre(asig.getNombre());
+                            nuevaAsig.setCodigo(asig.getCodigo());
+                            nuevaAsig.setCursos(cursosFiltrados);
+                            return nuevaAsig;
+                        })
+                        .filter(Objects::nonNull)
+                        .toList();
+
+                if (asignaturasFiltradas.isEmpty()) continue; // No hay asignaturas para mostrar
+
+                // CICLO
+                Paragraph pciclo = new Paragraph("CICLO " + ciclo.getCiclo(), cicloFont);
+                pciclo.setSpacingBefore(15f);
+                pciclo.setSpacingAfter(10f);
+                document.add(pciclo);
+
+                for (AsignaturaAgrupadaResponse asig : asignaturasFiltradas) {
+
+                    Paragraph pasig = new Paragraph(
+                            asig.getNombre() + " (" + asig.getCodigo() + ")",
+                            asignaturaFont
+                    );
+                    pasig.setSpacingAfter(5f);
+                    document.add(pasig);
+
+                    // Tabla principal de cursos
+                    PdfPTable table = new PdfPTable(6); // Código, Grupo, Plan, Horarios, Escuela, Docente
+                    table.setWidthPercentage(100);
+                    table.setWidths(new float[]{10f, 8f, 12f, 45f, 15f, 20f});
+
+                    agregarCeldaHeaderColor(table, "Código", celeste);
+                    agregarCeldaHeaderColor(table, "Grupo", celeste);
+                    agregarCeldaHeaderColor(table, "Plan", celeste);
+                    agregarCeldaHeaderColor(table, "Horarios", celeste);
+                    agregarCeldaHeaderColor(table, "Escuela", celeste);
+                    agregarCeldaHeaderColor(table, "Docente", celeste);
+
+                    for (CursoConDocenteResponse c : asig.getCursos()) {
+                        // Código
+                        table.addCell(crearCelda(c.getCodigoCurso(), textoFont));
+                        // Grupo
+                        table.addCell(crearCelda(c.getGrupo(), textoFont));
+                        // Plan de estudios
+                        table.addCell(crearCelda(String.join(", ", c.getPlanDeEstudios()), textoFont));
+
+                        // Horarios: subtabla
+                        PdfPTable horariosTable = new PdfPTable(3); // Día, Hora, Tipo
+                        horariosTable.setWidthPercentage(100);
+                        for (HorarioCursoResponse h : c.getHorarios()) {
+                            horariosTable.addCell(crearCelda(h.getDia(), textoFont));
+                            horariosTable.addCell(crearCelda(h.getHoraInicio() + " - " + h.getHoraFin(), textoFont));
+                            horariosTable.addCell(crearCelda(h.getTipoSesion(), textoFont));
+                        }
+                        PdfPCell horariosCell = new PdfPCell(horariosTable);
+                        horariosCell.setPadding(2f);
+                        table.addCell(horariosCell);
+
+                        // Escuela
+                        table.addCell(crearCelda(c.getEscuela(), textoFont));
+
+                        // Docente
+                        String docente = (c.getDocente() != null && !c.getDocente().isEmpty())
+                                ? c.getDocente()
+                                : "Sin docente asignado";
+                        table.addCell(crearCelda(docente, textoFont));
+                    }
+
+                    document.add(table);
+                    document.add(new Paragraph("\n"));
+                }
+            }
+
+            document.close();
+            return out.toByteArray();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+
+// ================= HELPERS =================
+
+    private void agregarCeldaHeaderColor(PdfPTable table, String texto, BaseColor color) {
+        Font headerFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, BaseColor.BLACK);
+        PdfPCell cell = new PdfPCell(new Phrase(texto, headerFont));
+        cell.setBackgroundColor(color);
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setPadding(4f);
+        table.addCell(cell);
+    }
+
+    private PdfPCell crearCelda(String texto, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(texto, font));
+        cell.setPadding(4f);
+        return cell;
+    }
+    private void agregarEncabezado(Document document, CargaDetalleResponse carga, EscuelaDetalleResponse escuela) throws Exception {
+        PdfPTable headerTable = new PdfPTable(2);
+        headerTable.setWidthPercentage(100);
+        headerTable.setWidths(new int[]{70, 30});
+
+        // Texto centrado
+        PdfPCell textCell = new PdfPCell();
+        textCell.setBorder(Rectangle.NO_BORDER);
+        textCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        textCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+        textCell.addElement(new Paragraph("UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS",
+                new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD)));
+        textCell.addElement(new Paragraph("DEPARTAMENTO ACADÉMICO DE CIENCIAS DE LA COMPUTACIÓN - DACC",
+                new Font(Font.FontFamily.HELVETICA, 11)));
+        textCell.addElement(new Paragraph("CARGA LECTIVA - SEMESTRE ACADÉMICO " + carga.getCicloAcademico().getNombre(),
+                new Font(Font.FontFamily.HELVETICA, 11)));
+
+        // Si se pasa una escuela válida, se agrega al encabezado
+        if (escuela != null) {
+            textCell.addElement(new Paragraph("ESCUELA: " + escuela.getNombre(),
+                    new Font(Font.FontFamily.HELVETICA, 11, Font.BOLD, BaseColor.DARK_GRAY)));
+        }
+
+        headerTable.addCell(textCell);
+
+        // Logo desde recurso local
+        InputStream logoStream = getClass().getResourceAsStream("/static/images/UNMSM.png");
+        if (logoStream == null) {
+            throw new RuntimeException("No se encontró el archivo UNMSM.png en /resources/static/images/");
+        }
+        byte[] logoBytes = logoStream.readAllBytes();
+        Image logo = Image.getInstance(logoBytes);
+        logo.scaleToFit(80, 80);
+        PdfPCell logoCell = new PdfPCell(logo);
+        logoCell.setBorder(Rectangle.NO_BORDER);
+        logoCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        headerTable.addCell(logoCell);
+
+        document.add(headerTable);
+        document.add(Chunk.NEWLINE);
+    }
+
+
+
 }

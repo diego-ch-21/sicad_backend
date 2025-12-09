@@ -2,20 +2,19 @@ package com.sicad.sicad_backend.service.impl;
 
 import com.sicad.sicad_backend.Enum.Modulo;
 import com.sicad.sicad_backend.Enum.TipoFile;
-import com.sicad.sicad_backend.Enum.TipoNotificacion;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
+import com.sicad.sicad_backend.dto.CicloCargaCurso.AsignaturaAgrupadaResponse;
+import com.sicad.sicad_backend.dto.CicloCargaCurso.CursoAgrupadoResponse;
+import com.sicad.sicad_backend.dto.CicloCargaCurso.CursoConDocenteResponse;
+import com.sicad.sicad_backend.dto.CicloCargaCurso.HorarioCursoResponse;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoCreateRequest;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoDetalleResponse;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoFileResponse;
 import com.sicad.sicad_backend.dto.cicloAcademico.CicloAcademicoUpdateRequest;
-import com.sicad.sicad_backend.dto.escuela.EscuelaDetalleResponse;
-import com.sicad.sicad_backend.dto.usuario.UsuarioDetalleResponse;
 import com.sicad.sicad_backend.model.*;
 import com.sicad.sicad_backend.repository.base.IGenericRepo;
-import com.sicad.sicad_backend.repository.interfaces.ICicloAcademicoRepo;
-import com.sicad.sicad_backend.repository.interfaces.IDocenteRepo;
-import com.sicad.sicad_backend.repository.interfaces.INotificacionRepo;
+import com.sicad.sicad_backend.repository.interfaces.*;
 import com.sicad.sicad_backend.service.base.CRUDImpl;
 import com.sicad.sicad_backend.service.interfaces.ICicloAcademicoService;
 import com.sicad.sicad_backend.service.interfaces.INoficacionService;
@@ -28,10 +27,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.sicad.sicad_backend.utils.NumbersUtils.convertirARomano;
 
@@ -43,6 +43,7 @@ public class CicloAcademicoServiceImpl
         implements ICicloAcademicoService {
 
     private final ICicloAcademicoRepo cicloAcademicoRepo;
+
     private final INoficacionService notificacionService;
     private final ISupabaseStorageService storageService;
     private final ModelMapper modelMapper;
@@ -287,6 +288,9 @@ public class CicloAcademicoServiceImpl
 
         return new BaseObjectResponse<>(200, Modulo.CICLO_ACADEMICO.eliminado(), null);
     }
+
+
+
     private CicloAcademicoDetalleResponse convCicloAcademicoDetalle(CicloAcademico obj) {
         return modelMapper.map(obj, CicloAcademicoDetalleResponse.class);
     }

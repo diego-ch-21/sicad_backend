@@ -1,5 +1,6 @@
 package com.sicad.sicad_backend.service.interfaces;
 
+import com.sicad.sicad_backend.dto.CicloCargaCurso.CursoAgrupadoResponse;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.carga.CargaDetalleResponse;
@@ -18,4 +19,14 @@ public interface ICargaService extends ICRUD<Carga, Integer> {
     BaseObjectResponse<CargaDetalleResponse> asignarPrincipal(Integer idCicloAcademico,Integer idCarga);
 
     BaseObjectResponse<CargaDetalleResponse> buscarPrincipal(Integer idCicloAcademico);
+
+    BaseListReponse<CursoAgrupadoResponse> listarCursosAgrupados(
+            Integer idCicloAcademico,
+            Integer idCarga
+    );
+    BaseListReponse<CursoAgrupadoResponse> listarCursosAgrupadosPorEscuela(
+            Integer idCicloAcademico,
+            Integer idCarga,
+            Integer idEscuela
+    );
 }

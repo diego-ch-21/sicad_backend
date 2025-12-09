@@ -1,12 +1,14 @@
 package com.sicad.sicad_backend.controller;
 
 
+import com.sicad.sicad_backend.dto.CicloCargaCurso.CursoAgrupadoResponse;
 import com.sicad.sicad_backend.dto.base.BaseObjectResponse;
 import com.sicad.sicad_backend.dto.base.BaseListReponse;
 import com.sicad.sicad_backend.dto.base.BaseMessageResponse; // Importación necesaria
 import com.sicad.sicad_backend.dto.carga.CargaDetalleResponse;
 import com.sicad.sicad_backend.service.interfaces.ICargaService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -109,4 +112,38 @@ public class CargaController {
         BaseObjectResponse<CargaDetalleResponse> response = service.buscarPrincipal(id);
         return ResponseEntity.status(response.status()).body(response);
     }
+
+
+    @Operation(
+            summary = "Listar cargas de un ciclo académico",
+            description = "Obtiene el historial de todas las cargas de asignación generadas para un ciclo académico específico."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de cargas obtenida exitosamente")
+    })
+    @GetMapping("/listar-cursos-agrupado/{idCicloAcademico}/{idCarga}")
+    public ResponseEntity<BaseListReponse<CursoAgrupadoResponse>>
+    listarSegunCicloAcademcoYCarga(
+            @PathVariable("idCicloAcademico") Integer idCicloAcademico,
+            @PathVariable("idCarga") Integer idCarga){
+        BaseListReponse<CursoAgrupadoResponse> response = service.listarCursosAgrupados(idCicloAcademico,idCarga);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+    @Operation(
+            summary = "Listar cargas de un ciclo académico",
+            description = "Obtiene el historial de todas las cargas de asignación generadas para un ciclo académico específico."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de cargas obtenida exitosamente")
+    })
+    @GetMapping("/listar-cursos-escuela-agrupado/{idCicloAcademico}/{idCarga}/{idEscuela}")
+    public ResponseEntity<BaseListReponse<CursoAgrupadoResponse>>
+    listarSegunCicloAcademcoYCargaYEscuela(
+            @PathVariable("idCicloAcademico") Integer idCicloAcademico,
+            @PathVariable("idCarga") Integer idCarga,
+            @PathVariable("idEscuela") Integer idEscuela){
+        BaseListReponse<CursoAgrupadoResponse> response = service.listarCursosAgrupadosPorEscuela(idCicloAcademico,idCarga,idEscuela);
+        return ResponseEntity.status(response.status()).body(response);
+    }
+
 }
