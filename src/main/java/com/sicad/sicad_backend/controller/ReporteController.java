@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,6 +31,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+
+import static com.sicad.sicad_backend.utils.CodigoGeneratorUtil.generarCodigoAlfanumerico;
+import static com.sicad.sicad_backend.utils.CodigoGeneratorUtil.generarCodigoNumerico;
 
 @RestController
 @RequestMapping("/reporte")
@@ -78,10 +82,10 @@ public class ReporteController {
         if (pdfBytes == null) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDispositionFormData("attachment", "reporte-carga-electiva.pdf");
+        String numeroId = "#"+generarCodigoNumerico(4);
+        headers.setContentDispositionFormData("attachment", numeroId+"-reporte-carga-electiva-docentes-"+carga.getCicloAcademico().getNombre()+".pdf");
 
         return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
     }
@@ -134,8 +138,10 @@ public class ReporteController {
         headers.setContentType(MediaType.parseMediaType(
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
         // Nombre del archivo dinámico
-        headers.setContentDispositionFormData("attachment",
-                "reporte-carga-electiva-" + carga.getCicloAcademico().getNombre() + ".xlsx");
+        String numeroId = "#"+generarCodigoNumerico(4);
+
+        headers.setContentDispositionFormData("attachment", numeroId+
+                "-reporte-carga-electiva-docentes" + carga.getCicloAcademico().getNombre() + ".xlsx");
 
         return new ResponseEntity<>(excelBytes, headers, HttpStatus.OK);
     }
@@ -181,7 +187,8 @@ public class ReporteController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDispositionFormData("attachment", "reporte-carga-electiva.pdf");
+            String numeroId = "#"+generarCodigoNumerico(4);
+            headers.setContentDispositionFormData("attachment", numeroId+"-reporte-carga-electiva-"+carga.getCicloAcademico().getNombre()+".pdf");
 
             return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
 
@@ -225,7 +232,8 @@ public class ReporteController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDispositionFormData("attachment", "reporte-carga-electiva.pdf");
+            String numeroId = "#"+generarCodigoNumerico(4);
+            headers.setContentDispositionFormData("attachment", numeroId+"-reporte-carga-electiva-"+carga.getCicloAcademico().getNombre()+".pdf");
 
             return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
 
@@ -236,5 +244,111 @@ public class ReporteController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    // --- EXPORTAR EXCEL CURSOS AGRUPADOS POR CARGA ---
+    @Operation(
+            summary = "Exportar Excel de Cursos Agrupados por Carga",
+            description = "Genera y exporta un reporte en formato Excel (XLSX) de todos los cursos agrupados por ciclo y asignatura para una Carga específica."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Reporte Excel generado y descargado exitosamente",
+                    content = @Content(mediaType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            schema = @Schema(type = "string", format = "binary"))),
+            @ApiResponse(responseCode = "404", description = "La Carga de Asignación no fue encontrada",
+                    content = @Content(schema = @Schema(implementation = BaseMessageResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Error interno al generar el Excel")
+    })
+    @PostMapping("/exportar-excel/listar-cursos-agrupado/{idCicloAcademico}/{idCarga}")
+    public ResponseEntity<byte[]> exportarExcelCursoCargaOrdenado(
+            @PathVariable("idCicloAcademico") Integer idCicloAcademico,
+            @PathVariable("idCarga") Integer idCarga) {
+
+        try {
+            BaseObjectResponse<CargaDetalleResponse> cargaResponse = cargaService.buscar(idCarga);
+            if (cargaResponse.status() != 200) {
+                return ResponseEntity.status(cargaResponse.status()).build();
+            }
+            CargaDetalleResponse carga = cargaResponse.data();
+
+            BaseListReponse<CursoAgrupadoResponse> arbolResponse = cargaService.listarCursosAgrupados(idCicloAcademico, idCarga);
+            if (arbolResponse.status() != 200) {
+                return ResponseEntity.status(arbolResponse.status()).build();
+            }
+            List<CursoAgrupadoResponse> lista = arbolResponse.data();
+
+            byte[] excelBytes = reporteService.generarExcelCursosAgrupadoCarga(lista, carga);
+
+            if (excelBytes == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
+            String numeroId = "#"+generarCodigoNumerico(4);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType(
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+            headers.setContentDispositionFormData("attachment", numeroId+"-reporte-carga-electiva-"+carga.getCicloAcademico().getNombre()+ ".xlsx");
+
+            return new ResponseEntity<>(excelBytes, headers, HttpStatus.OK);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // --- EXPORTAR EXCEL CURSOS AGRUPADOS POR ESCUELA ---
+    @Operation(
+            summary = "Exportar Excel de Cursos Agrupados por Carga y Escuela",
+            description = "Genera y exporta un reporte en formato Excel (XLSX) de todos los cursos agrupados por ciclo y asignatura para una Carga específica, filtrando solo los cursos de una escuela determinada."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Reporte Excel generado y descargado exitosamente",
+                    content = @Content(mediaType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            schema = @Schema(type = "string", format = "binary"))),
+            @ApiResponse(responseCode = "404", description = "La Carga o Escuela no fueron encontradas",
+                    content = @Content(schema = @Schema(implementation = BaseMessageResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Error interno al generar el Excel")
+    })
+    @PostMapping("/exportar-excel/listar-cursos-agrupado/{idCicloAcademico}/{idCarga}/{idEscuela}")
+    public ResponseEntity<byte[]> exportarExcelCursoCargaEscuelaOrdenado(
+            @PathVariable("idCicloAcademico") Integer idCicloAcademico,
+            @PathVariable("idCarga") Integer idCarga,
+            @PathVariable("idEscuela") Integer idEscuela) {
+
+        try {
+            BaseObjectResponse<CargaDetalleResponse> cargaResponse = cargaService.buscar(idCarga);
+            if (cargaResponse.status() != 200) {
+                return ResponseEntity.status(cargaResponse.status()).build();
+            }
+            CargaDetalleResponse carga = cargaResponse.data();
+
+            BaseObjectResponse<EscuelaDetalleResponse> escuelaResponse = escuelaService.buscar(idEscuela);
+            if (escuelaResponse.status() != 200) {
+                return ResponseEntity.status(escuelaResponse.status()).build();
+            }
+            EscuelaDetalleResponse escuela = escuelaResponse.data();
+
+            BaseListReponse<CursoAgrupadoResponse> arbolResponse = cargaService.listarCursosAgrupados(idCicloAcademico, idCarga);
+            if (arbolResponse.status() != 200) {
+                return ResponseEntity.status(arbolResponse.status()).build();
+            }
+            List<CursoAgrupadoResponse> lista = arbolResponse.data();
+
+            byte[] excelBytes = reporteService.generarExcelCursosAgrupadoCarga(lista, carga, escuela);
+
+            if (excelBytes == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
+            String numeroId = "#"+generarCodigoNumerico(4);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType(
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+            headers.setContentDispositionFormData("attachment",
+                    numeroId+"-reporte-carga-electiva-escuela-"+carga.getCicloAcademico().getNombre()+ ".xlsx");
+
+            return new ResponseEntity<>(excelBytes, headers, HttpStatus.OK);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 
 }

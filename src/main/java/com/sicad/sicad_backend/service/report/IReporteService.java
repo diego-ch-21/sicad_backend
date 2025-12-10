@@ -13,4 +13,6 @@ public interface IReporteService {
     byte[] generarExcelCargaElectiva(List<DocenteAsignacionResponse> docentes, CargaDetalleResponse carga);
     byte[] generarPdfCursosAgrupadoCarga(List<CursoAgrupadoResponse> data, CargaDetalleResponse carga);
     byte[] generarPdfCursosAgrupadoCarga(List<CursoAgrupadoResponse> data,CargaDetalleResponse carga,EscuelaDetalleResponse escuela);
+    byte[] generarExcelCursosAgrupadoCarga(List<CursoAgrupadoResponse> data, CargaDetalleResponse carga);
+    byte[] generarExcelCursosAgrupadoCarga(List<CursoAgrupadoResponse> data, CargaDetalleResponse carga, EscuelaDetalleResponse escuela);
 }

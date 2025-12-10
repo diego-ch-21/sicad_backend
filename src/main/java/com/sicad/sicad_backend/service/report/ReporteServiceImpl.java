@@ -33,6 +33,8 @@ import com.sicad.sicad_backend.dto.curso.CursoAsignacionResponse;
 import com.sicad.sicad_backend.dto.Horario.HorarioDetalleResponse;
 import com.sicad.sicad_backend.dto.docente.DocenteAsignacionResponse;
 
+import static com.sicad.sicad_backend.utils.CodigoGeneratorUtil.generarCodigoAlfanumerico;
+import static com.sicad.sicad_backend.utils.CodigoGeneratorUtil.generarCodigoNumerico;
 import static com.sicad.sicad_backend.utils.TextUtils.formatearListaComoTexto;
 
 @Service
@@ -600,7 +602,7 @@ public class ReporteServiceImpl
                         // Docente
                         String docente = (c.getDocente() != null && !c.getDocente().isEmpty())
                                 ? c.getDocente()
-                                : "Sin docente asignado";
+                                : "-";
                         table.addCell(crearCelda(docente, textoFont));
                     }
 
@@ -712,7 +714,7 @@ public class ReporteServiceImpl
                         // Docente
                         String docente = (c.getDocente() != null && !c.getDocente().isEmpty())
                                 ? c.getDocente()
-                                : "Sin docente asignado";
+                                : "-";
                         table.addCell(crearCelda(docente, textoFont));
                     }
 
@@ -789,6 +791,328 @@ public class ReporteServiceImpl
 
         document.add(headerTable);
         document.add(Chunk.NEWLINE);
+    }
+
+    @Override
+    public byte[] generarExcelCursosAgrupadoCarga(List<CursoAgrupadoResponse> data, CargaDetalleResponse carga) {
+        try (XSSFWorkbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            String numeroId = "#"+generarCodigoAlfanumerico(4);
+
+            XSSFSheet sheet = workbook.createSheet(numeroId+" Carga electiva - "+carga.getCicloAcademico().getNombre());
+
+            // Estilos
+            XSSFCellStyle estiloTitulo = crearEstiloTitulo(workbook);
+            XSSFCellStyle estiloEncabezado = crearEstiloEncabezado(workbook);
+            XSSFCellStyle estiloDatos = crearEstiloDatos(workbook);
+            XSSFCellStyle estiloCentrado = crearEstiloCentrado(workbook);
+            XSSFCellStyle estiloCiclo = workbook.createCellStyle();
+            XSSFFont fontCiclo = workbook.createFont();
+            fontCiclo.setBold(true);
+            fontCiclo.setColor(IndexedColors.WHITE.getIndex()); // Letra blanca
+            estiloCiclo.setFont(fontCiclo);
+            estiloCiclo.setAlignment(HorizontalAlignment.CENTER);
+            estiloCiclo.setVerticalAlignment(VerticalAlignment.CENTER);
+            estiloCiclo.setFillForegroundColor(new XSSFColor(new byte[]{64, 64, 64}, null)); // Gris oscuro
+            estiloCiclo.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            int rowNum = 0;
+
+            // Encabezado principal
+            Row row = sheet.createRow(rowNum++);
+            Cell cell = row.createCell(0);
+            cell.setCellValue("UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS");
+            cell.setCellStyle(estiloTitulo);
+            sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 0, 5));
+
+            row = sheet.createRow(rowNum++);
+            cell = row.createCell(0);
+            cell.setCellValue("DEPARTAMENTO ACADÉMICO DE CIENCIAS DE LA COMPUTACIÓN - DACC");
+            cell.setCellStyle(estiloTitulo);
+            sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 0, 5));
+
+            row = sheet.createRow(rowNum++);
+            cell = row.createCell(0);
+            cell.setCellValue("CARGA LECTIVA - SEMESTRE ACADÉMICO " + carga.getCicloAcademico().getNombre());
+            cell.setCellStyle(estiloTitulo);
+            sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 0, 5));
+
+            rowNum++; // Espacio
+
+            // Recorremos los ciclos
+            for (CursoAgrupadoResponse ciclo : data) {
+                row = sheet.createRow(rowNum++);
+                cell = row.createCell(0);
+                cell.setCellValue("CICLO " + ciclo.getCiclo());
+                cell.setCellStyle(estiloCiclo); // <-- aquí usamos el estilo nuevo
+                sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 0, 7)); // ajustar a todas las columnas visibles
+
+                for (AsignaturaAgrupadaResponse asig : ciclo.getAsignaturas()) {
+                    row = sheet.createRow(rowNum++);
+                    cell = row.createCell(0);
+                    cell.setCellValue(asig.getNombre() + " (" + asig.getCodigo() + ")");
+                    cell.setCellStyle(estiloDatos);
+                    sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 0, 5));
+
+                    // Encabezados de tabla
+                    row = sheet.createRow(rowNum++);
+                    String[] encabezados = {"Código Curso", "Grupo", "Plan de Estudios", "Día", "Horario", "Tipo", "Escuela", "Docente"};
+                    for (int i = 0; i < encabezados.length; i++) {
+                        cell = row.createCell(i);
+                        cell.setCellValue(encabezados[i]);
+                        cell.setCellStyle(estiloEncabezado);
+                    }
+
+                    // Datos de cursos
+                    for (CursoConDocenteResponse c : asig.getCursos()) {
+                        int startRow = rowNum; // Para combinar celdas de curso
+                        for (HorarioCursoResponse h : c.getHorarios()) {
+                            row = sheet.createRow(rowNum++);
+
+                            // Código Curso, Grupo, Plan, Escuela y Docente solo en la primera fila del horario
+                            if (h.equals(c.getHorarios().get(0))) {
+                                cell = row.createCell(0);
+                                cell.setCellValue(c.getCodigoCurso());
+                                cell.setCellStyle(estiloCentrado);
+
+                                cell = row.createCell(1);
+                                cell.setCellValue(c.getGrupo());
+                                cell.setCellStyle(estiloCentrado);
+
+                                cell = row.createCell(2);
+                                cell.setCellValue(String.join(", ", c.getPlanDeEstudios()));
+                                cell.setCellStyle(estiloCentrado);
+
+                                cell = row.createCell(6);
+                                cell.setCellValue(c.getEscuela());
+                                cell.setCellStyle(estiloCentrado);
+
+                                cell = row.createCell(7);
+                                String docente = (c.getDocente() != null && !c.getDocente().isEmpty())
+                                        ? c.getDocente()
+                                        : "-";
+                                cell.setCellValue(docente);
+                                cell.setCellStyle(estiloDatos);
+                            }
+
+                            // Día
+                            cell = row.createCell(3);
+                            cell.setCellValue(h.getDia());
+                            cell.setCellStyle(estiloCentrado);
+
+                            // Horario
+                            cell = row.createCell(4);
+                            cell.setCellValue(h.getHoraInicio() + " - " + h.getHoraFin());
+                            cell.setCellStyle(estiloCentrado);
+
+                            // Tipo
+                            cell = row.createCell(5);
+                            cell.setCellValue(h.getTipoSesion());
+                            cell.setCellStyle(estiloCentrado);
+                        }
+
+                        // Combinar celdas de Código, Grupo, Plan, Escuela y Docente si hay varios horarios
+                        if (c.getHorarios().size() > 1) {
+                            sheet.addMergedRegion(new CellRangeAddress(startRow, rowNum-1, 0, 0)); // Código
+                            sheet.addMergedRegion(new CellRangeAddress(startRow, rowNum-1, 1, 1)); // Grupo
+                            sheet.addMergedRegion(new CellRangeAddress(startRow, rowNum-1, 2, 2)); // Plan
+                            sheet.addMergedRegion(new CellRangeAddress(startRow, rowNum-1, 6, 6)); // Escuela
+                            sheet.addMergedRegion(new CellRangeAddress(startRow, rowNum-1, 7, 7)); // Docente
+                        }
+                    }
+
+                    rowNum++; // Espacio entre asignaturas
+                }
+
+                rowNum++; // Espacio entre ciclos
+            }
+
+            // Ajuste de columnas
+            sheet.setColumnWidth(0, 4000);  // Código
+            sheet.setColumnWidth(1, 3000);  // Grupo
+            sheet.setColumnWidth(2, 4000);  // Plan
+            sheet.setColumnWidth(3, 4000);  // Día
+            sheet.setColumnWidth(4, 4000);  // Horario
+            sheet.setColumnWidth(5, 3000);  // Tipo
+            sheet.setColumnWidth(6, 6000);  // Escuela
+            sheet.setColumnWidth(7, 10000);  // Docente
+
+            workbook.write(out);
+            return out.toByteArray();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+    @Override
+    public byte[] generarExcelCursosAgrupadoCarga(List<CursoAgrupadoResponse> data, CargaDetalleResponse carga, EscuelaDetalleResponse escuela) {
+        try (XSSFWorkbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            String numeroId = "#"+generarCodigoAlfanumerico(4);
+
+            XSSFSheet sheet = workbook.createSheet(numeroId+" Carga electiva - "+carga.getCicloAcademico().getNombre());
+
+            // Estilos
+            XSSFCellStyle estiloTitulo = crearEstiloTitulo(workbook);
+            XSSFCellStyle estiloEncabezado = crearEstiloEncabezado(workbook);
+            XSSFCellStyle estiloDatos = crearEstiloDatos(workbook);
+            XSSFCellStyle estiloCentrado = crearEstiloCentrado(workbook);
+            // Agregar después de crear los demás estilos
+            XSSFCellStyle estiloCiclo = workbook.createCellStyle();
+            XSSFFont fontCiclo = workbook.createFont();
+            fontCiclo.setBold(true);
+            fontCiclo.setColor(IndexedColors.WHITE.getIndex()); // Letra blanca
+            estiloCiclo.setFont(fontCiclo);
+            estiloCiclo.setAlignment(HorizontalAlignment.CENTER);
+            estiloCiclo.setVerticalAlignment(VerticalAlignment.CENTER);
+            estiloCiclo.setFillForegroundColor(new XSSFColor(new byte[]{64, 64, 64}, null)); // Gris oscuro
+            estiloCiclo.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+
+            int rowNum = 0;
+
+            // Encabezado principal
+            Row row = sheet.createRow(rowNum++);
+            Cell cell = row.createCell(0);
+            cell.setCellValue("UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS");
+            cell.setCellStyle(estiloTitulo);
+            sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 0, 7));
+
+            row = sheet.createRow(rowNum++);
+            cell = row.createCell(0);
+            cell.setCellValue("DEPARTAMENTO ACADÉMICO DE CIENCIAS DE LA COMPUTACIÓN - DACC");
+            cell.setCellStyle(estiloTitulo);
+            sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 0, 7));
+
+            row = sheet.createRow(rowNum++);
+            cell = row.createCell(0);
+            cell.setCellValue("CARGA LECTIVA - SEMESTRE ACADÉMICO " + carga.getCicloAcademico().getNombre());
+            cell.setCellStyle(estiloTitulo);
+            sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 0, 7));
+
+            row = sheet.createRow(rowNum++);
+            cell = row.createCell(0);
+            cell.setCellValue("ESCUELA: " + escuela.getNombre());
+            cell.setCellStyle(estiloTitulo);
+            sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 0, 7));
+
+            rowNum++; // Espacio
+
+            // Recorremos los ciclos
+            for (CursoAgrupadoResponse ciclo : data) {
+                row = sheet.createRow(rowNum++);
+                cell = row.createCell(0);
+                cell.setCellValue("CICLO " + ciclo.getCiclo());
+                cell.setCellStyle(estiloCiclo); // <-- aquí usamos el estilo nuevo
+                sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 0, 7)); // ajustar a todas las columnas visibles
+
+                for (AsignaturaAgrupadaResponse asig : ciclo.getAsignaturas()) {
+                    // Filtramos cursos solo de la escuela indicada
+                    List<CursoConDocenteResponse> cursosFiltrados = asig.getCursos().stream()
+                            .filter(c -> c.getEscuela().equalsIgnoreCase(escuela.getNombre()))
+                            .toList();
+
+                    if (cursosFiltrados.isEmpty()) continue; // Si no hay cursos en esa escuela, se salta la asignatura
+
+                    row = sheet.createRow(rowNum++);
+                    cell = row.createCell(0);
+                    cell.setCellValue(asig.getNombre() + " (" + asig.getCodigo() + ")");
+                    cell.setCellStyle(estiloDatos);
+                    sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 0, 7));
+
+                    // Encabezados de tabla
+                    row = sheet.createRow(rowNum++);
+                    String[] encabezados = {"Código Curso", "Grupo", "Plan de Estudios", "Día", "Horario", "Tipo", "Escuela", "Docente"};
+                    for (int i = 0; i < encabezados.length; i++) {
+                        cell = row.createCell(i);
+                        cell.setCellValue(encabezados[i]);
+                        cell.setCellStyle(estiloEncabezado);
+                    }
+
+                    // Datos de cursos filtrados
+                    for (CursoConDocenteResponse c : cursosFiltrados) {
+                        int startRow = rowNum;
+                        for (HorarioCursoResponse h : c.getHorarios()) {
+                            row = sheet.createRow(rowNum++);
+
+                            // Código Curso, Grupo, Plan, Escuela y Docente solo en la primera fila del horario
+                            if (h.equals(c.getHorarios().get(0))) {
+                                cell = row.createCell(0);
+                                cell.setCellValue(c.getCodigoCurso());
+                                cell.setCellStyle(estiloCentrado);
+
+                                cell = row.createCell(1);
+                                cell.setCellValue(c.getGrupo());
+                                cell.setCellStyle(estiloCentrado);
+
+                                cell = row.createCell(2);
+                                cell.setCellValue(String.join(", ", c.getPlanDeEstudios()));
+                                cell.setCellStyle(estiloCentrado);
+
+                                cell = row.createCell(6);
+                                cell.setCellValue(c.getEscuela());
+                                cell.setCellStyle(estiloCentrado);
+
+                                cell = row.createCell(7);
+                                String docente = (c.getDocente() != null && !c.getDocente().isEmpty())
+                                        ? c.getDocente()
+                                        : "-";
+                                cell.setCellValue(docente);
+                                cell.setCellStyle(estiloDatos);
+                            }
+
+                            // Día
+                            cell = row.createCell(3);
+                            cell.setCellValue(h.getDia());
+                            cell.setCellStyle(estiloCentrado);
+
+                            // Horario
+                            cell = row.createCell(4);
+                            cell.setCellValue(h.getHoraInicio() + " - " + h.getHoraFin());
+                            cell.setCellStyle(estiloCentrado);
+
+                            // Tipo
+                            cell = row.createCell(5);
+                            cell.setCellValue(h.getTipoSesion());
+                            cell.setCellStyle(estiloCentrado);
+                        }
+
+                        // Combinar celdas de Código, Grupo, Plan, Escuela y Docente si hay varios horarios
+                        if (c.getHorarios().size() > 1) {
+                            sheet.addMergedRegion(new CellRangeAddress(startRow, rowNum-1, 0, 0)); // Código
+                            sheet.addMergedRegion(new CellRangeAddress(startRow, rowNum-1, 1, 1)); // Grupo
+                            sheet.addMergedRegion(new CellRangeAddress(startRow, rowNum-1, 2, 2)); // Plan
+                            sheet.addMergedRegion(new CellRangeAddress(startRow, rowNum-1, 6, 6)); // Escuela
+                            sheet.addMergedRegion(new CellRangeAddress(startRow, rowNum-1, 7, 7)); // Docente
+                        }
+                    }
+
+                    rowNum++; // Espacio entre asignaturas
+                }
+
+                rowNum++; // Espacio entre ciclos
+            }
+
+            // Ajuste de columnas
+            sheet.setColumnWidth(0, 4000);  // Código
+            sheet.setColumnWidth(1, 3000);  // Grupo
+            sheet.setColumnWidth(2, 4000);  // Plan
+            sheet.setColumnWidth(3, 4000);  // Día
+            sheet.setColumnWidth(4, 4000);  // Horario
+            sheet.setColumnWidth(5, 3000);  // Tipo
+            sheet.setColumnWidth(6, 6000);  // Escuela
+            sheet.setColumnWidth(7, 10000);  // Docente
+
+            workbook.write(out);
+            return out.toByteArray();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 
