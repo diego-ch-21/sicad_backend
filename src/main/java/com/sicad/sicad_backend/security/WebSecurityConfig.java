@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -20,11 +22,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import java.util.Arrays;
 import java.util.List;
 
-//@Profile({"dev", "qa", "prod"})
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -52,46 +54,18 @@ public class WebSecurityConfig {
     }
 
     /**
-     * Configuración CORS integrada en Security
-     * Esta es la forma más limpia y recomendada
+     * Configuración CORS
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Orígenes permitidos (tu app Angular)
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:4200"
-        ));
-
-        // Métodos HTTP permitidos
-        configuration.setAllowedMethods(Arrays.asList(
-                "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
-        ));
-
-        // Headers permitidos
-        configuration.setAllowedHeaders(Arrays.asList(
-                "Authorization",
-                "Content-Type",
-                "X-Requested-With",
-                "Accept",
-                "Origin",
-                "Access-Control-Request-Method",
-                "Access-Control-Request-Headers"
-        ));
-
-        // Headers expuestos al cliente
-        configuration.setExposedHeaders(Arrays.asList(
-                "Authorization",
-                "Access-Control-Allow-Origin",
-                "Access-Control-Allow-Credentials"
-        ));
-
-        // Permitir credenciales (cookies, Authorization headers)
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200")); // Angular
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*")); // permitir todos los headers
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
         configuration.setAllowCredentials(true);
-
-        // SIN CACHÉ - Útil para desarrollo
-        configuration.setMaxAge(0L);
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -99,21 +73,30 @@ public class WebSecurityConfig {
         return source;
     }
 
+    /**
+     * Filtro CORS global, para asegurar que OPTIONS se gestione correctamente
+     */
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public CorsFilter corsFilter() {
+        return new CorsFilter(corsConfigurationSource());
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ Habilitar CORS
-                .authorizeHttpRequests(req -> req
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .authorizeHttpRequests(auth -> auth
+                        // permitir preflight OPTIONS
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // endpoints públicos
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers(
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html"
-                        ).permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        // cualquier otro requiere autenticación
                         .anyRequest().authenticated()
                 )
-                .exceptionHandling(e -> e.authenticationEntryPoint(jwtAuthEntryPoint))
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthEntryPoint))
                 .formLogin(AbstractHttpConfigurer::disable)
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
